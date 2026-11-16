@@ -1,48 +1,59 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>설치 안내</title>
-<style>
-:root{--bg:#fbfcfb;--ink:#1d2622;--muted:#5d6a64;--line:#d9dfdb;--accent:#1f6f5c;--soft:#eef5f2}
-@media (prefers-color-scheme:dark){:root{--bg:#121715;--ink:#e6ece9;--muted:#9aa8a1;--line:#2f3a35;--accent:#5fc0a2;--soft:#1c2622;color-scheme:dark}}
-body{max-width:680px;margin:0 auto;padding:24px 16px 48px;font:15px/1.7 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--bg)}
-h1{font-size:1.45rem;margin:0 0 4px}h2{font-size:1.08rem;margin:1.8em 0 .4em;padding-top:.6em;border-top:1px solid var(--line)}
-.lead{color:var(--muted);margin:0 0 16px}a{color:var(--accent)}
-.dl{display:inline-block;background:var(--accent);color:var(--bg);text-decoration:none;font-weight:600;padding:10px 16px;border-radius:8px;margin:6px 0}
-ol{padding-left:1.3em}li{margin:.3em 0}code{background:var(--soft);padding:1px 5px;border-radius:4px;font-size:.92em}
-.note{background:var(--soft);border-radius:8px;padding:10px 14px;font-size:.92rem}
-</style></head><body>
-<h1>약 이상반응 찾기 (시험판)</h1>
-<p class="lead">환자에게 새로 생긴 문제(신기능 저하, 간수치 상승, 새 증상)가 복용 중인 약 때문일 수 있는지 식약처 허가 첨부문서 기준으로 빠르게 찾아보는 도구입니다. AI 없이 첨부문서 문장을 규칙으로 정리했습니다.</p>
-
-<h2>1. 내려받기</h2>
-<a class="dl" href="download/drug-adr-extension.zip">확장 프로그램 내려받기 (약 3MB)</a>
-<p>받은 파일을 마우스 오른쪽 → <b>압축 풀기</b>(모두 압축 풀기) 하세요. <code>drug-adr-extension</code> 폴더가 생깁니다. 이 폴더는 지우지 말고 그대로 두세요(지우면 확장 프로그램도 사라집니다).</p>
-
-<h2>2. 설치 (Chrome)</h2>
-<ol>
-<li>주소창에 <code>chrome://extensions</code> 를 입력합니다.</li>
-<li>오른쪽 위 <b>개발자 모드</b>를 켭니다.</li>
-<li><b>압축해제된 확장 프로그램 로드</b>를 누르고 위의 <code>drug-adr-extension</code> 폴더를 선택합니다.</li>
-<li>주소창 오른쪽 퍼즐 모양 아이콘 → "약 이상반응 찾기" 옆 핀을 눌러 고정하면 편합니다.</li>
-</ol>
-<p class="note"><b>Edge</b>는 <code>edge://extensions</code> 에서 왼쪽 아래 "개발자 모드"를 켠 뒤 같은 방법으로 설치합니다. 네이버 웨일 등 다른 브라우저는 아직 시험하지 않았습니다.</p>
-
-<h2>3. 사용법</h2>
-<ol>
-<li>처방 화면을 띄운 상태에서 확장 프로그램 아이콘(또는 <code>Alt+Shift+Y</code>)을 누르면 오른쪽에 패널이 열립니다.</li>
-<li><b>지금 보고 있는 화면에서 약 찾기</b>를 누르면 처방 화면의 약 이름을 읽어 자동으로 추가합니다. 처음 한 번은 그 사이트를 읽어도 되는지 허용을 묻습니다.</li>
-<li>화면을 읽지 못하면 약 이름(제품명 일부도 가능)을 직접 입력하거나, 처방 목록을 붙여넣으세요. 화면에서 글자를 드래그한 뒤 오른쪽 클릭 → "약 이상반응 찾기에 추가"도 됩니다.</li>
-<li><b>새로 생긴 문제</b>에 "egfr", "간수치", "어지럼", "부종"처럼 자유롭게 쓰면 원인 가능성이 있는 약이 <b>높음 · 가능성 있음 · 낮음 · 매우 드묾</b> 순으로 나옵니다. 근거 문장과 식약처 원문 링크를 꼭 확인하세요.</li>
-<li>아래 <b>신기능·간기능이 떨어졌을 때</b>에서 약별 금기·용량 조절·주의 여부를 볼 수 있습니다.</li>
-<li>다음 환자로 넘어갈 때는 <b>새 환자 (모두 지우기)</b>를 누르세요.</li>
-</ol>
-<p class="note">휴대폰이나 설치형 EMR에서는 웹 버전을 쓰세요: <a href="./">jeremiah-84.github.io/drug-adr</a> (화면 읽기 기능만 빼고 같습니다). Chrome·Edge에서 주소창의 "앱 설치" 아이콘을 누르면 작은 창으로 따로 띄워 처방 창 옆에 둘 수 있습니다.</p>
-
-<h2>4. 개인정보와 시험 기간 통계</h2>
-<p>처방 화면 내용과 환자 정보는 이 컴퓨터 밖으로 나가지 않습니다. 시험 기간에는 동의하신 경우에만 익명 사용 통계(기능 사용 종류, 추가한 성분, 고른 문제 항목, 개수, 시험 광고 노출·클릭)를 보내며, 패널 맨 아래에서 언제든 끌 수 있습니다. 자세한 내용은 <a href="privacy.html">개인정보처리방침</a>을 보세요.</p>
-
-<h2>5. 알아두실 점</h2>
-<ul>
-<li>약마다 대표 제품 1개의 첨부문서를 기준으로 하며, 규칙에 따라 자동 추출해 누락이나 오분류가 있을 수 있습니다. 진료 판단의 참고로만 쓰세요.</li>
-<li>약 데이터는 매월 자동으로 새로 받아집니다. 프로그램 자체가 바뀌면 새 파일을 다시 안내드립니다.</li>
-<li>패널 아래의 광고는 시험용 배너입니다. 거슬리는지, 위치가 괜찮은지 의견 주시면 큰 도움이 됩니다.</li>
-</ul>
-</body></html>
+<link rel="icon" href="icon-192.png"><style>
+:root{--bg:#f6f8f7;--ink:#1d2622;--muted:#5d6a64;--line:#d0d8d3;--paper:#ffffff;--accent:#1f6f5c;--soft:#e6f1ec;--hi:#e8590c;--bar:#e9eeeb;--folder:#f2c14e;--zip:#8fa3c9;--chip:#dfeee8;--l4:#f6d3cf;--l3:#fbe7c2;--l2:#d6e6f5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111614;--ink:#e6ece9;--muted:#9aa8a1;--line:#34413b;--paper:#1b2320;--accent:#5fc0a2;--soft:#1f2c27;--hi:#ff8a3d;--bar:#232d29;--folder:#d9a93a;--zip:#6f86b5;--chip:#26362f;--l4:#5a2b26;--l3:#5a4520;--l2:#24394f;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+main{max-width:720px;margin:0 auto;padding:28px 16px 56px}
+h1{font-size:1.6rem;margin:0 0 6px;letter-spacing:-.01em}.lead{color:var(--muted);margin:0 0 18px}
+.dl{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--paper);text-decoration:none;font-weight:700;padding:13px 20px;border-radius:10px;font-size:1.05rem}
+.dlrow{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:4px 0 26px}.dlrow span{color:var(--muted);font-size:.9rem}
+.step{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center}
+.step svg{width:100%;height:auto;display:block}
+.num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--paper);font-weight:800;margin-bottom:6px}
+.step h2{font-size:1.12rem;margin:0 0 6px}.step p{margin:0}
+code{background:var(--soft);padding:1px 6px;border-radius:5px;font-size:.92em;word-break:break-all}
+.note{background:var(--soft);border-radius:10px;padding:12px 16px;font-size:.95rem;margin:0 0 14px}
+h3{font-size:1.05rem;margin:28px 0 8px}ul{padding-left:1.2em}a{color:var(--accent)}
+@media (max-width:600px){.step{grid-template-columns:1fr}}
+svg .w{fill:var(--paper);stroke:var(--line);stroke-width:1.5}svg .bar{fill:var(--bar)}svg .dot{fill:var(--line)}
+svg .addr{fill:var(--bg);stroke:var(--line)}svg .card{fill:var(--paper);stroke:var(--line)}svg .sh{filter:drop-shadow(0 3px 6px rgba(0,0,0,.18))}
+svg .panel{fill:var(--soft);stroke:var(--line)}svg .acc{fill:var(--accent)}svg .btn{fill:var(--paper);stroke:var(--accent);stroke-width:1.5}
+svg .sel{fill:var(--soft)}svg .hi{fill:none;stroke:var(--hi);stroke-width:3;stroke-dasharray:6 4}
+svg .hand{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}svg .folder{fill:var(--folder)}svg .zip{fill:var(--zip)}svg .zipline{stroke:var(--paper);stroke-width:2;stroke-dasharray:3 3}
+svg .arrow{fill:none;stroke:var(--muted);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}svg .l{stroke:var(--line)}
+svg .on{fill:#3b82f6}svg .knob{fill:#fff}svg .puz{fill:var(--muted)}svg .pin{fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:round}
+svg .chip{fill:var(--chip)}svg .lv4{fill:var(--l4)}svg .lv3{fill:var(--l3)}svg .lv2{fill:var(--l2)}
+svg .t{fill:var(--ink);font-family:system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:13px}svg .s{font-size:11.5px}svg .xs{font-size:10px}svg .xxs{font-size:8.5px}
+svg .b{font-weight:700}svg .mut{fill:var(--muted)}svg .inv{fill:var(--paper)}
+</style></head><body><main>
+<h1>약 이상반응 찾기 설치 안내</h1>
+<p class="lead">환자에게 새로 생긴 문제가 복용 중인 약 때문일 수 있는지, 식약처 허가 첨부문서 기준으로 빠르게 찾아보는 도구입니다. 그림을 따라 5분이면 설치할 수 있어요.</p>
+<div class="dlrow"><a class="dl" href="download/drug-adr-extension.zip">⬇ 확장 프로그램 내려받기</a><span>약 3MB · Chrome, Edge</span></div>
+<section class="step"><div><div class="num">1</div><h2>내려받기 버튼을 누르세요</h2><p>아래 초록 버튼을 누르면 <b>drug-adr-extension.zip</b> 파일이 <b>다운로드 폴더</b>에 저장됩니다.</p></div><svg viewBox="0 0 320 180" role="img" aria-hidden="true"><rect x="8" y="8" width="304" height="164" rx="10" class="w"/>
+<rect x="8" y="8" width="304" height="26" rx="10" class="bar"/><rect x="8" y="24" width="304" height="10" class="bar"/>
+<circle cx="22" cy="21" r="4" class="dot"/><circle cx="34" cy="21" r="4" class="dot"/><circle cx="46" cy="21" r="4" class="dot"/>
+<rect x="60" y="13" width="200" height="16" rx="8" class="addr"/><text x="70" y="25" class="t s">jeremiah-84.github.io/drug-adr/install.html</text><rect x="70" y="60" width="180" height="36" rx="8" class="acc"/><text x="160" y="83" text-anchor="middle" class="t inv b">확장 프로그램 내려받기</text><rect x="66" y="56" width="188" height="44" rx="11" class="hi"/><g transform="translate(220,84)"><path d="M0 0 L0 22 L6 17 L10 26 L14 24 L10 15 L18 15 Z" class="hand"/></g><rect x="24" y="130" width="150" height="30" rx="6" class="card"/><rect x="34" y="137" width="14" height="17" rx="2" class="zip"/><text x="56" y="150" class="t s">drug-adr-extension.zip</text></svg></section><section class="step"><div><div class="num">2</div><h2>압축을 푸세요</h2><p>다운로드 폴더에서 zip 파일을 <b>마우스 오른쪽 버튼</b>으로 누르고 <b>모두 압축 풀기</b> → <b>압축 풀기</b>를 누르세요. 같은 이름의 <b>노란 폴더</b>가 생깁니다.</p></div><svg viewBox="0 0 320 180" role="img" aria-hidden="true"><rect x="8" y="8" width="304" height="164" rx="10" class="w"/><text x="22" y="30" class="t b">다운로드</text><line x1="8" y1="40" x2="312" y2="40" class="l"/><rect x="26" y="54" width="34" height="42" rx="3" class="zip"/><path d="M38 54 v42" class="zipline"/><text x="43" y="112" text-anchor="middle" class="t xs">.zip</text><rect x="78" y="56" width="128" height="86" rx="6" class="card"/><text x="90" y="76" class="t s">열기</text><rect x="82" y="84" width="120" height="22" rx="4" class="sel"/><text x="90" y="99" class="t s b">모두 압축 풀기...</text><text x="90" y="124" class="t s">속성</text><rect x="80" y="82" width="124" height="26" rx="6" class="hi"/><g transform="translate(180,96)"><path d="M0 0 L0 22 L6 17 L10 26 L14 24 L10 15 L18 15 Z" class="hand"/></g><path d="M220 86 h18" class="arrow"/><path d="M234 80 l6 6 l-6 6" class="arrow"/><path d="M250 70 h18 l6 7 h26 v34 h-50 z" class="folder"/><text x="275" y="128" text-anchor="middle" class="t xs">drug-adr-</text><text x="275" y="140" text-anchor="middle" class="t xs">extension</text></svg></section><section class="step"><div><div class="num">3</div><h2>확장 프로그램 관리 화면을 여세요</h2><p>Chrome 주소창에 <code>chrome://extensions</code> 를 그대로 입력하고 <b>Enter</b>를 누르세요. (Edge는 <code>edge://extensions</code>)</p></div><svg viewBox="0 0 320 180" role="img" aria-hidden="true"><rect x="8" y="8" width="304" height="164" rx="10" class="w"/>
+<rect x="8" y="8" width="304" height="26" rx="10" class="bar"/><rect x="8" y="24" width="304" height="10" class="bar"/>
+<circle cx="22" cy="21" r="4" class="dot"/><circle cx="34" cy="21" r="4" class="dot"/><circle cx="46" cy="21" r="4" class="dot"/>
+<rect x="60" y="13" width="200" height="16" rx="8" class="addr"/><text x="70" y="25" class="t s">chrome://extensions</text><rect x="56" y="9" width="208" height="24" rx="12" class="hi"/><text x="200" y="60" class="t s mut">↑ 입력 후 Enter</text><text x="24" y="90" class="t b">확장 프로그램</text><rect x="24" y="104" width="130" height="50" rx="6" class="card"/><rect x="166" y="104" width="130" height="50" rx="6" class="card"/></svg></section><section class="step"><div><div class="num">4</div><h2>개발자 모드를 켜세요</h2><p>화면 <b>오른쪽 위</b>의 <b>개발자 모드</b> 스위치를 눌러 켜세요. 스위치가 파랗게 바뀌면 됩니다. (Edge는 왼쪽 아래에 있습니다)</p></div><svg viewBox="0 0 320 180" role="img" aria-hidden="true"><rect x="8" y="8" width="304" height="164" rx="10" class="w"/>
+<rect x="8" y="8" width="304" height="26" rx="10" class="bar"/><rect x="8" y="24" width="304" height="10" class="bar"/>
+<circle cx="22" cy="21" r="4" class="dot"/><circle cx="34" cy="21" r="4" class="dot"/><circle cx="46" cy="21" r="4" class="dot"/>
+<rect x="60" y="13" width="200" height="16" rx="8" class="addr"/><text x="70" y="25" class="t s">chrome://extensions</text><text x="24" y="58" class="t b">확장 프로그램</text><text x="196" y="58" class="t s">개발자 모드</text><rect x="266" y="47" width="32" height="16" rx="8" class="on"/><circle cx="290" cy="55" r="6" class="knob"/><rect x="186" y="40" width="118" height="30" rx="8" class="hi"/><g transform="translate(282,62)"><path d="M0 0 L0 22 L6 17 L10 26 L14 24 L10 15 L18 15 Z" class="hand"/></g><rect x="24" y="96" width="130" height="58" rx="6" class="card"/><rect x="166" y="96" width="130" height="58" rx="6" class="card"/></svg></section><section class="step"><div><div class="num">5</div><h2>압축 푼 폴더를 선택하세요</h2><p>새로 생긴 <b>압축해제된 확장 프로그램 로드</b> 버튼을 누르고, 2번에서 생긴 <b>drug-adr-extension</b> 폴더를 한 번 클릭한 뒤 <b>폴더 선택</b>을 누르세요.</p></div><svg viewBox="0 0 320 180" role="img" aria-hidden="true"><rect x="8" y="8" width="304" height="164" rx="10" class="w"/>
+<rect x="8" y="8" width="304" height="26" rx="10" class="bar"/><rect x="8" y="24" width="304" height="10" class="bar"/>
+<circle cx="22" cy="21" r="4" class="dot"/><circle cx="34" cy="21" r="4" class="dot"/><circle cx="46" cy="21" r="4" class="dot"/>
+<rect x="60" y="13" width="200" height="16" rx="8" class="addr"/><text x="70" y="25" class="t s">chrome://extensions</text><rect x="20" y="44" width="150" height="22" rx="5" class="btn"/><text x="95" y="59" text-anchor="middle" class="t xs b">압축해제된 확장 프로그램 로드</text><rect x="16" y="40" width="158" height="30" rx="8" class="hi"/><rect x="120" y="78" width="180" height="88" rx="8" class="card sh"/><text x="132" y="96" class="t s b">폴더 선택</text><rect x="128" y="104" width="164" height="20" rx="4" class="sel"/><path d="M134 108 h8 l3 3 h9 v9 h-20 z" class="folder"/><text x="160" y="118" class="t xs">drug-adr-extension</text><rect x="232" y="138" width="60" height="20" rx="5" class="acc"/><text x="262" y="152" text-anchor="middle" class="t xs inv b">폴더 선택</text><rect x="228" y="134" width="68" height="28" rx="8" class="hi"/><g transform="translate(272,148)"><path d="M0 0 L0 22 L6 17 L10 26 L14 24 L10 15 L18 15 Z" class="hand"/></g></svg></section><section class="step"><div><div class="num">6</div><h2>아이콘을 고정하세요</h2><p>주소창 오른쪽의 <b>퍼즐 모양</b>을 누르고, <b>약 이상반응 찾기</b> 옆의 <b>핀</b>을 누르세요. 이제 초록 아이콘이 항상 보입니다.</p></div><svg viewBox="0 0 320 180" role="img" aria-hidden="true"><rect x="8" y="8" width="304" height="164" rx="10" class="w"/>
+<rect x="8" y="8" width="304" height="26" rx="10" class="bar"/><rect x="8" y="24" width="304" height="10" class="bar"/>
+<circle cx="22" cy="21" r="4" class="dot"/><circle cx="34" cy="21" r="4" class="dot"/><circle cx="46" cy="21" r="4" class="dot"/>
+<rect x="60" y="13" width="200" height="16" rx="8" class="addr"/><text x="70" y="25" class="t s"></text><g transform="translate(272,13)"><rect width="18" height="16" rx="4" class="addr"/><path d="M5 4 h4 a2 2 0 0 1 4 0 h0 v4 a2 2 0 0 1 0 4 v0 h-8 z" class="puz"/></g><rect x="268" y="10" width="26" height="22" rx="7" class="hi"/><rect x="130" y="42" width="176" height="64" rx="8" class="card sh"/><text x="142" y="62" class="t s b">확장 프로그램</text><rect x="142" y="72" width="16" height="16" rx="4" class="acc"/><text x="166" y="85" class="t s">약 이상반응 찾기</text><path d="M282 74 l8 8 m-4 -4 l-6 6 m2 -12 l10 10" class="pin"/><rect x="274" y="68" width="26" height="24" rx="7" class="hi"/><g transform="translate(290,84)"><path d="M0 0 L0 22 L6 17 L10 26 L14 24 L10 15 L18 15 Z" class="hand"/></g><rect x="246" y="14" width="16" height="14" rx="4" class="acc"/><text x="24" y="140" class="t s mut">↗ 주소창 옆에 초록 아이콘이 생깁니다</text></svg></section><section class="step"><div><div class="num">7</div><h2>처방 화면에서 약을 읽어 오세요</h2><p>처방 화면을 띄운 채 <b>초록 아이콘</b>을 누르면 오른쪽에 패널이 열립니다. <b>지금 보고 있는 화면에서 약 찾기</b>를 누르고, 처음 한 번 나오는 허용 창에서 <b>허용</b>을 누르세요.</p></div><svg viewBox="0 0 320 180" role="img" aria-hidden="true"><rect x="8" y="8" width="304" height="164" rx="10" class="w"/>
+<rect x="8" y="8" width="304" height="26" rx="10" class="bar"/><rect x="8" y="24" width="304" height="10" class="bar"/>
+<circle cx="22" cy="21" r="4" class="dot"/><circle cx="34" cy="21" r="4" class="dot"/><circle cx="46" cy="21" r="4" class="dot"/>
+<rect x="60" y="13" width="200" height="16" rx="8" class="addr"/><text x="70" y="25" class="t s">내 EMR 처방 화면</text><rect x="20" y="44" width="170" height="118" rx="6" class="card"/><text x="30" y="62" class="t s b">처방</text><text x="30" y="82" class="t xs">암로디핀정 5mg</text><text x="30" y="98" class="t xs">메트포르민정 500mg</text><text x="30" y="114" class="t xs">로수바스타틴정 10mg</text><text x="30" y="130" class="t xs">…</text><rect x="198" y="40" width="108" height="126" rx="6" class="panel"/><text x="206" y="58" class="t xs b">약 이상반응 찾기</text><rect x="206" y="66" width="92" height="22" rx="5" class="acc"/><text x="252" y="81" text-anchor="middle" class="t xxs inv b">화면에서 약 찾기</text><rect x="202" y="62" width="100" height="30" rx="8" class="hi"/><g transform="translate(278,80)"><path d="M0 0 L0 22 L6 17 L10 26 L14 24 L10 15 L18 15 Z" class="hand"/></g><rect x="206" y="100" width="40" height="14" rx="7" class="chip"/><text x="226" y="110" text-anchor="middle" class="t xxs">암로디핀</text><rect x="250" y="100" width="48" height="14" rx="7" class="chip"/><text x="274" y="110" text-anchor="middle" class="t xxs">메트포르민</text><rect x="206" y="118" width="56" height="14" rx="7" class="chip"/><text x="234" y="128" text-anchor="middle" class="t xxs">로수바스타틴</text><rect x="246" y="8" width="16" height="14" rx="4" class="acc"/></svg></section><section class="step"><div><div class="num">8</div><h2>새로 생긴 문제를 쓰세요</h2><p><b>새로 생긴 문제</b> 칸에 "egfr", "간수치", "어지럼"처럼 편하게 쓰면 원인 가능성이 있는 약이 <b>높음 → 매우 드묾</b> 순서로 나옵니다. <b>근거 문장 보기</b>로 첨부문서 원문을 꼭 확인하세요.</p></div><svg viewBox="0 0 320 180" role="img" aria-hidden="true"><rect x="60" y="8" width="200" height="164" rx="10" class="panel"/><text x="74" y="30" class="t xs b">새로 생긴 문제</text><rect x="74" y="38" width="172" height="22" rx="5" class="addr"/><text x="82" y="53" class="t s">간수치</text><rect x="70" y="34" width="180" height="30" rx="8" class="hi"/><rect x="74" y="74" width="172" height="26" rx="6" class="card"/><rect x="80" y="80" width="34" height="14" rx="7" class="lv4"/><text x="97" y="90" text-anchor="middle" class="t xxs b">높음</text><text x="120" y="91" class="t xs">약 A</text><rect x="74" y="104" width="172" height="26" rx="6" class="card"/><rect x="80" y="110" width="52" height="14" rx="7" class="lv3"/><text x="106" y="120" text-anchor="middle" class="t xxs b">가능성 있음</text><text x="138" y="121" class="t xs">약 B</text><rect x="74" y="134" width="172" height="26" rx="6" class="card"/><rect x="80" y="140" width="34" height="14" rx="7" class="lv2"/><text x="97" y="150" text-anchor="middle" class="t xxs b">낮음</text><text x="120" y="151" class="t xs">약 C</text></svg></section>
+<div class="note"><b>설치형 EMR이나 휴대폰에서는?</b> 화면 읽기만 빼고 똑같은 <a href="./">웹 버전</a>을 쓰세요. Chrome·Edge 주소창 오른쪽의 "앱 설치" 아이콘을 누르면 작은 창으로 따로 띄워 처방 창 옆에 둘 수 있고, 휴대폰은 "홈 화면에 추가"를 누르면 됩니다.</div>
+<div class="note"><b>잘 안 될 때</b><br>· 압축 푼 <b>drug-adr-extension 폴더는 지우지 마세요.</b> 지우면 확장 프로그램도 사라집니다.<br>· "화면에서 약을 찾지 못했습니다"가 나오면 약 이름 일부를 직접 입력하거나, 처방 목록을 붙여넣어도 됩니다.<br>· 매월 약 데이터는 자동으로 새로 받아집니다. 프로그램이 바뀌면 새 파일을 다시 안내드립니다.</div>
+<h3>개인정보와 시험 기간 통계</h3>
+<p>처방 화면 내용과 환자 정보는 이 컴퓨터 밖으로 나가지 않습니다. 시험 기간에는 동의하신 경우에만 익명 사용 통계(기능 사용 종류, 추가한 성분, 고른 문제 항목, 개수, 시험 광고 노출·클릭)를 보내며, 패널 맨 아래에서 언제든 끌 수 있습니다. <a href="privacy.html">개인정보처리방침</a></p>
+<h3>알아두실 점</h3>
+<ul><li>약마다 대표 제품 1개의 첨부문서를 기준으로, 규칙에 따라 자동 추출했습니다(AI 사용 안 함). 누락이나 오분류가 있을 수 있으니 진료 판단의 참고로만 쓰세요.</li>
+<li>패널 아래의 광고는 시험용 배너입니다. 거슬리는지, 위치가 괜찮은지 의견 주시면 큰 도움이 됩니다.</li></ul>
+</main></body></html>
