@@ -11,7 +11,8 @@ for f in ("panel.html", "app.js"): shutil.copy(os.path.join(root, "app", f), dis
 shutil.copytree(os.path.join(root, "docs", "data"), os.path.join(dist, "data"))
 open(os.path.join(dist, "config.js"), "w").write("window.ADR_CONFIG=" + json.dumps({"mode": "ext", "remote": remote}) + ";\n")
 # 웹 버전
-shutil.copy(os.path.join(root, "app", "panel.html"), os.path.join(root, "docs", "index.html"))
+web = open(os.path.join(root, "app", "panel.html"), encoding="utf-8").read().replace("</head>", '<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#1f6f5c">\n<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{})</script>\n</head>', 1)
+open(os.path.join(root, "docs", "index.html"), "w", encoding="utf-8").write(web)
 shutil.copy(os.path.join(root, "app", "app.js"), os.path.join(root, "docs", "app.js"))
 open(os.path.join(root, "docs", "config.js"), "w").write("window.ADR_CONFIG=" + json.dumps({"mode": "web", "remote": ""}) + ";\n")
 z = os.path.join(root, "dist", "drug-adr-extension.zip")
