@@ -73,7 +73,12 @@ def brand_core(name):
     return re.sub(r"(서방|장용|필름코팅|구강붕해|츄어블|연질|경질|발포|분산)?(정|캡슐|산|과립|시럽|현탁액|액|주사액|주|패취|겔|크림|연고|좌제)$", "", core).strip()
 
 def slug(s):
-    return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")
+    # 윈도우 경로 길이 제한(260자) 때문에 파일 이름은 짧게: 길면 앞 32자 + 고유 해시
+    f = re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")
+    if len(f) > 40:
+        import hashlib
+        f = f[:32].rstrip("_") + "_" + hashlib.md5(s.encode()).hexdigest()[:6]
+    return f
 
 def main():
     ap = argparse.ArgumentParser()
