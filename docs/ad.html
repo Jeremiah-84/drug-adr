@@ -1,14 +1,28 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>광고</title>
 <style>
-:root{--bg:#ffffff;--fg:#1d2622;--muted:#5d6a64;--line:#d9dfdb;--accent:#1f6f5c}
-@media (prefers-color-scheme:dark){:root{--bg:#1a211e;--fg:#e6ece9;--muted:#9aa8a1;--line:#2f3a35;--accent:#5fc0a2;color-scheme:dark}}
+:root{--bg:#ffffff;--fg:#1d2622;--muted:#5d6a64;--line:#d9dfdb;--accent:#1f6f5c;--soft:#eef5f2}
+@media (prefers-color-scheme:dark){:root{--bg:#1a211e;--fg:#e6ece9;--muted:#9aa8a1;--line:#2f3a35;--accent:#5fc0a2;--soft:#223029;color-scheme:dark}}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:13px/1.45 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-.slot{box-sizing:border-box;height:100%;border:1px dashed var(--line);border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;text-align:center;padding:8px}
-.slot b{font-size:14px}.slot span{color:var(--muted)}a{color:var(--accent)}
+a.slot{box-sizing:border-box;height:100%;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:10px;padding:8px 12px;color:inherit;text-decoration:none;background:var(--soft)}
+.slot .ic{flex:none;width:44px;height:44px;border-radius:8px;background:var(--accent);color:var(--bg);display:grid;place-items:center;font-weight:700;font-size:12px}
+.slot b{display:block;font-size:14px}.slot span{color:var(--muted)}
+.tag{position:fixed;right:6px;top:4px;font-size:10px;color:var(--muted)}
 </style></head><body>
-<!-- 광고 자리: 직접 판매 배너는 아래 slot 내용을 이미지/링크로 바꾸면 됩니다.
-     구글 애드센스를 쓸 경우 승인 후 발급받은 코드를 이 파일에 넣으세요.
-     이 페이지는 확장 프로그램과 다른 주소에서 열리므로 처방 화면 내용에 접근할 수 없습니다. -->
-<div class="slot"><b>이 자리에 광고를 실을 수 있습니다</b><span>의사 대상 서비스 · 광고 문의는 GitHub 저장소 이슈로 남겨주세요</span></div>
+<!-- 광고 자리 (시험판)
+     ADS 목록만 고치면 모든 사용자에게 바로 바뀝니다. 직접 계약한 배너는 img(그림 주소)와 url(누를 때 갈 주소)을 넣으세요.
+     이 페이지는 확장 프로그램과 다른 주소에서 열려 처방 화면이나 입력한 약 정보에 접근할 수 없습니다.
+     노출·클릭 신호(광고 id)만 부모 화면에 알려 익명 통계로 셉니다. -->
+<a class="slot" id="slot" target="_blank" rel="noopener sponsored"></a><span class="tag">시험 광고</span>
+<script>
+const ADS=[
+  {id:"test-a",icon:"AD",title:"이 자리에 의원 대상 광고가 들어갑니다",sub:"시험 배너 A · 진료에 방해가 되는지 알려주세요",url:"https://github.com/Jeremiah-84/drug-adr/issues"},
+  {id:"test-b",icon:"공지",title:"약 이상반응 찾기 시험판을 써 주셔서 감사합니다",sub:"시험 배너 B · 광고 위치·크기에 대한 의견 환영",url:"https://github.com/Jeremiah-84/drug-adr/issues"}
+];
+const ad=ADS[Math.floor(Math.random()*ADS.length)], el=document.getElementById('slot');
+el.href=ad.url;
+el.innerHTML=ad.img?`<img src="${ad.img}" alt="${ad.title}" style="max-height:100%;max-width:100%">`:`<span class="ic">${ad.icon}</span><span><b>${ad.title}</b><span>${ad.sub}</span></span>`;
+const tell=t=>{try{parent.postMessage({adr:t,ad:ad.id},'*')}catch(e){}};
+tell('ad_view'); el.addEventListener('click',()=>tell('ad_click'));
+</script>
 </body></html>

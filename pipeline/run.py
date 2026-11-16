@@ -49,17 +49,18 @@ def fetch_detail(seq, key, cache):
     json.dump(it, open(path, "w"), ensure_ascii=False)
     return it
 
-SALT = r'\b(hydrochloride|hcl|besylate|besilate|camsylate|maleate|mesylate|mesilate|sodium|potassium|calcium|magnesium|hydrate|monohydrate|dihydrate|trihydrate|sesquihydrate|hemihydrate|anhydrous|tartrate|bitartrate|citrate|fumarate|hemifumarate|succinate|sulfate|bisulfate|hydrobromide|bromide|acetate|phosphate|dipotassium|disodium|nitrate|oxalate|malate|lactate|tosylate|tosilate|medoxomil|cilexetil|axetil|proxetil|pivoxil|propanediol|l-pyroglutamic acid|micronized|dispersion|zinc|ethyl|esters?|salt|lysine|arginine|meglumine|trometamol|hemitartrate|valerate|benzoate|palmitate|stearate|hemicalcium|olamine|decanoate|enanthate|hyclate|pamoate|aspartate|gluconate|carbonate|oxide|chloride)\b'
+SALT = r'\b(hydrochloride|hcl|besylate|besilate|camsylate|maleate|mesylate|mesilate|sodium|potassium|calcium|magnesium|hydrate|monohydrate|dihydrate|trihydrate|sesquihydrate|hemihydrate|anhydrous|tartrate|bitartrate|citrate|fumarate|hemifumarate|succinate|sulfate|bisulfate|hydrobromide|bromide|acetate|phosphate|dipotassium|disodium|nitrate|oxalate|malate|lactate|tosylate|tosilate|medoxomil|cilexetil|axetil|proxetil|pivoxil|propanediol|l-pyroglutamic acid|micronized|dispersion|zinc|ethyl|esters?|salt|lysine|arginine|meglumine|trometamol|hemitartrate|valerate|benzoate|palmitate|stearate|hemicalcium|olamine|decanoate|enanthate|hyclate|pamoate|aspartate|gluconate|carbonate|oxide|chloride|hemimalate|hemiedisylate|edisylate|orotate|nicotinate|adipate|camsilate|napadisilate|salicylate)\b'
 def base_name(n):
     n = n.lower(); n = re.sub(r"\(.*?\)", "", n); n = re.sub(SALT, " ", n)
     n = re.sub(r"[^a-z0-9\- ]", " ", n); return re.sub(r"\s+", " ", n).strip()
 ORAL = re.compile(r"(정|캡슐|산|과립|시럽|현탁|액|환|츄)")
 NONORAL = re.compile(r"(주사|주\d|주$|주\(|주사액|패취|패치|겔|크림|연고|좌제|좌약|점안|점이|점비|외용|흡입|분무|스프레이|플라스타|카타플라스마|로션|질정|가글|구강|에어로솔|필름(?!코팅)|첩부|트로키|관장|외용액|이식|투여용|투석|수액|세정)")
 EXCL = ("[06340]", "[02230]", "[02610]", "[07320]", "[07390]", "[07190]", "[07990]", "[03410]", "[01110]", "[02650]", "[02310]", "[01320]", "[01310]", "[02640]", "[02690]", "[01210]", "[02670]")
-SPEC = {"omega-3": r"omega-3", "valproate": r"valpro|divalproex", "ginkgo biloba": r"ginkgo", "spherical carbon": r"spherical|carbon",
+SPEC = {"omega-3": r"omega-3", "valproate": r"valpro|divalproex", "ginkgo biloba": r"ginkgo", "spherical carbon": r"spherical",
         "mycophenolate": r"mycophen", "omeprazole": r"(?<![a-z])omeprazole", "amlodipine": r"(?<![a-z-])amlodipine", "lithium": r"lithium",
-        "amoxicillin/clavulanate": r"(?=.*amoxicillin)(?=.*clavulan)", "choline alfoscerate": r"alfoscerate"}
-KSALT = r"(베실산염|캄실산염|말레산염|메실산염|염산염|브롬화수소산염|황산염|타르타르산염|푸마르산염|숙신산염|시트르산염|아세트산염|인산염|나트륨|칼륨|칼슘|마그네슘|수화물|일수화물|이수화물|삼수화물|무수물|메독소밀|실렉세틸|악세틸|프록세틸|프로판디올|미분화|토실산염|옥살산염|질산염|염)+$"
+        "amoxicillin/clavulanate": r"(?=.*amoxicillin)(?=.*clavulan)", "choline alfoscerate": r"alfoscerate",
+        "tenofovir": r"(?<![a-z])tenofovir(?! alafenamide)", "valsartan": r"(?<!sacubitril )(?<![a-z])valsartan", "ursodeoxycholic acid": r"^(?!.*chenodeoxy).*ursodeoxycholic"}
+KSALT = r"(헤미말산염|베실산염|캄실산염|말레산염|메실산염|염산염|브롬화수소산염|황산염|타르타르산염|푸마르산염|숙신산염|시트르산염|아세트산염|인산염|나트륨|칼륨|칼슘|마그네슘|수화물|일수화물|이수화물|삼수화물|무수물|메독소밀|실렉세틸|악세틸|프록세틸|프로판디올|미분화|토실산염|옥살산염|질산염|염)+$"
 
 def ko_name(name):
     m = re.findall(r"\(([^()]+)\)", name)
@@ -68,7 +69,7 @@ def ko_name(name):
     return k or name
 
 def brand_core(name):
-    core = re.split(r"[\d(（]", name)[0]
+    core = re.split(r"[\d(（]", name)[0].strip()
     return re.sub(r"(서방|장용|필름코팅|구강붕해|츄어블|연질|경질|발포|분산)?(정|캡슐|산|과립|시럽|현탁액|액|주사액|주|패취|겔|크림|연고|좌제)$", "", core).strip()
 
 def slug(s):

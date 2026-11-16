@@ -9,7 +9,27 @@ async function getJSON(path){
   if(CACHE){try{await CACHE.put(url,r.clone())}catch(e){}}
   return r.json();
 }
+/* ---------- 익명 사용 통계 (시험 기간) ----------
+   보내는 것: 설치별 임의 번호, 행동 종류, 성분 id, 문제 항목 id, 개수.
+   절대 보내지 않는 것: 화면에서 읽은 글자, 직접 입력한 문장, 환자 정보.
+   받는 곳은 웹의 stats.json 에서 정하므로 확장 프로그램을 다시 배포하지 않고 켜고 끌 수 있습니다. */
+const STATS={cfg:null,q:[],sid:String(Date.now()),
+  on(){try{const v=localStorage.getItem('adr.stats');return v==='1'||(v===null&&!!localStorage.getItem('adr.introOk'))}catch(e){return false}},
+  cid(){try{let c=localStorage.getItem('adr.cid');if(!c){c=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2));localStorage.setItem('adr.cid',c)}return c}catch(e){return 'anon'}},
+  async load(){try{const u=IS_EXT?(CFG.remote?CFG.remote+'stats.json':''):'stats.json';if(!u)return;
+    STATS.cfg=await (await fetch(u,{cache:'no-cache'})).json()}catch(e){}},
+  flush(){const c=STATS.cfg;if(!c||!c.ga_id||!c.ga_secret||!STATS.q.length||!STATS.on()){STATS.q=[];return}
+    while(STATS.q.length){const ev=STATS.q.splice(0,25);
+      const url=`https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(c.ga_id)}&api_secret=${encodeURIComponent(c.ga_secret)}`;
+      const body=JSON.stringify({client_id:STATS.cid(),user_properties:{app_mode:{value:IS_EXT?'ext':'web'}},events:ev});
+      try{if(!(navigator.sendBeacon&&navigator.sendBeacon(url,body)))fetch(url,{method:'POST',body,mode:'no-cors',keepalive:true})}catch(e){}}}
+};
+function track(name,params){if(!STATS.on())return;STATS.q.push({name,params:Object.assign({session_id:STATS.sid,engagement_time_msec:100},params||{})});if(STATS.q.length>=20)STATS.flush()}
+setInterval(()=>STATS.flush(),15000);
+addEventListener('pagehide',()=>STATS.flush());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')STATS.flush()});
 async function boot(){
+  STATS.load();
   let local=null; try{local=await (await fetch('data/version.json')).json()}catch(e){}
   if(IS_EXT&&CFG.remote){
     try{
@@ -59,7 +79,7 @@ function renderSugg(){
   sg.innerHTML=hits.map((h,i)=>`<button type="button" data-i="${i}" class="${i===hi?'on':''}"><span>${esc(h.label)} <small>${esc(h.sub)}</small></span><small>${esc(h.side)}</small></button>`).join('');
   sg.hidden=false;
 }
-function add(ids){for(const id of ids)if(!sel.includes(id))sel.push(id);save();q.value='';sg.hidden=true;render();q.focus()}
+function add(ids){for(const id of ids)if(!sel.includes(id)){sel.push(id);track('drug_add',{drug:id,how:'search'})}save();q.value='';sg.hidden=true;render();q.focus()}
 q.addEventListener('input',search);
 q.addEventListener('keydown',e=>{if(sg.hidden)return;
   if(e.key==='ArrowDown'){hi=Math.min(hi+1,hits.length-1);renderSugg();e.preventDefault()}
@@ -82,10 +102,11 @@ function findDrugs(text){
   }
   return found;
 }
-function addFromText(text){const f=findDrugs(text),added=f.filter(id=>!sel.includes(id));sel=sel.concat(added);save();render();return{f,added}}
-$('pasteGo').onclick=()=>{const r=addFromText($('paste').value);
+function addFromText(text,how){const f=findDrugs(text),added=f.filter(id=>!sel.includes(id));sel=sel.concat(added);save();render();
+  track('drugs_found',{how,found:f.length,added:added.length});for(const id of added)track('drug_add',{drug:id,how});return{f,added}}
+$('pasteGo').onclick=()=>{const r=addFromText($('paste').value,'paste');
   $('pasteMsg').textContent=r.f.length?`${r.added.length}개 추가 (찾은 약 ${r.f.length}개)`:'아는 약을 찾지 못했습니다';$('paste').value=''};
-$('clearAll').onclick=()=>{sel=[];save();render();q.focus()};
+$('clearAll').onclick=()=>{track('new_patient',{n:sel.length});sel=[];save();render();q.focus()};
 
 /* 현재 탭 화면 글자 읽기: 복사가 막힌 화면도 글자로 되어 있으면 읽을 수 있음 */
 $('scan').onclick=async()=>{
@@ -109,18 +130,18 @@ $('scan').onclick=async()=>{
       const origins=tab.url?[new URL(tab.url).origin+'/*']:['https://*/*','http://*/*'];
       hint.textContent='처방창 화면을 읽도록 허용해 주세요.';
       const ok=await chrome.permissions.request({origins});
-      if(!ok){hint.textContent='허용하지 않아 화면을 읽지 못했습니다. 아이콘을 눌러 패널을 연 뒤 다시 시도하거나, 처방 목록 붙여넣기를 사용하세요.';return}
+      if(!ok){track('scan_fail',{why:'perm_denied'});hint.textContent='허용하지 않아 화면을 읽지 못했습니다. 아이콘을 눌러 패널을 연 뒤 다시 시도하거나, 처방 목록 붙여넣기를 사용하세요.';return}
       res=await chrome.scripting.executeScript({target:{tabId:tab.id,allFrames:true},func:READ});
     }
     const text=res.map(r=>r.result||'').join('\n');
-    const r=addFromText(text);
+    const r=addFromText(text,'scan');
     hint.textContent=r.f.length?`화면에서 약 ${r.f.length}개를 찾아 ${r.added.length}개 추가했습니다.`:(text.trim().length<20?'화면에서 글자를 읽지 못했습니다. 처방창이 그림 형태일 수 있어요.':'화면에서 아는 약을 찾지 못했습니다.');
-  }catch(e){hint.textContent='화면을 읽지 못했습니다: '+(e&&e.message||e)}
+  }catch(e){track('scan_fail',{why:'error'});hint.textContent='화면을 읽지 못했습니다: '+(e&&e.message||e)}
 };
 function takePending(){
   if(!(window.chrome&&chrome.storage))return;
   chrome.storage.session.get('pending').then(o=>{if(!o.pending)return;chrome.storage.session.remove('pending');
-    const r=addFromText(o.pending.text);
+    const r=addFromText(o.pending.text,'menu');
     $('drughint').textContent=r.f.length?`선택한 글에서 ${r.added.length}개 추가했습니다.`:`"${o.pending.text.slice(0,30)}"에서 아는 약을 찾지 못했습니다.`})}
 if(window.chrome&&chrome.storage)chrome.storage.onChanged.addListener((c,a)=>{if(a==='session'&&c.pending&&c.pending.newValue)takePending()});
 
@@ -141,11 +162,16 @@ function matchProblems(text){
     if(best)sc.push([best,p.id])}
   return sc.sort((a,b)=>b[0]-a[0]).slice(0,5).map(x=>x[1]);
 }
+let probT=null;
+function trackProb(via){clearTimeout(probT);probT=setTimeout(()=>{if(!sel.length)return;
+  const m=via==='text'?matchProblems(ftq):[prob];
+  const hits=sel.filter(id=>byId[id].adr&&byId[id].adr[prob]).length;
+  track('problem_lookup',{problem:m.length?prob:'unmatched_text',via,n_drugs:sel.length,n_hits:m.length?hits:-1})},via==='text'?2000:300)}
 const pq=$('probq');
-pq.addEventListener('input',()=>{const m=matchProblems(pq.value);ftq=pq.value.trim();if(m.length){prob=m[0];store.set('adr.prob',prob)}renderPMatch(m);renderProbs();ensure(sel).then(renderResult)});
+pq.addEventListener('input',()=>{const m=matchProblems(pq.value);ftq=pq.value.trim();if(m.length){prob=m[0];store.set('adr.prob',prob)}renderPMatch(m);renderProbs();ensure(sel).then(renderResult);if(pq.value.trim())trackProb('text')});
 function renderPMatch(m){
   $('pmatch').innerHTML=m.map(id=>`<button class="pb" aria-pressed="${id===prob}" data-p="${id}">${esc(PROB[id].name)}</button>`).join('')+(pq.value.trim()&&!m.length?'<span class="hint">목록에 맞는 항목이 없어 첨부문서 본문에서 찾습니다.</span>':'');
-  $('pmatch').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{prob=b.dataset.p;store.set('adr.prob',prob);renderPMatch(m);renderProbs();ensure(sel).then(renderResult)});
+  $('pmatch').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{prob=b.dataset.p;store.set('adr.prob',prob);renderPMatch(m);renderProbs();ensure(sel).then(renderResult);trackProb('suggest')});
 }
 function renderProbs(){
   const t=$('tabs');
@@ -153,7 +179,7 @@ function renderProbs(){
   t.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{cat=b.dataset.c;store.set('adr.cat',cat);renderProbs()});
   $('probs').innerHTML=D.problems.filter(x=>x.category===cat).map(x=>{const n=sel.filter(id=>(byId[id].p||[]).includes(x.id)).length;
     return `<button class="pb" aria-pressed="${x.id===prob}" data-p="${x.id}">${esc(x.name)}${n?` · ${n}`:''}</button>`}).join('');
-  $('probs').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{prob=b.dataset.p;store.set('adr.prob',prob);pq.value='';ftq='';renderPMatch([]);renderProbs();ensure(sel).then(renderResult)});
+  $('probs').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{prob=b.dataset.p;store.set('adr.prob',prob);pq.value='';ftq='';renderPMatch([]);renderProbs();ensure(sel).then(renderResult);trackProb('list')});
 }
 
 /* ---------- 첨부문서 본문 검색 ---------- */
@@ -205,7 +231,7 @@ function renderResult(){
   renderFT();
 }
 const TAGCLS={'금기':'t-금기','용량 조절':'t-용량','주의':'t-주의','조절 불필요':'t-불필요'};
-document.querySelectorAll('#otabs .tab').forEach(b=>b.onclick=()=>{organTab=b.dataset.o;document.querySelectorAll('#otabs .tab').forEach(x=>x.setAttribute('aria-selected',x===b));renderOrgan()});
+document.querySelectorAll('#otabs .tab').forEach(b=>b.onclick=()=>{organTab=b.dataset.o;track('organ_tab',{tab:organTab,n_drugs:sel.length});document.querySelectorAll('#otabs .tab').forEach(x=>x.setAttribute('aria-selected',x===b));renderOrgan()});
 function renderOrgan(){
   $('organ').innerHTML=sel.map(id=>{const d=byId[id],g=d.organ[organTab];
     const tags=g.t.length?g.t.map(t=>`<span class="tag ${TAGCLS[t]}">${t}</span>`).join(''):'<span class="tag t-불필요">언급 없음</span>';
@@ -220,8 +246,19 @@ function renderChips(){
 function render(){renderChips();renderProbs();ensure(sel).then(()=>{renderResult();renderOrgan()})}
 if(!IS_EXT){$('scan').hidden=true}
 try{if(!localStorage.getItem('adr.introOk')){$('intro').hidden=false}}catch(e){$('intro').hidden=false}
-$('introOk').onclick=()=>{$('intro').hidden=true;try{localStorage.setItem('adr.introOk','1')}catch(e){}};
+$('introOk').onclick=()=>{$('intro').hidden=true;try{localStorage.setItem('adr.introOk','1');localStorage.setItem('adr.stats',$('statsOk').checked?'1':'0')}catch(e){};renderStats();track('intro_ok')};
+function renderStats(){const on=STATS.on();$('statsState').textContent=on?'익명 사용 통계 보내는 중':'사용 통계 꺼짐';$('statsToggle').textContent=on?'끄기':'켜기'}
+$('statsToggle').onclick=()=>{const on=STATS.on();if(on){track('stats_off');STATS.flush()}try{localStorage.setItem('adr.stats',on?'0':'1')}catch(e){};renderStats()};
+renderStats();
+document.addEventListener('toggle',e=>{const d=e.target;if(d.tagName==='DETAILS'&&d.open&&d.closest('#items,#organ,#ft'))track('evidence_open',{where:d.closest('#items,#organ,#ft').id})},true);
+document.addEventListener('click',e=>{const a=e.target.closest('a[href*="nedrug.mfds.go.kr"]');if(a)track('source_open')});
+STATS.ready=(async()=>{for(let i=0;i<40&&!STATS.cfg;i++)await new Promise(r=>setTimeout(r,100));const c=STATS.cfg||{};
+  if(c.feedback){const f=$('feedback');f.href=c.feedback;f.hidden=false;f.onclick=()=>track('feedback_open')}})();
+track('app_open',{mode:IS_EXT?'ext':'web',n_saved:sel.length});
 const adsrc=IS_EXT?(CFG.remote?CFG.remote+'ad.html':''):'ad.html';
-if(adsrc){const f=$('adframe');f.src=adsrc;f.onload=()=>{$('adbox').hidden=false}}
+if(adsrc){const f=$('adframe');f.src=adsrc;f.onload=()=>{$('adbox').hidden=false}
+  // 광고 페이지는 노출·클릭 신호만 보낼 수 있고, 이쪽 내용은 볼 수 없습니다
+  addEventListener('message',e=>{if(e.source!==f.contentWindow||!e.data||typeof e.data!=='object')return;
+    const id=String(e.data.ad||'').slice(0,40);if(e.data.adr==='ad_view')track('ad_view',{ad:id});else if(e.data.adr==='ad_click')track('ad_click',{ad:id})})}
 render();takePending();
 }
