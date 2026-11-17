@@ -63,7 +63,8 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const norm=s=>String(s).toLowerCase().replace(/\s+/g,'');
 const link=d=>`https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${d.seq}`;
 const $=id=>document.getElementById(id);
-const PRODS=Object.entries(D.products||{}).map(([name,ids])=>({name,n:norm(name),ids}));
+const PF=D.pform||{};
+const PRODS=Object.entries(D.products||{}).map(([name,ids])=>({name,n:norm(name),ids,form:PF[name]?PF[name].split('·'):null}));
 function save(){store.set('adr.drugs',sel)}
 
 /* ---------- 약 추가 ---------- */
@@ -71,7 +72,7 @@ const q=$('drugq'), sg=$('sugg'); let hits=[],hi=0,dup=false;
 function search(){
   const t=norm(q.value); if(!t){sg.hidden=true;return}
   const all=D.drugs.filter(d=>[d.ko,d.en,d.brand].some(x=>norm(x).includes(t))).map(d=>({ids:[d.id],label:d.ko,sub:d.en,side:d.brand}));
-  const pr=t.length>=2?PRODS.filter(p=>p.n.startsWith(t)||(t.length>=3&&p.n.includes(t))).slice(0,12).map(p=>({ids:p.ids,label:p.name,sub:'제품',side:p.ids.map(i=>byId[i].ko).join(' + ')})):[];
+  const pr=t.length>=2?PRODS.filter(p=>p.n.startsWith(t)||(t.length>=3&&p.n.includes(t))).slice(0,12).map(p=>({ids:p.ids,label:p.name,sub:p.form?p.form.join('·'):'제품',side:p.ids.map(i=>byId[i].ko).join(' + ')})):[];
   const both=all.concat(pr);
   hits=both.filter(h=>h.ids.some(i=>!sel.includes(i))).slice(0,10); dup=both.length>0&&!hits.length; hi=0; renderSugg();
 }
@@ -90,15 +91,28 @@ q.addEventListener('keydown',e=>{if(sg.hidden)return;
 sg.addEventListener('mousedown',e=>{const b=e.target.closest('button[data-i]');if(b){e.preventDefault();add(hits[+b.dataset.i].ids)}});
 document.addEventListener('click',e=>{if(!e.target.closest('.search'))sg.hidden=true});
 
+/* 화면·붙여넣기에서 찾을 제형 (기본: 먹는 약만) */
+let FORMS=store.get('adr.forms',['경구']);
+const fsel=$('formsel');
+if(fsel){fsel.querySelectorAll('input').forEach(i=>{i.checked=FORMS.includes(i.value);i.onchange=()=>{
+  FORMS=[...fsel.querySelectorAll('input:checked')].map(x=>x.value);store.set('adr.forms',FORMS);track('forms_set',{forms:FORMS.join(',')})}})}
+const formOk=fs=>{const f=(fs&&fs.length?fs:['경구']).map(x=>x==='기타'?'주사':x);return f.some(x=>FORMS.includes(x))};
+// 성분명 바로 뒤에 "주사·주·연고·점안" 등이 붙어 있으면 그 제형을 켰을 때만 인정
+const SUF={주사:/^[가-힣]{0,6}?(주사|주\b|주\d|주[(\s,]|수액)/,외용:/^[가-힣]{0,6}?(연고|크림|겔|로션|패취|패치|플라스타|점안|점비|점이|좌제|외용|스프레이|흡입)/};
+function hitKey(t,k){let i=t.indexOf(k);while(i>=0){const after=t.slice(i+k.length,i+k.length+12);
+  const blocked=Object.entries(SUF).some(([f,rx])=>!FORMS.includes(f)&&rx.test(after));
+  if(!blocked)return true; i=t.indexOf(k,i+1)}return false}
 function findDrugs(text){
   const t=norm(text), found=[];
   for(const d of D.drugs){
+    if(!formOk(d.form))continue;
     const keys=[d.ko,d.en,d.brand].filter(Boolean).map(norm).filter(k=>k.length>=2);
     if(d.id==='amoxicillin/clavulanate')keys.push('아목시실린','클라불란');
-    if(keys.some(k=>t.includes(k)))found.push(d.id);
+    if(keys.some(k=>hitKey(t,k)))found.push(d.id);
   }
   // 제품명(1만 4천 개)으로 찾기: 3글자 이상은 그대로, 2글자는 뒤에 제형(정·캡슐 등)이 붙을 때만
   for(const p of PRODS){
+    if(p.form&&!formOk(p.form))continue;
     if(p.n.length>=3?t.includes(p.n):new RegExp(p.n+'(정|캡슐|서방|시럽|산|액)').test(t)) for(const id of p.ids) if(!found.includes(id)) found.push(id);
   }
   return found;

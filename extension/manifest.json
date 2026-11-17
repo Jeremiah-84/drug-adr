@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "약 이상반응 찾기",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "처방 약 중 새로 생긴 문제(신기능·간수치·증상)를 일으킬 수 있는 약을 식약처 첨부문서 기준으로 찾아봅니다.",
   "permissions": [
     "sidePanel",

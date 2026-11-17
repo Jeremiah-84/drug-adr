@@ -157,14 +157,41 @@ def main():
     allrx = dict(core_rx)
     for gid, d in drugs.items():
         if d["tier"] == 2: allrx[gid] = re.compile(r"(?<![a-z])" + re.escape(gid) + r"(?![a-z])")
-    products = {}
+    # 회사 이름만 남은 이름(예: "대한", "하나")이나 흔한 낱말은 화면 읽기에서 엉뚱하게 잡히므로 뺌
+    def stem_of(e):
+        e = re.sub(r"\(.*?\)|주식회사|㈜", "", e or "").strip()
+        return re.sub(r"(제약|약품|신약|바이오|팜|파마|생명과학|헬스케어|메디칼|코리아)+.*$", "", e).strip()
+    stems = {stem_of(p.get("ENTP_NAME")) for p in prods} - {""}
+    STOP = {"관납용", "군납용", "군납명", "주사용", "외용", "내복", "라이스", "디메틸", "고려삼분", "멸균", "정제수", "대한", "한국", "동아", "일반"}
+    def noisy(k):
+        k2 = k.replace(" ", "")
+        return len(k2) < 2 or k2 in stems or k2 in STOP or not re.search(r"[가-힣]{2}", k2)
+    for gid, d in drugs.items():
+        if d["tier"] == 2 and noisy(d["brand"]): d["brand"] = ""
+        if d["tier"] == 2 and noisy(d["ko"]): d["ko"] = gid  # 한글 이름이 회사명·흔한 낱말이면 영문 성분명으로
+    # 같은 한글 성분명으로 두 번 이상 잡힌 묶음(염 이름 차이 등)은 하나로 합침
+    alias = {}
+    byko = collections.defaultdict(list)
+    for gid, d in drugs.items(): byko[d["ko"]].append(gid)
+    for ko, gids in byko.items():
+        if len(gids) < 2: continue
+        gids.sort(key=lambda g: (drugs[g]["tier"], "경구" not in forms.get(g, ["경구"]), -len(groups.get(g, []))))
+        keep = gids[0]
+        for g in gids[1:]:
+            alias[g] = keep
+            forms[keep] = sorted(set(forms.get(keep, ["경구"])) | set(forms.get(g, [])), key="경구주사외용기타".index)
+            del drugs[g]
+    print("합친 성분", len(alias))
+    products, pforms = {}, {}
     for p in prods:
         s = base_name(p.get("ITEM_INGR_NAME") or "") + " " + (p.get("ITEM_INGR_NAME") or "").lower()
         hit = [gid for gid, rx in allrx.items() if rx.search(s)]
         if "amoxicillin/clavulanate" in hit and "amoxicillin" in hit: hit.remove("amoxicillin")
+        hit = list(dict.fromkeys(alias.get(h, h) for h in hit))
         if not hit: continue
         bc = brand_core(p["ITEM_NAME"])
-        if len(bc) >= 2: products.setdefault(bc, set()).update(hit)
+        if noisy(bc): continue
+        products.setdefault(bc, set()).update(hit); pforms.setdefault(bc, set()).add(form_of(p["ITEM_NAME"]))
 
     # 첨부문서 받기와 추출
     os.makedirs(os.path.join(a.out, "d"), exist_ok=True)
@@ -186,9 +213,11 @@ def main():
         if i % 100 == 0: print("추출", i, "/", len(drugs), flush=True)
     known = {x["id"] for x in index}
     prod_idx = {k: sorted(v & known) for k, v in products.items() if v & known}
+    # 경구 제형이 없는 제품명만 제형을 적어 둠 (화면 읽기에서 주사·외용을 따로 켜고 끌 수 있게)
+    pform = {k: "·".join(sorted(pforms[k], key="경구주사외용기타".index)) for k in prod_idx if "경구" not in pforms[k]}
     version = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H%M")  # 같은 날 여러 번 올려도 캐시가 새로 받도록 시각 포함
     json.dump({"version": version, "drugs": index, "problems": [{"id": p, "category": c, "name": n} for p, c, n, _ in PROBLEMS],
-               "products": prod_idx}, open(os.path.join(a.out, "index.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+               "products": prod_idx, "pform": pform}, open(os.path.join(a.out, "index.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     json.dump({"version": version, "drugs": len(index), "products": len(prod_idx)}, open(os.path.join(a.out, "version.json"), "w"))
     print("완료", version, "성분", len(index), "제품명", len(prod_idx))
 

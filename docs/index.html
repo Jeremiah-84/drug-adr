@@ -92,6 +92,7 @@ mark{background:var(--mid-soft);color:inherit;padding:0 1px;border-radius:3px}
 .tier2{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
 [hidden]{display:none!important}
 #adbox{margin-top:4px}
+.formsel{gap:4px 12px;font-size:.85rem}.formsel label{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
 .linkbtn{font:inherit;background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;cursor:pointer}
 footer a{color:var(--accent)}
 </style>
@@ -112,6 +113,10 @@ footer a{color:var(--accent)}
     <div class="sugg" id="sugg" hidden></div>
   </div>
   <div class="row"><button class="btn" id="scan" type="button">지금 보고 있는 화면에서 약 찾기</button></div>
+  <div class="row formsel" id="formsel"><span class="hint">화면·붙여넣기에서 찾을 약:</span>
+    <label><input type="checkbox" value="경구" checked> 먹는 약</label>
+    <label><input type="checkbox" value="주사"> 주사</label>
+    <label><input type="checkbox" value="외용"> 외용(바르는·붙이는·눈약 등)</label></div>
   <details id="pastebox"><summary>처방 목록 붙여넣기</summary>
     <textarea id="paste" placeholder="처방창 약 목록을 복사해서 붙여넣으면, 아는 약을 자동으로 찾아 추가합니다."></textarea>
     <div class="row"><button class="btn" id="pasteGo" type="button">약 찾아서 추가</button><span class="hint" id="pasteMsg"></span></div>
