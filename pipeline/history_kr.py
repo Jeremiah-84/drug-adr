@@ -16,7 +16,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def first_permits(items, drugs):
     out = {}
     for d in drugs:
-        rx = re.compile(d["kr"], re.I); rko = re.compile(re.escape(d["ko"]))
+        rx = re.compile(d["kr"], re.I); rko = re.compile(r"(?<![가-힣])" + re.escape(d["ko"]))  # 메틸프레드니솔론·에프로사르탄 같은 다른 성분은 빼려고 앞에 한글이 붙으면 제외
         best, n = None, 0
         for p in items:
             ingr = (p.get("ITEM_INGR_NAME") or "") + " " + (p.get("ITEM_ENG_NAME") or "")

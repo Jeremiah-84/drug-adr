@@ -97,14 +97,11 @@
 </div></section>
 
 <main><div class="wrap">
-  <p class="note"><i data-i="info"></i><span><span class="tag draft">감수 중</span> 세계 허가·출시 연도와 개발 배경은 널리 알려진 사실을 출처와 함께 정리한 초안이에요. 국내 첫 허가일은 식약처 의약품 제품 허가 목록에서 그 성분이 든 제품 중 가장 이른 허가일(취소된 품목 포함)이에요.</span></p>
+  <p class="note"><i data-i="info"></i><span><span class="tag draft">감수 중</span> 세계 허가·출시 연도와 개발 배경은 널리 알려진 사실을 출처와 함께 정리한 초안이에요. 국내 허가 기록은 식약처 의약품 제품 허가 목록에서 그 성분이 든 품목 중 가장 이른 허가일(취소 품목 포함, 수출용 제외)이에요.</span></p>
 
   <div class="section" style="margin-top:28px">
     <div class="ctrl">
-      <div class="seg" role="group" aria-label="배치 기준">
-        <button type="button" data-mode="w" aria-pressed="true">세계 첫 허가·출시</button>
-        <button type="button" data-mode="k" aria-pressed="false">국내 첫 허가</button>
-      </div>
+      <span style="color:var(--muted);font-size:.9rem">세계에서 처음 허가·출시된 해 기준</span>
       <div class="cats" id="cats" aria-label="분야"></div>
     </div>
     <div class="tl-wrap" id="tlWrap"><div class="tl" id="tl"></div></div>
@@ -120,7 +117,7 @@
     <div class="card" style="color:var(--ink2);font-size:.92rem">
       <b style="display:block;margin-bottom:6px;color:var(--ink)">이 페이지의 자료</b>
       세계 연도는 약마다 적은 출처(노벨상 공식 누리집, 위키백과 영문판과 그 인용 문헌)를 따랐어요. 처음 허가된 나라와 기준(첫 환자 치료, 출시, 허가)이 약마다 달라 함께 적었어요.
-      국내 첫 허가일은 식품의약품안전처 의약품 제품 허가 목록(공공데이터포털)을 매월 받아 자동으로 계산해요. 오래된 품목은 전산 기록 기준이라 실제 국내 첫 사용보다 늦을 수 있어요.
+      국내 허가 기록은 식품의약품안전처 의약품 제품 허가 목록(공공데이터포털)을 매월 받아 자동으로 계산해요. 회사 간 품목 양도나 재허가로 새 품목번호가 붙으면 예전 기록이 목록에 남지 않는 경우가 있어, 오래된 약일수록 실제 국내 도입보다 늦게 나올 수 있어요.
       '당시 신문 찾아보기'는 신문사·포털의 기사 검색으로 연결될 뿐, 이 사이트가 기사 내용을 만들거나 고르지 않았어요.
     </div>
   </div>
@@ -166,7 +163,7 @@ function draw(){
   for(const it of items){
     const bottom=12+it.r*ROWH, st=`--c:${color(it.d)}`;
     lane+=`<span class="stem" style="${st};left:${it.x}px;height:${bottom}px;${on(it)?'':'opacity:.15'}"></span><span class="dot" style="${st};left:${it.x}px;${on(it)?'':'opacity:.2'}"></span>`;
-    lane+=`<button type="button" class="chipx${on(it)?'':' dim'}${sel===it.d.id?' on':''}" data-id="${it.d.id}" style="${st};left:${it.x}px;bottom:${bottom}px" title="${esc(it.d.ko)} · ${it.y} ${esc(mode==='w'?it.d.when:'국내 첫 허가')}">${esc(it.d.ko)}<small>${it.y}</small></button>`;
+    lane+=`<button type="button" class="chipx${on(it)?'':' dim'}${sel===it.d.id?' on':''}" data-id="${it.d.id}" style="${st};left:${it.x}px;bottom:${bottom}px" title="${esc(it.d.ko)} · ${it.y} ${esc(mode==='w'?it.d.when:'국내 허가 기록')}">${esc(it.d.ko)}<small>${it.y}</small></button>`;
   }
   lane+='</div>';
   let axis='<div class="axis">'+TICKS.map(t=>`<span style="left:${xOf(t)*W}px">${t}</span>`).join('')+`<i class="gap" style="left:${xOf(1930)*W}px"></i></div>`;
@@ -177,7 +174,7 @@ function draw(){
   tl.innerHTML=lane+axis+ev;
   const missing=H.drugs.length-items.length;
   $('hint').querySelector('span').textContent=mode==='k'
-    ?(Object.keys(KR).length?`식약처 제품 허가 목록 기준이에요.${missing?` 국내 허가 기록을 찾지 못한 ${missing}개는 빠졌어요.`:''} 1940년 이전은 간격을 줄여 그렸어요.`:'국내 첫 허가일 자료를 아직 받지 못했어요. 다음 월간 데이터 갱신 때 채워져요.')
+    ?(Object.keys(KR).length?`식약처 허가 목록에 남은 가장 이른 품목 기준이라 실제 국내 도입보다 늦을 수 있어요.${missing?` 국내 허가 기록을 찾지 못한 ${missing}개는 빠졌어요.`:''} 1940년 이전은 간격을 줄여 그렸어요.`:'국내 허가 기록을 아직 받지 못했어요. 다음 월간 데이터 갱신 때 채워져요.')
     :'1940년 이전은 간격을 줄여 그렸어요. 화면이 좁으면 옆으로 밀어 보세요.';
 }
 
@@ -188,7 +185,7 @@ function list(){
   const keys=Object.keys(by).map(Number).sort((a,b)=>a-b);
   $('list').innerHTML=keys.map(k=>`<div class="decade"><h3>${k<1900?'1900년 이전':k+'년대'}</h3><div class="items">${by[k].sort((a,b)=>(a.ev?a.y:yearOf(a))-(b.ev?b.y:yearOf(b))).map(d=>d.ev
     ?`<div class="item evi"><span class="yr" style="color:var(--ink2)">${d.y} · 제도</span><b>${esc(d.ev.t)}</b><span>${esc(d.ev.d)}</span></div>`
-    :`<button type="button" class="item" data-id="${d.id}" style="--c:${color(d)}"><span class="yr">${yearOf(d)} · ${esc(H.cats[d.cat])}</span><b>${esc(d.ko)}</b><span>${esc(mode==='w'?d.when:(KR[d.id].item||'국내 첫 허가'))}</span></button>`).join('')}</div></div>`).join('');
+    :`<button type="button" class="item" data-id="${d.id}" style="--c:${color(d)}"><span class="yr">${yearOf(d)} · ${esc(H.cats[d.cat])}</span><b>${esc(d.ko)}</b><span>${esc(mode==='w'?d.when:(KR[d.id].item||'국내 허가 기록'))}</span></button>`).join('')}</div></div>`).join('');
 }
 
 function nytUrl(q,y){return `https://www.nytimes.com/search?query=${encodeURIComponent(q)}&startDate=${y-1}0101&endDate=${y+1}1231&sort=oldest`}
@@ -208,14 +205,14 @@ function open(id,push=true){
   <h2 id="sName">${esc(d.ko)}</h2><div class="en">${esc(d.en)}</div>
   <div class="dates">
     <div><small>세계 첫 허가·출시</small><b>${d.y}</b><span>${esc(d.when)}</span></div>
-    <div><small>국내 첫 허가</small>${k?`<b>${esc(k.date.replace(/-/g,'.'))}</b><span>${esc(k.item||'')}${k.entp?' · '+esc(k.entp):''}${k.cancel?' (지금은 취소·취하된 품목)':''}</span><a href="https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${encodeURIComponent(k.seq)}" target="_blank" rel="noopener">의약품안전나라에서 보기</a>`:'<b style="color:var(--muted);font-size:1rem">자료 준비 중</b><span>식약처 제품 허가 목록에서 다음 데이터 갱신 때 채워져요.</span>'}</div>
-    ${k&&ky>=d.y?`<div class="gapline">세계 첫 허가·출시 뒤 약 ${ky-d.y}년 만에 국내 허가 기록이 있어요</div>`:''}
+    <div><small>국내 허가 기록 (가장 이른 품목)</small>${k?`<b>${esc(k.date.replace(/-/g,'.'))}</b><span>${esc(k.item||'')}${k.entp?' · '+esc(k.entp):''}${k.cancel?' (지금은 취소·취하된 품목)':''}</span><a href="https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${encodeURIComponent(k.seq)}" target="_blank" rel="noopener">의약품안전나라에서 보기</a>`:'<b style="color:var(--muted);font-size:1rem">자료 준비 중</b><span>식약처 제품 허가 목록에서 다음 데이터 갱신 때 채워져요.</span>'}</div>
+    ${k?`<div class="gapline">${ky>=d.y?`세계 첫 허가·출시 뒤 ${ky-d.y}년 만의 기록이에요. `:''}식약처 허가 목록에 남은 가장 이른 품목이라, 품목 양도·재허가로 번호가 바뀐 약은 실제 국내 도입보다 늦게 나올 수 있어요.</div>`:''}
   </div>
   <h3>개발 배경</h3>${d.bg.map(p=>`<p>${esc(p)}</p>`).join('')}
   <h3>그 시절</h3><p>${esc(d.ctx)}</p>
   <h3>당시 신문 찾아보기</h3><ul class="links">${news.join('')}</ul>
   <p class="fine">기사 검색 결과로 연결돼요. 이 사이트가 기사 내용을 만들거나 고르지 않았어요.</p>
-  <h3>출처</h3><ul class="links">${d.src.map(s=>`<li><a href="${esc(s.u)}" target="_blank" rel="noopener">${icon('doc')}${esc(s.t)}</a></li>`).join('')}${k?`<li><a href="https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${encodeURIComponent(k.seq)}" target="_blank" rel="noopener">${icon('doc')}식품의약품안전처 의약품안전나라 (국내 첫 허가 품목)</a></li>`:''}</ul>
+  <h3>출처</h3><ul class="links">${d.src.map(s=>`<li><a href="${esc(s.u)}" target="_blank" rel="noopener">${icon('doc')}${esc(s.t)}</a></li>`).join('')}${k?`<li><a href="https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${encodeURIComponent(k.seq)}" target="_blank" rel="noopener">${icon('doc')}식품의약품안전처 의약품안전나라 (가장 이른 국내 허가 품목)</a></li>`:''}</ul>
   ${NO_DICT.has(d.id)?'':`<p style="margin-top:22px"><a class="btn" href="drug.html?id=${encodeURIComponent(d.id)}">${icon('book')}약 사전에서 이상반응 보기</a></p>`}`;
   document.body.classList.add('open');
   $('xBtn').onclick=close;$('sheet').scrollTop=0;$('sheet').focus({preventScroll:true});
