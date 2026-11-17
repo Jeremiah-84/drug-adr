@@ -5,14 +5,43 @@ const DATA=B+'../data/';                          // 기존 웹 버전과 같은
 const page=document.body.dataset.page||'';
 const NAV=[['drug','drug.html','약 사전'],['guides','guides.html','상황별 가이드'],['check','check.html','같이 먹어도 되나요?'],['news','news.html','안전 소식'],['pro','pro.html','의료진'],['about','about.html','소개']];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const IC={
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  pill:'<path d="M10.5 20.5a5 5 0 0 1-7-7l10-10a5 5 0 0 1 7 7z"/><path d="m8.5 8.5 7 7"/>',
+  symptom:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  layers:'<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+  book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M9 7h6"/>',
+  compass:'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+  shield:'<path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/><path d="m9 12 2 2 4-4"/>',
+  bell:'<path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',
+  arrow:'<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
+  warn:'<path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/>',
+  check:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+  refresh:'<path d="M20 11a8 8 0 0 0-14.5-4.5L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.5 4.5L20 16"/><path d="M20 20v-4h-4"/>',
+  doc:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  ext:'<path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M19 14v6H4V5h6"/>',
+  phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1"/>',
+  kidney:'<path d="M9 4C5 4 4 8 4 12s1 8 5 8 4-3 3-5 1-3 0-5-1-6-3-6z"/><path d="M15 4c4 0 5 4 5 8s-1 8-5 8"/>',
+  plug:'<path d="M9 2v6M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-12 0z"/><path d="M12 17v5"/>',
+};
+const icon=(n,c='i')=>`<svg class="${c}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||''}</svg>`;
+// 페이지 안의 <i data-i="이름"></i>를 아이콘으로 바꿈
+document.querySelectorAll('i[data-i]').forEach(e=>e.outerHTML=icon(e.dataset.i));
 document.body.insertAdjacentHTML('afterbegin',`<header class="top"><div class="wrap">
-<a class="logo" href="${B}index.html"><i>약</i>약 바로알기</a>
+<a class="logo" href="${B}index.html"><span class="mark">${icon('pill')}</span>약 바로알기</a>
 <nav class="nav" aria-label="주 메뉴">${NAV.map(([k,h,t])=>`<a href="${B}${h}"${k===page?' aria-current="page"':''}>${t}</a>`).join('')}</nav></div></header>`);
 document.body.insertAdjacentHTML('beforeend',`<footer class="foot"><div class="wrap">
-<div><b>약 바로알기</b>는 식품의약품안전처 의약품 허가정보(첨부문서)를 쉬운 말로 정리합니다. AI가 만든 글이 아니며, 진단이나 처방을 대신하지 않습니다. 약을 임의로 끊거나 바꾸지 말고 의사·약사와 상의하세요.</div>
-<div class="row"><a href="${B}about.html">운영자·출처</a><a href="${B}about.html#report">오류 신고</a><a href="${B}../privacy.html">개인정보처리방침</a><span id="dataVer"></span></div>
-<div style="margin-top:8px">응급 증상(숨이 차거나 얼굴·입술이 붓는 경우, 의식이 흐려지는 경우)은 바로 <b>119</b>에 연락하세요.</div></div></footer>`);
-fetch(DATA+'version.json').then(r=>r.json()).then(v=>{const e=document.getElementById('dataVer');if(e)e.textContent=`자료 기준일 ${v.version} · 성분 ${v.drugs.toLocaleString()}개 · 제품명 ${v.products.toLocaleString()}개`}).catch(()=>{});
+<div class="cols">
+ <div><a class="logo" href="${B}index.html" style="margin-bottom:12px"><span class="mark">${icon('pill')}</span>약 바로알기</a>
+ <p style="margin:0;max-width:44ch">식품의약품안전처 의약품 허가정보(첨부문서)를 쉬운 말로 정리합니다. AI가 만든 글이 아니며, 진단이나 처방을 대신하지 않습니다. 약을 임의로 끊거나 바꾸지 말고 의사·약사와 상의하세요.</p></div>
+ <div><h4>찾아보기</h4><ul><li><a href="${B}drug.html">약 사전</a></li><li><a href="${B}../">이 증상, 약 때문일까?</a></li><li><a href="${B}check.html">같이 먹어도 되나요?</a></li><li><a href="${B}guides.html">상황별 가이드</a></li></ul></div>
+ <div><h4>안내</h4><ul><li><a href="${B}about.html">운영자·출처</a></li><li><a href="${B}about.html#report">오류 신고</a></li><li><a href="${B}pro.html">의료진 코너</a></li><li><a href="${B}../privacy.html">개인정보처리방침</a></li></ul></div>
+</div>
+<div class="legal"><span id="dataVer">자료: 식품의약품안전처 의약품 허가정보</span><span class="sos">${icon('phone')}숨이 차거나 얼굴·입술이 붓는 등 응급 증상은 <b>119</b></span></div>
+</div></footer>`);
+fetch(DATA+'version.json').then(r=>r.json()).then(v=>{const e=document.getElementById('dataVer');if(e)e.textContent=`자료: 식품의약품안전처 의약품 허가정보 · 기준일 ${v.version} · 성분 ${v.drugs.toLocaleString()}개 · 제품명 ${v.products.toLocaleString()}개`;document.querySelectorAll('[data-count]').forEach(x=>x.textContent=Number(v[x.dataset.count]).toLocaleString())}).catch(()=>{});
 
 let IDX=null;
 const norm=s=>String(s).toLowerCase().replace(/[\s\-·()（）]/g,'');
@@ -50,7 +79,9 @@ function attachSearch(input,box,onPick){
     else if(e.key==='Escape'){box.hidden=true}});
   box.addEventListener('click',e=>{const a=e.target.closest('a[data-i]');if(!a)return;e.preventDefault();pick(items[+a.dataset.i])});
   document.addEventListener('click',e=>{if(!box.contains(e.target)&&e.target!==input)box.hidden=true});
+  const b=input.closest('.search')?.querySelector('.btn');
+  if(b)b.addEventListener('click',async e=>{e.preventDefault();const db=await load();const r=search(db,input.value);if(r.length)pick(r[0]);else input.focus()});
   function pick(it){box.hidden=true;onPick(it)}
 }
-window.Portal={B,DATA,esc,norm,load,search,attachSearch};
+window.Portal={B,DATA,esc,norm,load,search,attachSearch,icon};
 })();
