@@ -64,12 +64,12 @@
 "count": 5
 },
 "prednisolone": {
-"date": "1985-02-09",
-"item": "메디소루주(메틸프레드니솔론숙시네이트나트륨)",
-"seq": "198500227",
-"entp": "한올바이오파마(주)",
+"date": "1986-07-02",
+"item": "삼아리도멕스크림0.3%(프레드니솔론발레로아세테이트)",
+"seq": "198600458",
+"entp": "삼아제약(주)",
 "cancel": false,
-"count": 137
+"count": 49
 },
 "acetaminophen": {
 "date": "1968-08-27",
@@ -125,7 +125,7 @@
 "seq": "197700120",
 "entp": "삼일제약(주)",
 "cancel": false,
-"count": 404
+"count": 264
 },
 "lithium": {
 "date": "1973-12-22",
@@ -157,7 +157,7 @@
 "seq": "198601101",
 "entp": "경동제약(주)",
 "cancel": false,
-"count": 145
+"count": 126
 },
 "lovastatin": {
 "date": "1997-08-06",
@@ -181,7 +181,7 @@
 "seq": "199202074",
 "entp": "한미약품(주)",
 "cancel": true,
-"count": 388
+"count": 52
 },
 "amlodipine": {
 "date": "2004-06-08",
@@ -213,7 +213,7 @@
 "seq": "200401773",
 "entp": "한국유나이티드제약(주)",
 "cancel": false,
-"count": 372
+"count": 360
 },
 "atorvastatin": {
 "date": "2004-10-25",
