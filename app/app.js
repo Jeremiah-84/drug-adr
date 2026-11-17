@@ -50,7 +50,7 @@ const loading={};
 function loadDrug(id){const d=byId[id]; if(!d)return Promise.resolve(); if(d.adr)return Promise.resolve(d);
   return loading[id]||(loading[id]=getJSON('d/'+d.f+'.json').then(x=>Object.assign(d,x)).catch(()=>Object.assign(d,{adr:{},organ:{renal:{t:[],e:[]},hepatic:{t:[],e:[]}},txt:[],product:'(불러오기 실패)'})))}
 function ensure(ids){return Promise.all(ids.map(loadDrug))}
-document.getElementById('dataver').textContent=`데이터 기준일 ${D.version}.`;
+document.getElementById('dataver').textContent=`데이터 기준일 ${String(D.version).slice(0,10)}.`;
 document.getElementById('counts').textContent=`${D.drugs.some(d=>d.form&&!d.form.includes('경구'))?'경구제·주사제·외용제 ':'경구제 '}${D.drugs.length.toLocaleString()}개 성분, 제품명 ${Object.keys(D.products).length.toLocaleString()}개를 인식합니다.`;
 const PROB=Object.fromEntries(D.problems.map(p=>[p.id,p]));
 const CATS=[...new Set(D.problems.map(p=>p.category))];

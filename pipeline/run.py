@@ -186,7 +186,7 @@ def main():
         if i % 100 == 0: print("추출", i, "/", len(drugs), flush=True)
     known = {x["id"] for x in index}
     prod_idx = {k: sorted(v & known) for k, v in products.items() if v & known}
-    version = datetime.date.today().isoformat()
+    version = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H%M")  # 같은 날 여러 번 올려도 캐시가 새로 받도록 시각 포함
     json.dump({"version": version, "drugs": index, "problems": [{"id": p, "category": c, "name": n} for p, c, n, _ in PROBLEMS],
                "products": prod_idx}, open(os.path.join(a.out, "index.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     json.dump({"version": version, "drugs": len(index), "products": len(prod_idx)}, open(os.path.join(a.out, "version.json"), "w"))
