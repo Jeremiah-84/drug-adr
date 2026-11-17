@@ -67,15 +67,45 @@ SPEC = {"omega-3": r"omega-3", "valproate": r"valpro|divalproex", "ginkgo biloba
         "tenofovir": r"(?<![a-z])tenofovir(?! alafenamide)", "valsartan": r"(?<!sacubitril )(?<![a-z])valsartan", "ursodeoxycholic acid": r"^(?!.*chenodeoxy).*ursodeoxycholic"}
 KSALT = r"(헤미말산염|베실산염|캄실산염|말레산염|메실산염|염산염|브롬화수소산염|황산염|타르타르산염|푸마르산염|숙신산염|시트르산염|아세트산염|인산염|나트륨|칼륨|칼슘|마그네슘|수화물|일수화물|이수화물|삼수화물|무수물|메독소밀|실렉세틸|악세틸|프록세틸|프로판디올|미분화|토실산염|옥살산염|질산염|염)+$"
 
+FORMSUF = r"(서방|장용|필름코팅|연질|경질|구강붕해|츄어블)?(정|캡슐|캅셀|주사액|주사|주|액|시럽|산|과립|연고|크림|겔|패취|패치|점안액|좌제|로션)$"
+def _parens(name):
+    """맨 바깥 괄호 안의 글들 (괄호 안 괄호도 처리)"""
+    out, depth, start = [], 0, 0
+    for i, ch in enumerate(name):
+        if ch == "(":
+            if depth == 0: start = i + 1
+            depth += 1
+        elif ch == ")" and depth:
+            depth -= 1
+            if depth == 0: out.append(name[start:i])
+    return [re.sub(r"\(.*", "", x).strip() for x in out if re.search(r"[가-힣]", x)]
+
 def ko_name(name):
-    m = re.findall(r"\(([^()]+)\)", name)
+    name = re.sub(r"^군납명\s*:\s*", "", name)
+    m = _parens(name)
     k = (m[-1] if m else name).split(",")[0].strip()
-    k = re.sub(r"\d.*$", "", k); k = re.sub(KSALT, "", k).strip()
+    k = re.sub(r"\d.*$", "", k)
+    if not m: k = re.sub(FORMSUF, "", k)
+    k = re.sub(KSALT, "", k).strip()
     return k or name
+
+def group_ko(ps):
+    """묶음 안 제품들의 괄호 속 성분명 중 가장 흔한 것 (회사명·제형이 붙은 제품명 대신)"""
+    c = collections.Counter(ko_name(p["ITEM_NAME"]) for p in ps if "(" in p["ITEM_NAME"])
+    if c: return c.most_common(1)[0][0]
+    # 괄호가 없으면 제품명 앞의 회사 이름(예: 하나제약 → 하나)을 떼어 냄
+    cands = []
+    for p in ps:
+        k = ko_name(p["ITEM_NAME"])
+        stem = re.sub(r"\(.*?\)|주식회사|㈜", "", p.get("ENTP_NAME") or "").strip()
+        stem = re.sub(r"(제약|약품|신약|바이오|팜|파마|생명과학|헬스케어|메디칼|코리아)+.*$", "", stem).strip()
+        if len(stem) >= 2 and k.startswith(stem) and len(k) - len(stem) >= 2: k = k[len(stem):]
+        cands.append(k)
+    return collections.Counter(cands).most_common(1)[0][0]
 
 def brand_core(name):
     core = re.split(r"[\d(（]", name)[0].strip()
-    return re.sub(r"(서방|장용|필름코팅|구강붕해|츄어블|연질|경질|발포|분산)?(정|캡슐|산|과립|시럽|현탁액|액|주사액|주|패취|겔|크림|연고|좌제)$", "", core).strip()
+    return re.sub(r"(서방|장용|필름코팅|구강붕해|츄어블|연질|경질|발포|분산)?(정|캡슐|산|과립|시럽|현탁액|액|주사액|주사|주|패취|겔|크림|연고|좌제)$", "", core).strip()
 
 def slug(s):
     # 윈도우 경로 길이 제한(260자) 때문에 파일 이름은 짧게: 길면 앞 32자 + 고유 해시
@@ -120,7 +150,7 @@ def main():
         if gid in drugs: continue
         order = {"경구": 0, "주사": 1, "외용": 2, "기타": 3}
         ps.sort(key=lambda p: (order[form_of(p["ITEM_NAME"])], p["SPCLTY_PBLC"] != "전문의약품", not re.search(r"(정|캡슐)", p["ITEM_NAME"]), p.get("ITEM_PERMIT_DATE") or "9"))
-        drugs[gid] = {"id": gid, "ko": ko_name(ps[0]["ITEM_NAME"]), "brand": brand_core(ps[0]["ITEM_NAME"]), "seq": ps[0]["ITEM_SEQ"], "tier": 2}
+        drugs[gid] = {"id": gid, "ko": group_ko(ps), "brand": brand_core(ps[0]["ITEM_NAME"]), "seq": ps[0]["ITEM_SEQ"], "tier": 2}
     print("성분", len(drugs))
 
     # 제품명 → 성분 색인 (복합제 포함)
