@@ -12,7 +12,7 @@ FREQ = [
  (r"빈도\s*불명|시판\s*후|자발\s*보고", 0, "빈도 불명 (시판 후 보고)"),
 ]
 LEVELS = {4: "높음", 3: "가능성 있음", 2: "낮음", 1: "매우 드묾"}
-ADR_TITLE = r"이상\s*반응|부작용|중지|중단"
+ADR_TITLE = r"이상\s*(반응|사례)|부작용|중지|중단"
 COMPILED = [(pid, cat, name, [re.compile(s) for s in syns]) for pid, cat, name, syns in PROBLEMS]
 
 def section_text(nb):
@@ -21,7 +21,7 @@ def section_text(nb):
     arts = sorted(arts, key=lambda a: 1 if re.search(r"경고", a[0]) else 0)
     out = []
     for title, body in arts:
-        if re.search(r"경고", title) and not re.search(r"이상\s*반응|부작용", title):
+        if re.search(r"경고", title) and not re.search(r"이상\s*(반응|사례)|부작용", title):
             out.append(("warnhdr", ""))
         elif not re.search(ADR_TITLE, title):
             continue
@@ -76,7 +76,7 @@ def extract_adr(nb):
     for kind, t in section_text(nb):
         if kind == "warnhdr":
             warn = True; default = (0, "경고 항목에 기재 (빈도 불명)"); continue
-        if kind == "p" and len(t) < 250 and re.search(r"가장\s*흔(하게|한)|흔하게\s*(나타난|보고된)|흔한\s*이상반응", t) and not re.search(r"시판\s*후", t):
+        if kind == "p" and len(t) < 250 and re.search(r"가장\s*흔(하게|한)|흔하게\s*(나타난|보고된)|흔한\s*이상(반응|사례)", t) and not re.search(r"시판\s*후", t):
             default = (4, "흔하게 (임상시험 주요 이상반응)")
         elif kind == "p" and len(t) < 200 and re.search(r"시판\s*후|자발\s*보고|빈도\s*불명", t):
             default = (0, "빈도 불명 (시판 후 보고)")
@@ -86,8 +86,11 @@ def extract_adr(nb):
             for rx in rxs:
                 m = None
                 for mm in rx.finditer(t):
-                    if re.match(r"[가-힣\s]{0,4}(환자|자는|자에|자의|자\b)", t[mm.end():mm.end() + 8]):
+                    if re.match(r"([가-힣\s]{0,4}|\s*(또는|및|이나|,)[가-힣\s]{0,12})(환자|자는|자에|자의|자\b)", t[mm.end():mm.end() + 24]):
                         continue
+                    w = t[max(0, mm.start() - 50):mm.start()]
+                    if re.search(r"(주사|투여|적용|접종)\s*부위[^.)]{0,40}$", w) and not re.search(r"전신[^.]{0,15}(투여|적용)\s*부위", w):
+                        continue  # 주사 부위 멍·발진 같은 국소 반응은 전신 문제로 세지 않음
                     m = mm; break
                 if not m:
                     continue

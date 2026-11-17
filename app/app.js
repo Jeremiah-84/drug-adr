@@ -51,13 +51,14 @@ function loadDrug(id){const d=byId[id]; if(!d)return Promise.resolve(); if(d.adr
   return loading[id]||(loading[id]=getJSON('d/'+d.f+'.json').then(x=>Object.assign(d,x)).catch(()=>Object.assign(d,{adr:{},organ:{renal:{t:[],e:[]},hepatic:{t:[],e:[]}},txt:[],product:'(불러오기 실패)'})))}
 function ensure(ids){return Promise.all(ids.map(loadDrug))}
 document.getElementById('dataver').textContent=`데이터 기준일 ${D.version}.`;
-document.getElementById('counts').textContent=`경구제 ${D.drugs.length.toLocaleString()}개 성분, 제품명 ${Object.keys(D.products).length.toLocaleString()}개를 인식합니다.`;
+document.getElementById('counts').textContent=`${D.drugs.some(d=>d.form&&!d.form.includes('경구'))?'경구제·주사제·외용제 ':'경구제 '}${D.drugs.length.toLocaleString()}개 성분, 제품명 ${Object.keys(D.products).length.toLocaleString()}개를 인식합니다.`;
 const PROB=Object.fromEntries(D.problems.map(p=>[p.id,p]));
 const CATS=[...new Set(D.problems.map(p=>p.category))];
 const LV={4:'높음',3:'가능성 있음',2:'낮음',1:'매우 드묾'};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let sel=store.get('adr.drugs',[]).filter(id=>byId[id]);
 let cat=store.get('adr.cat','신장'), prob=store.get('adr.prob','renal_fx'), organTab='renal', ftq='';
+const ftag=d=>d.form&&!d.form.includes('경구')?` <small class="hint">(${d.form.join('·')})</small>`:'';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s).toLowerCase().replace(/\s+/g,'');
 const link=d=>`https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${d.seq}`;
@@ -221,7 +222,7 @@ function renderResult(){
     const P=PROB[prob]; $('rtitle').textContent=`${P.name}: 원인 가능성이 있는 약`;
     const rows=sel.map(id=>({d:byId[id],a:byId[id].adr[prob]})).sort((x,y)=>(y.a?y.a[0]:0)-(x.a?x.a[0]:0));
     const hit=rows.filter(r=>r.a),miss=rows.filter(r=>!r.a);
-    let h=hit.map(({d,a})=>`<div class="item"><div class="top"><span class="badge l${a[0]}">${LV[a[0]]}</span><span class="name">${esc(d.ko)}</span>${d.tier===2?'<span class="tier2">자동 선정 문서</span>':''}<span class="freq">첨부문서: ${esc(a[1])}</span></div>
+    let h=hit.map(({d,a})=>`<div class="item"><div class="top"><span class="badge l${a[0]}">${LV[a[0]]}</span><span class="name">${esc(d.ko)}${ftag(d)}</span>${d.tier===2?'<span class="tier2">자동 선정 문서</span>':''}<span class="freq">첨부문서: ${esc(a[1])}</span></div>
       <details><summary>근거 문장 보기</summary><blockquote>${esc(a[2])}</blockquote><div class="hint">${esc(d.product)} · <a href="${link(d)}" target="_blank" rel="noopener">식약처 원문</a></div></details></div>`).join('');
     if(!sel.length)h='<div class="none">위에서 약을 먼저 추가하세요.</div>';
     else if(!hit.length)h+='<div class="none">선택한 약의 첨부문서에서 이 문제를 찾지 못했습니다.</div>';

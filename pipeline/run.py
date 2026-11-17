@@ -53,8 +53,13 @@ SALT = r'\b(hydrochloride|hcl|besylate|besilate|camsylate|maleate|mesylate|mesil
 def base_name(n):
     n = n.lower(); n = re.sub(r"\(.*?\)", "", n); n = re.sub(SALT, " ", n)
     n = re.sub(r"[^a-z0-9\- ]", " ", n); return re.sub(r"\s+", " ", n).strip()
-ORAL = re.compile(r"(정|캡슐|산|과립|시럽|현탁|액|환|츄)")
+ORAL = re.compile(r"(정|캡슐|캅셀|엘릭서|세립|산|과립|시럽|현탁|액|환|츄)")
 NONORAL = re.compile(r"(주사|주\d|주$|주\(|주사액|패취|패치|겔|크림|연고|좌제|좌약|점안|점이|점비|외용|흡입|분무|스프레이|플라스타|카타플라스마|로션|질정|가글|구강|에어로솔|필름(?!코팅)|첩부|트로키|관장|외용액|이식|투여용|투석|수액|세정)")
+INJ = re.compile(r"(주사|주\d|주$|주\(|수액|주사액)")
+TOP = re.compile(r"(패취|패치|겔|크림|연고|좌제|좌약|점안|점이|점비|외용|흡입|분무|스프레이|플라스타|카타플라스마|로션|질정|가글|에어로솔|첩부|트로키|관장|구강|필름(?!코팅))")
+FLUID = re.compile(r"(알러젠|알레르겐|스킨테스트|테스트용|방사성|테크네튬|주사용수|생리식염|염화나트륨주|포도당주|링거|하트만|멸균정제수|투석액|관류액|조영|진단용)", re.I)
+def form_of(n):
+    return "주사" if INJ.search(n) else "외용" if TOP.search(n) else "경구" if ORAL.search(n) else "기타"
 EXCL = ("[06340]", "[02230]", "[02610]", "[07320]", "[07390]", "[07190]", "[07990]", "[03410]", "[01110]", "[02650]", "[02310]", "[01320]", "[01310]", "[02640]", "[02690]", "[01210]", "[02670]")
 SPEC = {"omega-3": r"omega-3", "valproate": r"valpro|divalproex", "ginkgo biloba": r"ginkgo", "spherical carbon": r"spherical",
         "mycophenolate": r"mycophen", "omeprazole": r"(?<![a-z])omeprazole", "amlodipine": r"(?<![a-z-])amlodipine", "lithium": r"lithium",
@@ -102,17 +107,19 @@ def main():
         if int(p.get("ITEM_INGR_CNT") or 0) != 1: continue
         if (p.get("PRDUCT_TYPE") or "").startswith(EXCL): continue
         n = p["ITEM_NAME"]
-        if NONORAL.search(n) or not ORAL.search(n): continue
+        if FLUID.search(n) or FLUID.search(p.get("ITEM_INGR_NAME") or ""): continue
         b = base_name(p.get("ITEM_INGR_NAME") or "")
         if len(b) < 3: continue
         cid = (ids_of(b) or [None])[0]
         groups[cid or b].append(p)
+    forms = {gid: sorted({form_of(p["ITEM_NAME"]) for p in ps}, key="경구주사외용기타".index) for gid, ps in groups.items()}
     drugs = {}
     for c in core:
         drugs[c["id"]] = {"id": c["id"], "ko": c["ko"], "brand": c["brand"], "seq": c["item_seq"], "tier": 1}
     for gid, ps in groups.items():
         if gid in drugs: continue
-        ps.sort(key=lambda p: (p["SPCLTY_PBLC"] != "전문의약품", not re.search(r"(정|캡슐)", p["ITEM_NAME"]), p.get("ITEM_PERMIT_DATE") or "9"))
+        order = {"경구": 0, "주사": 1, "외용": 2, "기타": 3}
+        ps.sort(key=lambda p: (order[form_of(p["ITEM_NAME"])], p["SPCLTY_PBLC"] != "전문의약품", not re.search(r"(정|캡슐)", p["ITEM_NAME"]), p.get("ITEM_PERMIT_DATE") or "9"))
         drugs[gid] = {"id": gid, "ko": ko_name(ps[0]["ITEM_NAME"]), "brand": brand_core(ps[0]["ITEM_NAME"]), "seq": ps[0]["ITEM_SEQ"], "tier": 2}
     print("성분", len(drugs))
 
@@ -145,7 +152,7 @@ def main():
         f = slug(gid)
         json.dump(rec, open(os.path.join(a.out, "d", f + ".json"), "w"), ensure_ascii=False, separators=(",", ":"))
         index.append({"id": gid, "f": f, "ko": d["ko"], "en": gid, "brand": d["brand"], "seq": raw["ITEM_SEQ"], "tier": d["tier"],
-                      "p": sorted(rec["adr"].keys())})
+                      "form": forms.get(gid, ["경구"]), "p": sorted(rec["adr"].keys())})
         if i % 100 == 0: print("추출", i, "/", len(drugs), flush=True)
     known = {x["id"] for x in index}
     prod_idx = {k: sorted(v & known) for k, v in products.items() if v & known}
