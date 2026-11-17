@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>의료진 코너 · 약 바로알기</title>
+<meta name="description" content="처방 화면 옆에서 이상반응과 신기능·간기능 주의를 확인하는 확장 프로그램.">
+<link rel="icon" href="../icon-192.png">
+<link rel="stylesheet" href="portal.css">
+</head>
+<body data-page="pro" data-base="">
+<main><div class="wrap">
+  <h1>의료진 코너</h1>
+  <p class="lead">외래 진료 중 처방 창 옆에서 바로 쓸 수 있는 도구예요. 환자의 새 증상이나 검사 이상이 지금 먹는 약 때문인지 첨부문서 기준으로 빠르게 확인해요.</p>
+  <div class="grid">
+    <a class="tile" href="../install.html"><span class="ico">🧩</span><b>Chrome·Edge 확장 프로그램</b><span>EMR 화면의 약 이름을 읽어 자동으로 넣고, 문제 항목이나 자유 입력으로 원인 약을 찾아요.</span></a>
+    <a class="tile" href="../"><span class="ico">🌐</span><b>웹 버전</b><span>설치 없이 같은 기능. 앱 설치로 작은 창에 따로 띄울 수 있어요.</span></a>
+  </div>
+  <h2 id="organ">신기능·간기능 저하 때 주의</h2>
+  <p>약 사전의 각 성분 페이지에 첨부문서의 신장·간 관련 문장을 금기 / 용량 조절 / 주의 / 조절 불필요로 나눠 보여줘요. 성분별 요약표는 준비 중이에요.</p>
+  <div class="search" style="max-width:520px">
+    <input id="q" type="search" placeholder="성분명으로 바로 가기" autocomplete="off" aria-label="성분 검색"><div class="sugg" id="sugg" hidden></div>
+  </div>
+  <h2>원칙</h2>
+  <ul>
+    <li>자료는 식약처 의약품 허가정보 첨부문서만 사용하고 매월 갱신해요.</li>
+    <li>AI 요약 없이 규칙으로 문장을 분류하고, 근거 문장과 원문 링크를 함께 보여줘요.</li>
+    <li>처방 화면 내용과 환자 정보는 기기 밖으로 나가지 않아요.</li>
+  </ul>
+  <script>addEventListener('DOMContentLoaded',()=>Portal.attachSearch(document.getElementById('q'),document.getElementById('sugg'),it=>location.href=(it.type==='product'?'drug.html?p=':'drug.html?id=')+encodeURIComponent(it.type==='product'?it.label:it.ids[0])))</script>
+</div></main>
+<script src="portal.js"></script>
+</body>
+</html>
