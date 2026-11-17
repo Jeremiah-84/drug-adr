@@ -5,7 +5,7 @@
 "seq": "198401387",
 "entp": "(주)제일제약",
 "cancel": false,
-"count": 23
+"count": 20
 },
 "aspirin": {
 "date": "1990-08-29",
@@ -13,7 +13,7 @@
 "seq": "199001012",
 "entp": "(주)보령",
 "cancel": false,
-"count": 120
+"count": 114
 },
 "insulin": {
 "date": "1992-09-22",
@@ -29,7 +29,7 @@
 "seq": "196300001",
 "entp": "에이치케이이노엔(주)",
 "cancel": false,
-"count": 4
+"count": 3
 },
 "streptomycin": {
 "date": "1961-12-28",
@@ -45,7 +45,7 @@
 "seq": "196200032",
 "entp": "(주)유한양행",
 "cancel": false,
-"count": 5
+"count": 3
 },
 "chlorpromazine": {
 "date": "1960-03-21",
@@ -53,7 +53,7 @@
 "seq": "199203520",
 "entp": "환인제약(주)",
 "cancel": false,
-"count": 5
+"count": 4
 },
 "warfarin": {
 "date": "1985-05-28",
@@ -61,23 +61,23 @@
 "seq": "198500306",
 "entp": "제일약품(주)",
 "cancel": true,
-"count": 6
+"count": 5
 },
 "prednisolone": {
-"date": "1984-11-14",
-"item": "제일멸균프레드니솔론아세테이트현탁액주사(수출용)",
-"seq": "198400284",
-"entp": "(주)제일제약",
+"date": "1985-02-09",
+"item": "메디소루주(메틸프레드니솔론숙시네이트나트륨)",
+"seq": "198500227",
+"entp": "한올바이오파마(주)",
 "cancel": false,
-"count": 173
+"count": 137
 },
 "acetaminophen": {
-"date": "1966-10-06",
-"item": "게리동정(수출용)",
-"seq": "199806929",
-"entp": "(주)넥스팜코리아",
+"date": "1968-08-27",
+"item": "판콜에이내복액",
+"seq": "196800036",
+"entp": "동화약품(주)",
 "cancel": false,
-"count": 1314
+"count": 1223
 },
 "metformin": {
 "date": "1985-07-03",
@@ -85,7 +85,7 @@
 "seq": "198500321",
 "entp": "(주)대웅제약",
 "cancel": false,
-"count": 1603
+"count": 1569
 },
 "thalidomide": {
 "date": "2006-04-07",
@@ -117,7 +117,7 @@
 "seq": "197400347",
 "entp": "신일제약(주)",
 "cancel": true,
-"count": 6
+"count": 5
 },
 "ibuprofen": {
 "date": "1977-01-21",
@@ -125,7 +125,7 @@
 "seq": "197700120",
 "entp": "삼일제약(주)",
 "cancel": false,
-"count": 430
+"count": 404
 },
 "lithium": {
 "date": "1973-12-22",
@@ -136,12 +136,12 @@
 "count": 4
 },
 "tamoxifen": {
-"date": "1988-06-10",
-"item": "타목센정10밀리그램(타목시펜시트르산염)(수출용)(수출명:Tamooex Tabs.10mg,XifenTabs.10mg,GyraxenTabs.10mg)",
-"seq": "198801191",
+"date": "1988-06-28",
+"item": "타목센정20밀리그램(타목시펜시트르산염)(수출명:Tamooex Tabs.20mg,XifenTabs.20mg,GyraxenTabs.20mg)",
+"seq": "198801218",
 "entp": "한국유나이티드제약(주)",
-"cancel": true,
-"count": 12
+"cancel": false,
+"count": 7
 },
 "cimetidine": {
 "date": "1977-07-21",
@@ -149,7 +149,7 @@
 "seq": "197700088",
 "entp": "일동제약(주)",
 "cancel": true,
-"count": 76
+"count": 62
 },
 "acyclovir": {
 "date": "1986-03-07",
@@ -157,7 +157,7 @@
 "seq": "198601101",
 "entp": "경동제약(주)",
 "cancel": false,
-"count": 158
+"count": 145
 },
 "lovastatin": {
 "date": "1997-08-06",
@@ -165,7 +165,7 @@
 "seq": "199700176",
 "entp": "(주)종근당",
 "cancel": true,
-"count": 7
+"count": 6
 },
 "fluoxetine": {
 "date": "1997-10-21",
@@ -181,7 +181,7 @@
 "seq": "199202074",
 "entp": "한미약품(주)",
 "cancel": true,
-"count": 402
+"count": 388
 },
 "amlodipine": {
 "date": "2004-06-08",
@@ -189,7 +189,7 @@
 "seq": "200402637",
 "entp": "한미약품(주)",
 "cancel": false,
-"count": 1615
+"count": 1584
 },
 "finasteride": {
 "date": "1995-08-22",
@@ -197,7 +197,7 @@
 "seq": "199504272",
 "entp": "한국오가논(주)",
 "cancel": false,
-"count": 222
+"count": 212
 },
 "zolpidem": {
 "date": "2005-04-08",
@@ -205,15 +205,15 @@
 "seq": "200512142",
 "entp": "환인제약(주)",
 "cancel": false,
-"count": 18
+"count": 16
 },
 "losartan": {
-"date": "2004-09-21",
-"item": "로잘정50mg(로사르탄칼륨)",
-"seq": "200401773",
-"entp": "한국유나이티드제약(주)",
+"date": "2002-03-14",
+"item": "테베텐정600밀리그램(에프로사르탄메실산염)",
+"seq": "200200771",
+"entp": "(주)한독",
 "cancel": false,
-"count": 376
+"count": 373
 },
 "atorvastatin": {
 "date": "2004-10-25",
@@ -221,7 +221,7 @@
 "seq": "200410085",
 "entp": "비아트리스코리아(주)",
 "cancel": false,
-"count": 788
+"count": 781
 },
 "donepezil": {
 "date": "2000-08-04",
@@ -229,7 +229,7 @@
 "seq": "200000796",
 "entp": "(주)한독",
 "cancel": false,
-"count": 396
+"count": 391
 },
 "clopidogrel": {
 "date": "2005-05-24",
@@ -237,7 +237,7 @@
 "seq": "200500249",
 "entp": "동아에스티(주)",
 "cancel": false,
-"count": 180
+"count": 176
 },
 "sildenafil": {
 "date": "2004-05-03",
@@ -245,7 +245,7 @@
 "seq": "200410082",
 "entp": "비아트리스코리아(주)",
 "cancel": false,
-"count": 114
+"count": 104
 },
 "oseltamivir": {
 "date": "2000-06-15",
@@ -253,7 +253,7 @@
 "seq": "200008798",
 "entp": "(주)한국로슈",
 "cancel": false,
-"count": 186
+"count": 182
 },
 "imatinib": {
 "date": "2006-11-30",
@@ -261,7 +261,7 @@
 "seq": "200611516",
 "entp": "한국노바티스(주)",
 "cancel": false,
-"count": 22
+"count": 21
 },
 "sitagliptin": {
 "date": "2007-09-21",
@@ -285,7 +285,7 @@
 "seq": "201310307",
 "entp": "한국아스트라제네카(주)",
 "cancel": true,
-"count": 446
+"count": 443
 },
 "semaglutide": {
 "date": "2022-04-28",
