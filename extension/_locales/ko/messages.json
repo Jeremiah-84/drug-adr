@@ -1,0 +1,20 @@
+{
+  "extName": {
+    "message": "메디스캔 프로 (MediScan Pro) - 약 부작용·이상반응 검색"
+  },
+  "extShortName": {
+    "message": "메디스캔 프로"
+  },
+  "extDesc": {
+    "message": "약 부작용·이상반응 검색. 처방 약 중 신기능 저하·간수치 상승·새 증상의 원인 가능성이 있는 약을 식약처 첨부문서 기준으로 찾습니다."
+  },
+  "actionTitle": {
+    "message": "메디스캔 프로 열기"
+  },
+  "menuAdd": {
+    "message": "메디스캔 프로에 추가: \"%s\""
+  },
+  "cmdOpen": {
+    "message": "옆 패널 열기"
+  }
+}

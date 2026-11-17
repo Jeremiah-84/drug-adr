@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "약 이상반응 찾기",
-  "version": "1.0.2",
-  "description": "처방 약 중 새로 생긴 문제(신기능·간수치·증상)를 일으킬 수 있는 약을 식약처 첨부문서 기준으로 찾아봅니다.",
+  "name": "__MSG_extName__",
+  "version": "1.1.0",
+  "description": "__MSG_extDesc__",
   "permissions": [
     "sidePanel",
     "contextMenus",
@@ -21,7 +21,7 @@
     "default_path": "panel.html"
   },
   "action": {
-    "default_title": "약 이상반응 찾기 열기",
+    "default_title": "__MSG_actionTitle__",
     "default_icon": {
       "16": "icon-16.png",
       "32": "icon-32.png"
@@ -38,8 +38,10 @@
       "suggested_key": {
         "default": "Alt+Shift+Y"
       },
-      "description": "옆 패널 열기"
+      "description": "__MSG_cmdOpen__"
     }
   },
-  "homepage_url": "https://jeremiah-84.github.io/drug-adr/install.html"
+  "homepage_url": "https://jeremiah-84.github.io/drug-adr/install.html",
+  "short_name": "__MSG_extShortName__",
+  "default_locale": "ko"
 }
