@@ -3,7 +3,7 @@
 const B=document.body.dataset.base||'';           // 포털 루트까지 상대 경로 ('' 또는 '../')
 const DATA=B+'../data/';                          // 기존 웹 버전과 같은 식약처 데이터
 const page=document.body.dataset.page||'';
-const NAV=[['drug','drug.html','약 사전'],['guides','guides.html','상황별 가이드'],['check','check.html','같이 먹어도 되나요?'],['news','news.html','안전 소식'],['dep','dependence.html','의존·중독'],['pro','pro.html','의료진'],['about','about.html','소개']];
+const NAV=[['drug','drug.html','약 사전'],['guides','guides.html','상황별 가이드'],['check','check.html','같이 먹어도 되나요?'],['news','news.html','안전 소식'],['dep','dependence.html','의존·중독'],['history','history.html','약의 역사'],['pro','pro.html','의료진'],['about','about.html','소개']];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const IC={
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
@@ -25,6 +25,7 @@ const IC={
   ext:'<path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M19 14v6H4V5h6"/>',
   phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1"/>',
   kidney:'<path d="M9 4C5 4 4 8 4 12s1 8 5 8 4-3 3-5 1-3 0-5-1-6-3-6z"/><path d="M15 4c4 0 5 4 5 8s-1 8-5 8"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   plug:'<path d="M9 2v6M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-12 0z"/><path d="M12 17v5"/>',
 };
 const icon=(n,c='i')=>`<svg class="${c}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||''}</svg>`;
@@ -37,7 +38,7 @@ document.body.insertAdjacentHTML('beforeend',`<footer class="foot"><div class="w
 <div class="cols">
  <div><a class="logo" href="${B}index.html" style="margin-bottom:12px"><span class="mark">${icon('pill')}</span>약 바로알기</a>
  <p style="margin:0;max-width:44ch">식품의약품안전처 의약품 허가정보(첨부문서)를 쉬운 말로 정리합니다. AI가 만든 글이 아니며, 진단이나 처방을 대신하지 않습니다. 약을 임의로 끊거나 바꾸지 말고 의사·약사와 상의하세요.</p></div>
- <div><h4>찾아보기</h4><ul><li><a href="${B}drug.html">약 사전</a></li><li><a href="${B}../">이 증상, 약 때문일까?</a></li><li><a href="${B}check.html">같이 먹어도 되나요?</a></li><li><a href="${B}guides.html">상황별 가이드</a></li></ul></div>
+ <div><h4>찾아보기</h4><ul><li><a href="${B}drug.html">약 사전</a></li><li><a href="${B}../">이 증상, 약 때문일까?</a></li><li><a href="${B}check.html">같이 먹어도 되나요?</a></li><li><a href="${B}guides.html">상황별 가이드</a></li><li><a href="${B}history.html">약의 역사</a></li></ul></div>
  <div><h4>안내</h4><ul><li><a href="${B}about.html">운영자·출처</a></li><li><a href="${B}about.html#report">오류 신고</a></li><li><a href="${B}pro.html">의료진 코너</a></li><li><a href="${B}../privacy.html">개인정보처리방침</a></li></ul></div>
 </div>
 <div class="legal"><span id="dataVer">자료: 식품의약품안전처 의약품 허가정보</span><span class="sos">${icon('phone')}숨이 차거나 얼굴·입술이 붓는 등 응급 증상은 <b>119</b></span></div>

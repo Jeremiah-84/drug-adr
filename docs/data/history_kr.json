@@ -1,0 +1,298 @@
+{
+"morphine": {
+"date": "1984-11-14",
+"item": "제일모르핀염산염주사액",
+"seq": "198401387",
+"entp": "(주)제일제약",
+"cancel": false,
+"count": 20
+},
+"aspirin": {
+"date": "1990-08-29",
+"item": "보령아스트릭스캡슐100밀리그람(아스피린)",
+"seq": "199001012",
+"entp": "(주)보령",
+"cancel": false,
+"count": 114
+},
+"insulin": {
+"date": "1992-09-22",
+"item": "휴물린70/30",
+"seq": "199203300",
+"entp": "한국릴리(유)",
+"cancel": false,
+"count": 36
+},
+"digoxin": {
+"date": "1963-05-16",
+"item": "디고신정(디곡신)",
+"seq": "196300001",
+"entp": "에이치케이이노엔(주)",
+"cancel": false,
+"count": 3
+},
+"streptomycin": {
+"date": "1961-12-28",
+"item": "종근당황산스트렙토마이신주(스트렙토마이신황산염)",
+"seq": "196100002",
+"entp": "(주)종근당",
+"cancel": false,
+"count": 2
+},
+"isoniazid": {
+"date": "1962-01-19",
+"item": "유한짓정100mg(이소니아지드)(군납명:이소니아지드정케이.피100밀리그람)",
+"seq": "196200032",
+"entp": "(주)유한양행",
+"cancel": false,
+"count": 3
+},
+"chlorpromazine": {
+"date": "1960-03-21",
+"item": "네오마찐정100밀리그램(클로르프로마진염산염)",
+"seq": "199203520",
+"entp": "환인제약(주)",
+"cancel": false,
+"count": 4
+},
+"warfarin": {
+"date": "1985-05-28",
+"item": "제일와파린정(와파린나트륨)",
+"seq": "198500306",
+"entp": "제일약품(주)",
+"cancel": true,
+"count": 5
+},
+"prednisolone": {
+"date": "1986-07-02",
+"item": "삼아리도멕스크림0.3%(프레드니솔론발레로아세테이트)",
+"seq": "198600458",
+"entp": "삼아제약(주)",
+"cancel": false,
+"count": 49
+},
+"acetaminophen": {
+"date": "1968-08-27",
+"item": "판콜에이내복액",
+"seq": "196800036",
+"entp": "동화약품(주)",
+"cancel": false,
+"count": 1223
+},
+"metformin": {
+"date": "1985-07-03",
+"item": "다이아벡스정500밀리그램(메트포르민염산염)",
+"seq": "198500321",
+"entp": "(주)대웅제약",
+"cancel": false,
+"count": 1569
+},
+"thalidomide": {
+"date": "2006-04-07",
+"item": "비엠에스탈리도마이드캡슐50밀리그램",
+"seq": "200603990",
+"entp": "(유)한국비엠에스제약",
+"cancel": false,
+"count": 5
+},
+"diazepam": {
+"date": "1977-05-12",
+"item": "대원디아제팜정2밀리그램(수출명:디아잠정2밀리그램)(수출명2:트레즈콘정2밀리그램)",
+"seq": "197700525",
+"entp": "대원제약(주)",
+"cancel": false,
+"count": 11
+},
+"propranolol": {
+"date": "1974-11-05",
+"item": "인데놀정10mg(프로프라놀롤염산염)",
+"seq": "197400040",
+"entp": "동광제약(주)",
+"cancel": false,
+"count": 4
+},
+"salbutamol": {
+"date": "1974-09-02",
+"item": "신일살부타몰정(수출명:BUTAMOLTab.)(SalbutamolSulfate)",
+"seq": "197400347",
+"entp": "신일제약(주)",
+"cancel": true,
+"count": 5
+},
+"ibuprofen": {
+"date": "1977-01-21",
+"item": "부루펜정200밀리그램(이부프로펜)",
+"seq": "197700120",
+"entp": "삼일제약(주)",
+"cancel": false,
+"count": 264
+},
+"lithium": {
+"date": "1973-12-22",
+"item": "리단정(탄산리튬)",
+"seq": "197300172",
+"entp": "부광약품(주)",
+"cancel": false,
+"count": 4
+},
+"tamoxifen": {
+"date": "1988-06-28",
+"item": "타목센정20밀리그램(타목시펜시트르산염)(수출명:Tamooex Tabs.20mg,XifenTabs.20mg,GyraxenTabs.20mg)",
+"seq": "198801218",
+"entp": "한국유나이티드제약(주)",
+"cancel": false,
+"count": 7
+},
+"cimetidine": {
+"date": "1977-07-21",
+"item": "하이메틴정(시메티딘)",
+"seq": "197700088",
+"entp": "일동제약(주)",
+"cancel": true,
+"count": 62
+},
+"acyclovir": {
+"date": "1986-03-07",
+"item": "에크로바주(아시클로버)(수출명:세비린주,비루헥살주)",
+"seq": "198601101",
+"entp": "경동제약(주)",
+"cancel": false,
+"count": 126
+},
+"lovastatin": {
+"date": "1997-08-06",
+"item": "로바로드정(로바스타틴)",
+"seq": "199700176",
+"entp": "(주)종근당",
+"cancel": true,
+"count": 6
+},
+"fluoxetine": {
+"date": "1997-10-21",
+"item": "푸록틴캡슐20밀리그램(플루옥세틴염산염)",
+"seq": "199701295",
+"entp": "명인제약(주)",
+"cancel": false,
+"count": 118
+},
+"omeprazole": {
+"date": "1992-09-01",
+"item": "라메졸캡슐20밀리그램(오메프라졸)",
+"seq": "199202074",
+"entp": "한미약품(주)",
+"cancel": true,
+"count": 52
+},
+"amlodipine": {
+"date": "2004-06-08",
+"item": "아모디핀정5밀리그램(암로디핀캄실산염)",
+"seq": "200402637",
+"entp": "한미약품(주)",
+"cancel": false,
+"count": 1584
+},
+"finasteride": {
+"date": "1995-08-22",
+"item": "프로스카정(피나스테리드)",
+"seq": "199504272",
+"entp": "한국오가논(주)",
+"cancel": false,
+"count": 212
+},
+"zolpidem": {
+"date": "2005-04-08",
+"item": "졸피람정10밀리그램(졸피뎀타르타르산염)",
+"seq": "200512142",
+"entp": "환인제약(주)",
+"cancel": false,
+"count": 16
+},
+"losartan": {
+"date": "2004-09-21",
+"item": "로잘정50mg(로사르탄칼륨)",
+"seq": "200401773",
+"entp": "한국유나이티드제약(주)",
+"cancel": false,
+"count": 360
+},
+"atorvastatin": {
+"date": "2004-10-25",
+"item": "리피토정20밀리그램(아토르바스타틴칼슘삼수화물)",
+"seq": "200410085",
+"entp": "비아트리스코리아(주)",
+"cancel": false,
+"count": 781
+},
+"donepezil": {
+"date": "2000-08-04",
+"item": "아리셉트정5밀리그램(도네페질염산염)",
+"seq": "200000796",
+"entp": "(주)한독",
+"cancel": false,
+"count": 391
+},
+"clopidogrel": {
+"date": "2005-05-24",
+"item": "플라비톨정(클로피도그렐황산수소염)",
+"seq": "200500249",
+"entp": "동아에스티(주)",
+"cancel": false,
+"count": 176
+},
+"sildenafil": {
+"date": "2004-05-03",
+"item": "비아그라정50밀리그람(실데나필시트르산염)",
+"seq": "200410082",
+"entp": "비아트리스코리아(주)",
+"cancel": false,
+"count": 104
+},
+"oseltamivir": {
+"date": "2000-06-15",
+"item": "타미플루캡슐75밀리그램(인산오셀타미비르)",
+"seq": "200008798",
+"entp": "(주)한국로슈",
+"cancel": false,
+"count": 182
+},
+"imatinib": {
+"date": "2006-11-30",
+"item": "글리벡필름코팅정100밀리그램(이매티닙메실산염)",
+"seq": "200611516",
+"entp": "한국노바티스(주)",
+"cancel": false,
+"count": 21
+},
+"sitagliptin": {
+"date": "2007-09-21",
+"item": "자누비아정50밀리그램(시타글립틴인산염수화물)",
+"seq": "200710758",
+"entp": "(주)종근당",
+"cancel": false,
+"count": 795
+},
+"dabigatran": {
+"date": "2011-02-18",
+"item": "프라닥사캡슐150밀리그램(다비가트란에텍실레이트메실산염)",
+"seq": "201100747",
+"entp": "한국베링거인겔하임(주)",
+"cancel": false,
+"count": 6
+},
+"dapagliflozin": {
+"date": "2013-11-26",
+"item": "포시가정5밀리그램(다파글리플로진프로판디올수화물)",
+"seq": "201310307",
+"entp": "한국아스트라제네카(주)",
+"cancel": true,
+"count": 443
+},
+"semaglutide": {
+"date": "2022-04-28",
+"item": "오젬픽프리필드펜(세마글루티드)",
+"seq": "202201737",
+"entp": "노보노디스크제약(주) ",
+"cancel": false,
+"count": 8
+}
+}
