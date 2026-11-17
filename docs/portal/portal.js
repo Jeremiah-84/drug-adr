@@ -3,11 +3,12 @@
 const B=document.body.dataset.base||'';           // 포털 루트까지 상대 경로 ('' 또는 '../')
 const DATA=B+'../data/';                          // 기존 웹 버전과 같은 식약처 데이터
 const page=document.body.dataset.page||'';
-const NAV=[['drug','drug.html','약 사전'],['guides','guides.html','상황별 가이드'],['check','check.html','같이 먹어도 되나요?'],['news','news.html','안전 소식'],['pro','pro.html','의료진'],['about','about.html','소개']];
+const NAV=[['drug','drug.html','약 사전'],['guides','guides.html','상황별 가이드'],['check','check.html','같이 먹어도 되나요?'],['news','news.html','안전 소식'],['dep','dependence.html','의존·중독'],['pro','pro.html','의료진'],['about','about.html','소개']];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const IC={
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   pill:'<path d="M10.5 20.5a5 5 0 0 1-7-7l10-10a5 5 0 0 1 7 7z"/><path d="m8.5 8.5 7 7"/>',
+  heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
   symptom:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
   layers:'<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
   book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M9 7h6"/>',
@@ -83,5 +84,19 @@ function attachSearch(input,box,onPick){
   if(b)b.addEventListener('click',async e=>{e.preventDefault();const db=await load();const r=search(db,input.value);if(r.length)pick(r[0]);else input.focus()});
   function pick(it){box.hidden=true;onPick(it)}
 }
-window.Portal={B,DATA,esc,norm,load,search,attachSearch,icon};
+// 의존·내성 주의가 필요한 약 묶음 (감수 필요)
+const DEP=[
+  {k:'sleep',name:'수면제·신경안정제',sub:'벤조디아제핀계, 졸피뎀',ids:['alprazolam','lorazepam','diazepam','clonazepam','etizolam','triazolam','bromazepam','clobazam','flurazepam','chlordiazepoxide','flunitrazepam','loflazepate','tofisopam','zolpidem','eszopiclone','zaleplon']},
+  {k:'opioid',name:'마약성 진통제',sub:'트라마돌, 옥시코돈 등',ids:['tramadol','oxycodone','hydromorphone','fentanyl','morphine','tapentadol','pethidine','pentazocine','butorphanol','sufentanil','oliceridine']},
+  {k:'cough',name:'코데인이 든 기침약',sub:'코데인, 디히드로코데인',ids:['codeine','dihydrocodeine']},
+  {k:'diet',name:'식욕억제제',sub:'펜터민, 펜디메트라진 등',ids:['phentermine','phendimetrazine','diethylpropion']},
+  {k:'adhd',name:'중추신경 자극제',sub:'ADHD 치료제, 기면증 치료제',ids:['methylphenidate','modafinil','armodafinil']},
+  {k:'etc',name:'그 밖의 향정신성의약품',sub:'바르비탈계 등',ids:['phenobarbital','pentobarbital','esketamine']},
+];
+const DEP_IDS=new Set(DEP.flatMap(g=>g.ids));
+// 첨부문서 문장 중 의존성·금단·남용 관련 문장
+const DEP_RE=/(정신적|신체적|약물)\s*의존|의존성|금단|남용|습관성|약물\s*내성|반동성/;
+const DEP_NOT=/(용량|농도|시간)\s*[-·]?\s*의존/;
+const depLines=txt=>(txt||[]).filter(t=>t.length>15&&DEP_RE.test(t)&&!(DEP_NOT.test(t)&&!/의존성/.test(t.replace(DEP_NOT,''))));
+window.Portal={B,DATA,esc,norm,load,search,attachSearch,icon,DEP,DEP_IDS,depLines};
 })();
