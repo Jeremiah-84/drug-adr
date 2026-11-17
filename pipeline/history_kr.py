@@ -16,12 +16,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def first_permits(items, drugs):
     out = {}
     for d in drugs:
-        rx = re.compile(d["kr"], re.I)
+        rx = re.compile(d["kr"], re.I); rko = re.compile(re.escape(d["ko"]))
         best, n = None, 0
         for p in items:
             ingr = (p.get("ITEM_INGR_NAME") or "") + " " + (p.get("ITEM_ENG_NAME") or "")
             date = re.sub(r"\D", "", str(p.get("ITEM_PERMIT_DATE") or ""))
-            if len(date) != 8 or not rx.search(ingr):
+            if len(date) != 8 or "수출용" in (p.get("ITEM_NAME") or ""):
+                continue  # 수출 전용 품목은 국내 판매가 아니므로 뺌
+            if not (rx.search(ingr) or rko.search(p.get("ITEM_NAME") or "") or rko.search(p.get("ITEM_INGR_NAME") or "")):
                 continue
             n += 1
             if best is None or date < best[0]:
