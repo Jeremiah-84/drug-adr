@@ -14,41 +14,58 @@
 :root[data-theme="dark"]{--c-pain:#f0848d;--c-inf:#8ab8e6;--c-cv:#f0a060;--c-neuro:#b99cf0;--c-meta:#4cc9a6;--c-onc:#e3bd52;--c-gi:#5fc9d9;--c-etc:#a4aeaa}
 
 .ctrl{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
-.seg{display:inline-flex;padding:4px;border-radius:999px;background:var(--bg2);border:1px solid var(--line)}
-.seg button{font:inherit;font-size:.9rem;font-weight:600;border:0;background:none;color:var(--muted);padding:7px 16px;border-radius:999px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:var(--shadow)}
 .cats{display:flex;flex-wrap:wrap;gap:6px}
 .cats button{font:inherit;font-size:.84rem;font-weight:500;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink2);cursor:pointer}
 .cats button i{width:9px;height:9px;border-radius:50%;background:var(--c)}
 .cats button[aria-pressed="false"]{color:var(--muted);background:var(--bg2)}
 .cats button[aria-pressed="false"] i{background:none;box-shadow:inset 0 0 0 1.5px var(--c)}
 
-/* 타임라인 */
-.tl-wrap{position:relative;border:1px solid var(--line);border-radius:var(--radius);background:
-  radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--ink) 9%,transparent) 1px,transparent 0) 0 0/16px 16px,var(--paper);overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
-.tl{position:relative;min-width:960px;padding:24px 28px 0 60px}
-.tl .lane{position:relative}
-.tl .axis{position:relative;height:34px;border-top:2px solid var(--ink2)}
-.tl .axis span{position:absolute;top:6px;transform:translateX(-50%);font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.tl .axis span::before{content:"";position:absolute;left:50%;top:-10px;width:1px;height:6px;background:var(--ink2)}
-.tl .axis .gap{position:absolute;top:-9px;width:14px;height:14px;transform:translateX(-50%);background:var(--paper);border-left:2px solid var(--ink2);border-right:2px solid var(--ink2);rotate:20deg}
-.dot{position:absolute;bottom:0;transform:translateX(-50%);width:9px;height:9px;margin-bottom:-5px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px var(--paper)}
-.stem{position:absolute;bottom:0;width:1px;background:color-mix(in srgb,var(--c) 45%,transparent)}
-.chipx{position:absolute;transform:translateX(-50%);display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font:inherit;font-size:.8rem;font-weight:600;white-space:nowrap;cursor:pointer;
-  color:var(--ink);background:color-mix(in srgb,var(--c) 12%,var(--paper));border:1px solid color-mix(in srgb,var(--c) 40%,transparent);transition:transform .15s,box-shadow .15s,background .15s}
-.chipx small{font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
-.chipx:hover,.chipx:focus-visible{background:var(--c);color:var(--paper);box-shadow:var(--shadow-lg);z-index:3;outline:none}
-.chipx:hover small,.chipx:focus-visible small{color:inherit;opacity:.85}
-.chipx.on{background:var(--c);color:var(--paper);z-index:3}
-.chipx.on small{color:inherit}
-.chipx.dim{opacity:.18;pointer-events:none}
-.ev{position:absolute;top:0;transform:translateX(-50%);display:flex;align-items:center;gap:6px;text-decoration:none;font-size:.72rem;color:var(--muted);text-align:center;line-height:1.3;cursor:help;white-space:nowrap}
-.ev b{width:8px;height:8px;rotate:45deg;background:var(--ink2);flex:none}
-.ev:hover{color:var(--ink)}
-.tl .evlane{position:relative;height:64px}
-.tl .evlane .lbl{position:absolute;left:0;top:0;font-size:.7rem;font-weight:700;color:var(--muted)}
+/* 점 타임라인 (histography 방식): 늘 어두운 무대 위에 약 하나가 점 하나 */
+.stage{--s-bg:#0a0f0e;--s-ink:#e9f0ed;--s-muted:#8b9a95;--s-line:rgba(233,240,237,.14);
+  --c-pain:#f0848d;--c-inf:#8ab8e6;--c-cv:#f0a060;--c-neuro:#b99cf0;--c-meta:#4cc9a6;--c-onc:#e3bd52;--c-gi:#5fc9d9;--c-etc:#b4bdb9;
+  position:relative;border-radius:var(--radius);overflow:hidden;color:var(--s-ink);user-select:none;-webkit-user-select:none;
+  background:radial-gradient(120% 90% at 50% 110%,#12302a 0,transparent 60%),var(--s-bg);box-shadow:var(--shadow-lg)}
+.plot{position:relative;height:340px;touch-action:pan-y;cursor:grab;overflow:hidden;overflow:clip}
+.plot.drag{cursor:grabbing}
+@media (max-width:640px){.plot{height:330px}}
+.era{position:absolute;top:0;bottom:0;border-left:1px dashed var(--s-line);pointer-events:none}
+.era span{position:absolute;top:48px;left:10px;font-size:.74rem;font-weight:600;color:var(--s-muted);white-space:nowrap;letter-spacing:.01em}
+.base{position:absolute;left:0;right:0;bottom:44px;height:1px;background:var(--s-line)}
+.tick{position:absolute;bottom:0;height:44px;transform:translateX(-50%);font-size:.72rem;color:var(--s-muted);font-variant-numeric:tabular-nums;pointer-events:none;padding-top:14px}
+.tick::before{content:"";position:absolute;left:50%;top:0;width:1px;height:6px;background:var(--s-line)}
+.pt{position:absolute;left:-10px;bottom:-10px;width:20px;height:20px;border:0;padding:0;background:none;cursor:pointer;will-change:transform;border-radius:50%}
+.pt i{position:absolute;left:4px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 0 var(--c);transition:transform .25s cubic-bezier(.2,.9,.3,1.4),box-shadow .25s,opacity .3s}
+.pt b{position:absolute;left:22px;top:1px;font-size:.76rem;font-weight:600;white-space:nowrap;color:var(--s-ink);opacity:0;transition:opacity .25s;pointer-events:none}
+.labels .pt b{opacity:.88}
+.pt:hover i,.pt:focus-visible i,.pt.on i{transform:scale(1.7);box-shadow:0 0 0 6px color-mix(in srgb,var(--c) 22%,transparent),0 0 18px var(--c)}
+.pt:focus-visible{outline:none}
+.plot.hov .pt:not(:hover):not(.on) i{opacity:.35}
+.pt.off{pointer-events:none}.pt.off i{opacity:.08!important;transform:scale(.6)}.pt.off b{opacity:0!important}
+.pt.in i{animation:pop .6s cubic-bezier(.2,.9,.3,1.3) both;animation-delay:var(--d)}
+@keyframes pop{from{transform:translateY(30px) scale(0);opacity:0}}
+.evm{position:absolute;bottom:39px;width:10px;height:10px;margin-left:-5px;rotate:45deg;background:var(--s-ink);opacity:.55;border:0;padding:0;cursor:pointer;transition:opacity .2s,transform .2s}
+.evm:hover,.evm:focus-visible{opacity:1;transform:scale(1.3);outline:none}
+.tip{position:absolute;z-index:5;pointer-events:none;min-width:150px;max-width:240px;padding:10px 12px;border-radius:12px;background:rgba(18,26,24,.94);border:1px solid var(--s-line);box-shadow:0 10px 30px rgba(0,0,0,.4);font-size:.82rem;line-height:1.45;opacity:0;transform:translateY(6px);transition:opacity .15s,transform .15s}
+.tip.show{opacity:1;transform:none}
+.tip b{display:block;font-size:.98rem;color:var(--s-ink)}
+.tip small{color:var(--s-muted)}
+.tip .cat{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--c);font-size:.76rem}
+.tip .cat::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.zoom{position:absolute;right:12px;top:10px;display:flex;gap:6px;z-index:4}
+.zoom button{width:32px;height:32px;border-radius:10px;border:1px solid var(--s-line);background:rgba(255,255,255,.04);color:var(--s-ink);font:inherit;font-size:1.05rem;cursor:pointer;display:grid;place-items:center}
+.zoom button:hover{background:rgba(255,255,255,.1)}
+.zoom .fit{width:auto;padding:0 10px;font-size:.78rem;font-weight:600}
+.range{position:absolute;left:14px;top:12px;font-size:.78rem;font-weight:700;color:var(--s-ink);font-variant-numeric:tabular-nums;z-index:4;pointer-events:none}
+/* 아래 전체 미리보기 막대: 끌어서 이동, 양 끝을 끌어 확대 */
+.brush{position:relative;height:46px;border-top:1px solid var(--s-line);background:rgba(255,255,255,.02);touch-action:none;cursor:pointer}
+.brush .m{position:absolute;bottom:10px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--c);opacity:.8}
+.brush .win{position:absolute;top:4px;bottom:4px;border-radius:8px;border:1.5px solid rgba(233,240,237,.55);background:rgba(233,240,237,.07);cursor:grab}
+.brush .win::before,.brush .win::after{content:"";position:absolute;top:50%;width:4px;height:16px;margin-top:-8px;border-radius:2px;background:rgba(233,240,237,.7)}
+.brush .win::before{left:3px}.brush .win::after{right:3px}
+.brush .yl{position:absolute;top:4px;font-size:.66rem;color:var(--s-muted);transform:translateX(-50%);pointer-events:none}
 .tl-hint{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:.84rem;margin:10px 2px 0}
 .tl-hint svg{width:16px;height:16px}
+@media (prefers-reduced-motion:reduce){.pt i,.tip{transition:none}.pt.in i{animation:none}}
 
 /* 세로 목록 */
 .list{display:flex;flex-direction:column;margin-top:8px}
@@ -101,11 +118,17 @@
 
   <div class="section" style="margin-top:28px">
     <div class="ctrl">
-      <span style="color:var(--muted);font-size:.9rem">세계에서 처음 허가·출시된 해 기준</span>
+      <span style="color:var(--muted);font-size:.9rem">점 하나가 약 하나예요 · 세계에서 처음 허가·출시된 해 기준</span>
       <div class="cats" id="cats" aria-label="분야"></div>
     </div>
-    <div class="tl-wrap" id="tlWrap"><div class="tl" id="tl"></div></div>
-    <p class="tl-hint" id="hint"><i data-i="info"></i><span>1940년 이전은 간격을 줄여 그렸어요. 화면이 좁으면 옆으로 밀어 보세요.</span></p>
+    <div class="stage" id="stage">
+      <div class="range" id="range"></div>
+      <div class="zoom"><button type="button" id="zIn" aria-label="확대">+</button><button type="button" id="zOut" aria-label="축소">−</button><button type="button" class="fit" id="zFit">전체</button></div>
+      <div class="plot" id="plot" aria-label="약의 역사 타임라인"></div>
+      <div class="brush" id="brush" aria-hidden="true"></div>
+      <div class="tip" id="tip" role="status"></div>
+    </div>
+    <p class="tl-hint"><i data-i="info"></i><span id="hint">점에 마우스를 올리면 이름이, 누르면 자세한 이야기가 나와요. 끌어서 옮기고, + 버튼이나 Ctrl+휠(휴대폰은 두 손가락)로 확대해요.</span></p>
   </div>
 
   <div class="section">
@@ -133,50 +156,123 @@
 (function(){
 const {esc,icon}=Portal;
 const NO_DICT=new Set(['insulin','penicillin']);   // 약 사전(경구 위주)에 아직 없는 성분
-let H=null,KR={},mode='w',cats={},sel=null;
+let H=null,KR={},cats={},sel=null;
 const $=id=>document.getElementById(id);
-
-// 1820~1940년은 줄이고 1940~2025년을 넓게
-const Y0=1820,Y1=1940,Y2=2026,CUT=.24;
-const xOf=y=>y<Y1?(y-Y0)/(Y1-Y0)*CUT:CUT+(y-Y1)/(Y2-Y1)*(1-CUT);
-const TICKS=[1820,1860,1900,1920,1940,1950,1960,1970,1980,1990,2000,2010,2020];
-
-const krYear=d=>KR[d.id]?+KR[d.id].date.slice(0,4):null;
-const yearOf=d=>mode==='w'?d.y:krYear(d);
 const color=d=>`var(--c-${d.cat})`;
+const yearOf=d=>d.y;
 
-function draw(){
-  const tl=$('tl'),W=Math.max(tl.clientWidth-88,872);
-  const items=H.drugs.filter(d=>yearOf(d)!=null).map(d=>({d,y:yearOf(d)})).sort((a,b)=>a.y-b.y||a.d.ko.localeCompare(b.d.ko));
-  // 겹치지 않게 줄 배정 (아래 줄부터)
-  const rows=[],ROWH=32;
-  const meas=document.createElement('span');meas.className='chipx';meas.style.visibility='hidden';tl.appendChild(meas);
-  for(const it of items){
-    it.x=xOf(it.y)*W;meas.innerHTML=`${esc(it.d.ko)}<small>${it.y}</small>`;it.w=meas.offsetWidth+6;
-    let r=0;while(rows[r]!=null&&rows[r]>it.x-it.w/2)r++;
-    rows[r]=it.x+it.w/2;it.r=r;
-  }
-  meas.remove();
-  const H_=Math.max(rows.length,3)*ROWH+30;
-  const on=it=>cats[it.d.cat];
-  let lane=`<div class="lane" style="height:${H_}px">`;
-  for(const it of items){
-    const bottom=12+it.r*ROWH, st=`--c:${color(it.d)}`;
-    lane+=`<span class="stem" style="${st};left:${it.x}px;height:${bottom}px;${on(it)?'':'opacity:.15'}"></span><span class="dot" style="${st};left:${it.x}px;${on(it)?'':'opacity:.2'}"></span>`;
-    lane+=`<button type="button" class="chipx${on(it)?'':' dim'}${sel===it.d.id?' on':''}" data-id="${it.d.id}" style="${st};left:${it.x}px;bottom:${bottom}px" title="${esc(it.d.ko)} · ${it.y} ${esc(mode==='w'?it.d.when:'국내 허가 기록')}">${esc(it.d.ko)}<small>${it.y}</small></button>`;
-  }
-  lane+='</div>';
-  let axis='<div class="axis">'+TICKS.map(t=>`<span style="left:${xOf(t)*W}px">${t}</span>`).join('')+`<i class="gap" style="left:${xOf(1930)*W}px"></i></div>`;
-  const er=[];let evh='';
-  for(const e of H.events){const x=xOf(e.y)*W,w=(e.t.length*12+44);let r=0;while(er[r]!=null&&er[r]>x-w/2)r++;er[r]=x+w/2;
-    evh+=`<a class="ev" style="left:${x}px;top:${r*24+6}px" href="${esc(e.u)}" target="_blank" rel="noopener" title="${esc(e.y+' '+e.t+' — '+e.d)}"><b></b>${e.y} ${esc(e.t)}</a>`}
-  const ev=`<div class="evlane" style="height:${er.length*24+34}px"><span class="lbl" style="bottom:6px;top:auto">국내외 제도</span>${evh}</div>`;
-  tl.innerHTML=lane+axis+ev;
-  const missing=H.drugs.length-items.length;
-  $('hint').querySelector('span').textContent=mode==='k'
-    ?(Object.keys(KR).length?`식약처 허가 목록에 남은 가장 이른 품목 기준이라 실제 국내 도입보다 늦을 수 있어요.${missing?` 국내 허가 기록을 찾지 못한 ${missing}개는 빠졌어요.`:''} 1940년 이전은 간격을 줄여 그렸어요.`:'국내 허가 기록을 아직 받지 못했어요. 다음 월간 데이터 갱신 때 채워져요.')
-    :'1940년 이전은 간격을 줄여 그렸어요. 화면이 좁으면 옆으로 밀어 보세요.';
+// ── 점 타임라인 ───────────────────────────────────────────
+const D0=1800,D1=2027,MINSPAN=12;           // 전체 범위와 가장 크게 확대했을 때 보이는 햇수
+let view={a:1815,b:2027},goal={a:1815,b:2027},pts=[],evs=[],W=0,PH=0,raf=0,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const plot=$('plot'),brush=$('brush'),tip=$('tip'),stage=$('stage');
+const xOf=y=>(y-view.a)/(view.b-view.a)*W;
+const clampView=v=>{let s=Math.min(Math.max(v.b-v.a,MINSPAN),D1-D0),a=Math.min(Math.max(v.a,D0),D1-s);return{a,b:a+s}};
+function setGoal(v,now){goal=clampView(v);if(now||reduce)view={...goal};kick()}
+function kick(){if(!raf)raf=requestAnimationFrame(step)}
+function step(){
+  raf=0;
+  const k=.22,da=goal.a-view.a,db=goal.b-view.b;
+  view.a+=da*k;view.b+=db*k;if(Math.abs(da)<.01&&Math.abs(db)<.01)view={...goal};
+  layout();
+  if(view.a!==goal.a||view.b!==goal.b||pts.some(p=>Math.abs(p.ty-p.cy)>.3))kick();
 }
+function build(){
+  const items=H.drugs.slice().sort((a,b)=>a.y-b.y||a.cat.localeCompare(b.cat));
+  plot.innerHTML=H.eras.map((e,i)=>`<div class="era" data-era="${i}"><span>${esc(e.t)}</span></div>`).join('')+'<div class="base"></div><div id="ticks"></div>'+
+    items.map((d,i)=>`<button type="button" class="pt in" data-id="${d.id}" style="--c:${color(d)};--d:${(i*22)}ms" aria-label="${esc(d.ko)}, ${d.y}년, ${esc(d.when)}"><i></i><b>${esc(d.ko)}</b></button>`).join('')+
+    H.events.map((e,i)=>`<button type="button" class="evm" data-ev="${i}" aria-label="${e.y}년 ${esc(e.t)}"></button>`).join('');
+  pts=[...plot.querySelectorAll('.pt')].map(el=>{const d=H.drugs.find(x=>x.id===el.dataset.id);return{el,d,cy:0,ty:0,lw:el.querySelector('b').offsetWidth||60}});
+  evs=[...plot.querySelectorAll('.evm')];
+  brush.innerHTML=H.drugs.map(d=>`<span class="m" style="--c:${color(d)};left:${(d.y-D0)/(D1-D0)*100}%;height:${10}px" data-c="${d.cat}"></span>`).join('')+
+    [1850,1900,1950,2000].map(y=>`<span class="yl" style="left:${(y-D0)/(D1-D0)*100}%">${y}</span>`).join('')+'<div class="win" id="win"></div>';
+  setTimeout(()=>pts.forEach(p=>p.el.classList.remove('in')),1600);
+  measure();
+}
+function measure(){W=plot.clientWidth;PH=plot.clientHeight;kick()}
+plot.addEventListener('scroll',()=>{plot.scrollLeft=0;plot.scrollTop=0});   // 포커스·검색으로 안쪽이 밀리지 않게
+function layout(){
+  const ppy=W/(view.b-view.a),labels=ppy>=22;          // 1년에 22px 넘게 벌어지면 이름을 늘 보여 줌
+  plot.classList.toggle('labels',labels);
+  // 가까운 점은 위로 쌓기 (이름이 보일 때는 이름 폭만큼 띄움)
+  const lv=[],STEP=W<640?15:17,BASE=58;
+  for(const p of pts){
+    const on=cats[p.d.cat];p.el.classList.toggle('off',!on);
+    p.x=xOf(p.d.y);
+    if(!on){p.ty=BASE-10;continue}
+    const w=labels?p.lw+26:15;let r=0;while(lv[r]!=null&&lv[r]>p.x-7)r++;lv[r]=p.x+w;
+    p.ty=BASE+r*STEP;
+  }
+  const maxY=PH-56;for(const p of pts){p.ty=Math.min(p.ty,maxY);p.cy+=reduce?p.ty-p.cy:(p.ty-p.cy)*.25;p.el.style.transform=`translate3d(${p.x}px,${-p.cy}px,0)`}
+  evs.forEach((e,i)=>e.style.left=xOf(H.events[i].y)+'px');
+  plot.querySelectorAll('.era').forEach(e=>{const r=H.eras[+e.dataset.era],x0=xOf(r.a),x1=xOf(r.b);e.style.left=x0+'px';e.style.width=Math.max(x1-x0,0)+'px';e.style.display=x1<0||x0>W?'none':'';e.firstChild.style.display=x1-Math.max(x0,0)<120?'none':'';e.firstChild.style.left=Math.max(10,-x0+10)+'px'});
+  // 눈금: 화면 폭에 맞춰 1·2·5·10·20·50년 간격
+  const step=[1,2,5,10,20,25,50,100].find(s=>s*ppy>=70)||100;
+  let t='';for(let y=Math.ceil(view.a/step)*step;y<=view.b;y+=step)t+=`<span class="tick" style="left:${xOf(y)}px">${y}</span>`;
+  $('ticks').innerHTML=t;
+  $('range').textContent=`${Math.round(view.a)} – ${Math.min(Math.round(view.b),2026)}`;
+  const win=$('win');if(win){win.style.left=(view.a-D0)/(D1-D0)*100+'%';win.style.width=(view.b-view.a)/(D1-D0)*100+'%'}
+  brush.querySelectorAll('.m').forEach(m=>m.style.opacity=cats[m.dataset.c]?.8:.15);
+}
+// 확대·축소: 기준점(year)을 화면의 같은 자리에 두고 범위만 바꿈
+function zoomAt(f,year){const g=goal,c=year??(g.a+g.b)/2;setGoal({a:c-(c-g.a)*f,b:c+(g.b-c)*f})}
+const yAt=px=>goal.a+px/W*(goal.b-goal.a);
+$('zIn').onclick=()=>zoomAt(.5);$('zOut').onclick=()=>zoomAt(2);$('zFit').onclick=()=>setGoal({a:1815,b:2027});
+plot.addEventListener('wheel',e=>{
+  const r=plot.getBoundingClientRect(),y=yAt(e.clientX-r.left);
+  if(e.ctrlKey||e.metaKey){e.preventDefault();zoomAt(Math.exp(e.deltaY*.01),y)}                // 핀치·Ctrl+휠
+  else if(Math.abs(e.deltaX)>Math.abs(e.deltaY)){e.preventDefault();const s=(goal.b-goal.a)/W*e.deltaX;setGoal({a:goal.a+s,b:goal.b+s},true)}
+},{passive:false});
+// 끌기(한 손가락·마우스)와 두 손가락 확대
+const ptrs=new Map();let drag=null,moved=false;
+plot.addEventListener('pointerdown',e=>{
+  ptrs.set(e.pointerId,e.clientX);moved=false;
+  if(ptrs.size===1)drag={x:e.clientX,a:goal.a,b:goal.b};
+  else if(ptrs.size===2){const xs=[...ptrs.values()],r=plot.getBoundingClientRect();drag={pinch:Math.abs(xs[0]-xs[1])||1,mid:yAt((xs[0]+xs[1])/2-r.left),a:goal.a,b:goal.b}}
+});
+addEventListener('pointermove',e=>{
+  if(!drag||!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,e.clientX);
+  if(drag.pinch&&ptrs.size===2){const xs=[...ptrs.values()],f=drag.pinch/(Math.abs(xs[0]-xs[1])||1),c=drag.mid;setGoal({a:c-(c-drag.a)*f,b:c+(drag.b-c)*f},true);moved=true;return}
+  const dx=e.clientX-drag.x;if(Math.abs(dx)>4){moved=true;plot.classList.add('drag');hideTip()}
+  if(moved){const s=-dx/W*(drag.b-drag.a);setGoal({a:drag.a+s,b:drag.b+s},true)}
+});
+const up=e=>{ptrs.delete(e.pointerId);if(!ptrs.size){drag=null;plot.classList.remove('drag')}else if(ptrs.size===1){const x=[...ptrs.values()][0];drag={x,a:goal.a,b:goal.b}}};
+addEventListener('pointerup',up);addEventListener('pointercancel',up);
+plot.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault()}},true);
+// 아래 막대: 창 끌기 / 양 끝 끌기 / 빈 곳 누르면 그리로 이동
+brush.addEventListener('pointerdown',e=>{
+  const r=brush.getBoundingClientRect(),yr=D0+(e.clientX-r.left)/r.width*(D1-D0),win=$('win'),wr=win.getBoundingClientRect();
+  let kind='move';if(Math.abs(e.clientX-wr.left)<12)kind='l';else if(Math.abs(e.clientX-wr.right)<12)kind='r';
+  else if(e.clientX<wr.left||e.clientX>wr.right){const s=goal.b-goal.a;setGoal({a:yr-s/2,b:yr+s/2})}
+  const st={x:e.clientX,a:goal.a,b:goal.b,kind};brush.setPointerCapture(e.pointerId);
+  const mv=ev=>{const d=(ev.clientX-st.x)/r.width*(D1-D0);
+    if(st.kind==='move')setGoal({a:st.a+d,b:st.b+d},true);
+    else if(st.kind==='l')setGoal({a:Math.min(st.a+d,st.b-MINSPAN),b:st.b},true);
+    else setGoal({a:st.a,b:Math.max(st.b+d,st.a+MINSPAN)},true)};
+  const end=()=>{brush.removeEventListener('pointermove',mv);brush.removeEventListener('pointerup',end)};
+  brush.addEventListener('pointermove',mv);brush.addEventListener('pointerup',end);
+});
+// 말풍선
+function showTip(el,html,c){
+  tip.innerHTML=html;tip.style.setProperty('--c',c||'var(--s-ink)');
+  const s=stage.getBoundingClientRect(),r=el.getBoundingClientRect(),tw=tip.offsetWidth,th=tip.offsetHeight;
+  let x=r.left-s.left+r.width/2-tw/2;x=Math.max(8,Math.min(x,s.width-tw-8));
+  let y=r.top-s.top-th-14;if(y<8)y=r.bottom-s.top+14;
+  tip.style.left=x+'px';tip.style.top=y+'px';tip.classList.add('show');
+}
+function hideTip(){tip.classList.remove('show');plot.classList.remove('hov')}
+plot.addEventListener('pointerover',e=>{
+  if(drag&&moved)return;
+  const p=e.target.closest('.pt');if(p){const d=H.drugs.find(x=>x.id===p.dataset.id);plot.classList.add('hov');
+    showTip(p,`<span class="cat">${esc(H.cats[d.cat])}</span><b>${esc(d.ko)}</b><small>${d.y} · ${esc(d.when)}</small>`,color(d));return}
+  const v=e.target.closest('.evm');if(v){const ev=H.events[+v.dataset.ev];showTip(v,`<span class="cat">국내외 제도</span><b>${ev.y} ${esc(ev.t)}</b><small>${esc(ev.d)}</small>`);return}
+});
+plot.addEventListener('pointerout',e=>{if(!e.relatedTarget||!e.relatedTarget.closest||!e.relatedTarget.closest('.pt,.evm'))hideTip()});
+plot.addEventListener('focusin',e=>{const p=e.target.closest('.pt,.evm');if(!p)return;
+  const y=p.dataset.id?H.drugs.find(x=>x.id===p.dataset.id).y:H.events[+p.dataset.ev].y;
+  if(y<goal.a||y>goal.b){const s=goal.b-goal.a;setGoal({a:y-s/2,b:y+s/2},true)}
+  p.dispatchEvent(new PointerEvent('pointerover',{bubbles:true}))});
+plot.addEventListener('focusout',hideTip);
+plot.addEventListener('click',e=>{const v=e.target.closest('.evm');if(v)window.open(H.events[+v.dataset.ev].u,'_blank','noopener')});
 
 function list(){
   const by={},dk=y=>y<1900?1890:Math.floor(y/10)*10;
@@ -185,7 +281,7 @@ function list(){
   const keys=Object.keys(by).map(Number).sort((a,b)=>a-b);
   $('list').innerHTML=keys.map(k=>`<div class="decade"><h3>${k<1900?'1900년 이전':k+'년대'}</h3><div class="items">${by[k].sort((a,b)=>(a.ev?a.y:yearOf(a))-(b.ev?b.y:yearOf(b))).map(d=>d.ev
     ?`<div class="item evi"><span class="yr" style="color:var(--ink2)">${d.y} · 제도</span><b>${esc(d.ev.t)}</b><span>${esc(d.ev.d)}</span></div>`
-    :`<button type="button" class="item" data-id="${d.id}" style="--c:${color(d)}"><span class="yr">${yearOf(d)} · ${esc(H.cats[d.cat])}</span><b>${esc(d.ko)}</b><span>${esc(mode==='w'?d.when:(KR[d.id].item||'국내 허가 기록'))}</span></button>`).join('')}</div></div>`).join('');
+    :`<button type="button" class="item" data-id="${d.id}" style="--c:${color(d)}"><span class="yr">${yearOf(d)} · ${esc(H.cats[d.cat])}</span><b>${esc(d.ko)}</b><span>${esc(d.when)}</span></button>`).join('')}</div></div>`).join('');
 }
 
 function nytUrl(q,y){return `https://www.nytimes.com/search?query=${encodeURIComponent(q)}&startDate=${y-1}0101&endDate=${y+1}1231&sort=oldest`}
@@ -194,7 +290,7 @@ function naverNews(q,y){return `https://search.naver.com/search.naver?where=news
 
 function open(id,push=true){
   const d=H.drugs.find(x=>x.id===id);if(!d)return;
-  sel=id;document.querySelectorAll('.chipx').forEach(c=>c.classList.toggle('on',c.dataset.id===id));
+  sel=id;document.querySelectorAll('.pt').forEach(c=>c.classList.toggle('on',c.dataset.id===id));
   const k=KR[id],ky=k&&+k.date.slice(0,4),st=`--c:${color(d)}`;
   const news=[`<li><a href="${nytUrl(d.q.en,d.y)}" target="_blank" rel="noopener">${icon('ext')}뉴욕타임스 기사 검색 · ${d.y-1}–${d.y+1}년</a></li>`];
   const ny=ky||d.y;
@@ -218,21 +314,20 @@ function open(id,push=true){
   $('xBtn').onclick=close;$('sheet').scrollTop=0;$('sheet').focus({preventScroll:true});
   if(push)history.replaceState(null,'','#'+id);
 }
-function close(){document.body.classList.remove('open');sel=null;document.querySelectorAll('.chipx.on').forEach(c=>c.classList.remove('on'));history.replaceState(null,'',location.pathname+location.search)}
+function close(){document.body.classList.remove('open');sel=null;document.querySelectorAll('.pt.on').forEach(c=>c.classList.remove('on'));history.replaceState(null,'',location.pathname+location.search)}
 
 function cats_(){
   $('cats').innerHTML=Object.entries(H.cats).map(([k,v])=>`<button type="button" data-c="${k}" aria-pressed="${cats[k]}" style="--c:var(--c-${k})"><i></i>${esc(v)}</button>`).join('');
 }
-function render(){draw();list()}
+function render(){list();kick()}
 
 Promise.all([fetch('history.json').then(r=>r.json()),fetch(Portal.DATA+'history_kr.json').then(r=>r.ok?r.json():{}).catch(()=>({}))]).then(([h,kr])=>{
   H=h;KR=kr||{};Object.keys(H.cats).forEach(k=>cats[k]=true);
-  cats_();render();
+  cats_();build();render();
   const id=decodeURIComponent(location.hash.slice(1));if(id)open(id,false);
 });
 document.addEventListener('click',e=>{
-  const c=e.target.closest('[data-id]');if(c&&!c.classList.contains('dim')){open(c.dataset.id);return}
-  const m=e.target.closest('[data-mode]');if(m){mode=m.dataset.mode;document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b===m));render();return}
+  const c=e.target.closest('[data-id]');if(c&&!c.classList.contains('off')){open(c.dataset.id);return}
   const k=e.target.closest('[data-c]');if(k){
     const all=Object.values(cats).every(Boolean);
     if(all){Object.keys(cats).forEach(x=>cats[x]=x===k.dataset.c)}           // 처음 누르면 그 분야만
@@ -241,7 +336,7 @@ document.addEventListener('click',e=>{
   if(e.target.id==='sheetBg')close();
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('open'))close()});
-let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>H&&draw(),120)});
+addEventListener('resize',()=>H&&measure());
 })();
 </script>
 </body>
