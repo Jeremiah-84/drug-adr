@@ -106,9 +106,10 @@ function findDrugs(text){
   const t=norm(text), found=[];
   for(const d of D.drugs){
     if(!formOk(d.form))continue;
-    const keys=[d.ko,d.en,d.brand].filter(Boolean).map(norm).filter(k=>k.length>=2);
+    // 두 글자 이름(예: 미보)은 뒤에 정·캡슐 등 제형이 붙을 때만 인정 (다른 낱말 속 글자와 헷갈리지 않게)
+    const keys=[d.ko,d.en,d.brand].filter(Boolean).map(norm).map(k=>k.replace(/\(.*\)$/,'')).filter(k=>k.length>=3||(k.length===2&&/[가-힣]/.test(k)));
     if(d.id==='amoxicillin/clavulanate')keys.push('아목시실린','클라불란');
-    if(keys.some(k=>hitKey(t,k)))found.push(d.id);
+    if(keys.some(k=>k.length>=3?hitKey(t,k):new RegExp(k+'(정|캡슐|서방|시럽|산|액|연고|크림|주)').test(t)))found.push(d.id);
   }
   // 제품명(1만 4천 개)으로 찾기: 3글자 이상은 그대로, 2글자는 뒤에 제형(정·캡슐 등)이 붙을 때만
   for(const p of PRODS){
@@ -132,11 +133,22 @@ $('scan').onclick=async()=>{
     const [tab]=await chrome.tabs.query({active:true,lastFocusedWindow:true});
     if(!tab){hint.textContent='처방창 탭을 연 상태에서 눌러주세요.';return}
     if(tab.url&&!/^https?:/.test(tab.url)){hint.textContent='이 화면은 읽을 수 없습니다. 처방창 탭을 연 상태에서 눌러주세요.';return}
+    // 지금 화면에 실제로 보이는 글자만 읽음 (접힌 지난 처방·숨은 메뉴·툴팁은 제외)
     const READ=()=>{
-      const out=[]; if(document.body)out.push(document.body.innerText||'');
-      document.querySelectorAll('input,textarea,select').forEach(e=>{if(e.value)out.push(e.value)});
-      document.querySelectorAll('[title],[aria-label]').forEach(e=>{out.push(e.getAttribute('title')||'');out.push(e.getAttribute('aria-label')||'')});
-      const walk=r=>r.querySelectorAll('*').forEach(el=>{if(el.shadowRoot){out.push(el.shadowRoot.textContent||'');walk(el.shadowRoot)}});walk(document);
+      const out=[], W=innerWidth, H=innerHeight;
+      const shown=el=>{if(!el)return false;const r=el.getBoundingClientRect();
+        if(r.width<1||r.height<1||r.bottom<0||r.right<0||r.top>H||r.left>W)return false;
+        const cs=getComputedStyle(el);return cs.visibility!=='hidden'&&cs.display!=='none'&&+cs.opacity>0.05};
+      const scan=root=>{
+        const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n,last=null,buf=[];
+        while((n=tw.nextNode())){const v=n.nodeValue;if(!v||!v.trim())continue;const el=n.parentElement;
+          if(!el||/^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/.test(el.tagName))continue;
+          if(el!==last){last=el;last.__ok=shown(el)}if(last.__ok)buf.push(v)}
+        out.push(buf.join(' '));
+        root.querySelectorAll('input,textarea,select').forEach(e=>{if(e.value&&shown(e))out.push(e.value)});
+        root.querySelectorAll('*').forEach(el=>{if(el.shadowRoot)scan(el.shadowRoot)});
+      };
+      if(document.body)scan(document.body);
       return out.join('\n')};
     let res;
     try{ res=await chrome.scripting.executeScript({target:{tabId:tab.id,allFrames:true},func:READ}); }
