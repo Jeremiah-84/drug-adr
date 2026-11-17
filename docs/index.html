@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>약 이상반응 찾기</title>
+<title>메디스캔 프로 (MediScan Pro)</title>
 <style>
 /* Layout: one narrow column, chart-sheet feel — inputs on top, verdict list below, organ panel last */
 :root{
@@ -33,6 +33,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 32px}
 .wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 header h1{font-family:var(--f-head);font-size:1.2rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand-en{font-size:.75rem;font-weight:500;color:var(--muted);letter-spacing:0}
+.langbtn{font:inherit;font-size:.78rem;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--accent);cursor:pointer;flex:none}
+.langbtn:hover{border-color:var(--accent)}
 header p{margin:4px 0 0;color:var(--muted);font-size:.9rem}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .label{font-family:var(--f-head);font-weight:600;font-size:.8rem;letter-spacing:.06em;color:var(--muted)}
@@ -53,7 +57,7 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:1px}
 .tab[aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
 .pb{font:inherit;font-size:.88rem;padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
 .pb[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
-.result h2{font-family:var(--f-head);font-size:1.15rem;margin:0}
+.result h2{font-family:var(--f-head);font-size:1rem;margin:0;line-height:1.4}
 .items{display:flex;flex-direction:column;gap:8px}
 .item{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .item .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -73,7 +77,9 @@ a{color:var(--accent)}
 .tag{font-size:.76rem;font-weight:700;padding:2px 8px;border-radius:5px}
 .t-금기{background:var(--hi-soft);color:var(--hi)} .t-용량{background:var(--mid-soft);color:var(--mid)}
 .t-주의{background:var(--lo-soft);color:var(--lo)} .t-불필요{background:var(--vlo-soft);color:var(--vlo)}
-.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.8rem;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.72rem;color:var(--muted)}
+.legend .badge{font-size:.68rem;padding:1px 7px}
+.result .none{font-size:.82rem}
 .legend span{display:inline-flex;gap:5px;align-items:center}
 footer{font-size:.78rem;color:var(--muted);line-height:1.6}
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
@@ -102,35 +108,35 @@ footer a{color:var(--accent)}
 <body>
 <div class="wrap">
 <header>
-  <h1>약 이상반응 찾기</h1>
-  <p>처방창을 띄운 상태에서 "지금 보고 있는 화면에서 약 찾기"를 누르면 화면의 약을 읽어 추가합니다.</p>
+  <div class="hrow"><h1><span data-i18n="title">메디스캔 프로</span> <small class="brand-en">MediScan Pro</small></h1><button class="langbtn" id="langBtn" type="button" aria-label="Switch language">English</button></div>
+  <p data-i18n="sub">처방창을 띄운 상태에서 "지금 보고 있는 화면에서 약 찾기"를 누르면 화면의 약을 읽어 추가합니다.</p>
 </header>
 
 <section class="card" aria-labelledby="l-drugs">
-  <div class="label" id="l-drugs">복용 중인 약</div>
+  <div class="label" id="l-drugs" data-i18n="drugs">복용 중인 약</div>
   <div class="search">
-    <input id="drugq" type="search" placeholder="성분명·제품명 (예: 아모잘탄, 리리카, 프레가발린)" autocomplete="off" aria-label="약 검색">
+    <input id="drugq" type="search" data-i18n-ph="drugq" placeholder="성분명·제품명 (예: 아모잘탄, 리리카, 프레가발린)" autocomplete="off" aria-label="약 검색">
     <div class="sugg" id="sugg" hidden></div>
   </div>
-  <div class="row"><button class="btn" id="scan" type="button">지금 보고 있는 화면에서 약 찾기</button></div>
-  <div class="row formsel" id="formsel"><span class="hint">화면·붙여넣기에서 찾을 약:</span>
-    <label><input type="checkbox" value="경구" checked> 먹는 약</label>
-    <label><input type="checkbox" value="주사"> 주사</label>
-    <label><input type="checkbox" value="외용"> 외용(바르는·붙이는·눈약 등)</label></div>
-  <details id="pastebox"><summary>처방 목록 붙여넣기</summary>
-    <textarea id="paste" placeholder="처방창 약 목록을 복사해서 붙여넣으면, 아는 약을 자동으로 찾아 추가합니다."></textarea>
-    <div class="row"><button class="btn" id="pasteGo" type="button">약 찾아서 추가</button><span class="hint" id="pasteMsg"></span></div>
+  <div class="row"><button class="btn" id="scan" type="button" data-i18n="scan">지금 보고 있는 화면에서 약 찾기</button></div>
+  <div class="row formsel" id="formsel"><span class="hint" data-i18n="formsHint">화면·붙여넣기에서 찾을 약:</span>
+    <label><input type="checkbox" value="경구" checked> <span data-i18n="fOral">먹는 약</span></label>
+    <label><input type="checkbox" value="주사"> <span data-i18n="fInj">주사</span></label>
+    <label><input type="checkbox" value="외용"> <span data-i18n="fTop">외용(바르는·붙이는·눈약 등)</span></label></div>
+  <details id="pastebox"><summary data-i18n="pasteSum">처방 목록 붙여넣기</summary>
+    <textarea id="paste" data-i18n-ph="pastePh" placeholder="처방창 약 목록을 복사해서 붙여넣으면, 아는 약을 자동으로 찾아 추가합니다."></textarea>
+    <div class="row"><button class="btn" id="pasteGo" type="button" data-i18n="pasteGo">약 찾아서 추가</button><span class="hint" id="pasteMsg"></span></div>
   </details>
   <div class="row" id="chips"></div>
-  <div class="row"><button class="btn ghost" id="clearAll" type="button">새 환자 (모두 지우기)</button></div>
+  <div class="row"><button class="btn ghost" id="clearAll" type="button" data-i18n="clearAll">새 환자 (모두 지우기)</button></div>
   <div class="hint" id="drughint"></div>
 </section>
 
 <section class="card" aria-labelledby="l-prob">
-  <div class="label" id="l-prob">새로 생긴 문제</div>
-  <input id="probq" type="search" placeholder="직접 입력 (예: eGFR 감소, 간수치, 다리 부음, 졸려요)" autocomplete="off" aria-label="문제 직접 입력">
+  <div class="label" id="l-prob" data-i18n="prob">새로 생긴 문제</div>
+  <input id="probq" type="search" data-i18n-ph="probq" placeholder="직접 입력 (예: eGFR 감소, 간수치, 다리 부음, 졸려요)" autocomplete="off" aria-label="문제 직접 입력">
   <div class="row" id="pmatch"></div>
-  <details id="plist"><summary>목록에서 고르기</summary>
+  <details id="plist"><summary data-i18n="plist">목록에서 고르기</summary>
     <div class="tabs" role="tablist" id="tabs"></div>
     <div class="row" id="probs" style="margin-top:8px"></div>
   </details>
@@ -139,33 +145,34 @@ footer a{color:var(--accent)}
 <section class="card result" aria-live="polite">
   <h2 id="rtitle"></h2>
   <div class="legend">
-    <span><span class="badge l4">높음</span>흔하게 (1% 이상)</span>
-    <span><span class="badge l3">가능성 있음</span>때때로, 또는 빈도 없이 기재</span>
-    <span><span class="badge l2">낮음</span>드물게</span>
-    <span><span class="badge l1">매우 드묾</span>매우 드물게</span>
+    <span><span class="badge l4" data-lv="4">높음</span><span data-i18n="lg4">흔하게 (1% 이상)</span></span>
+    <span><span class="badge l3" data-lv="3">가능성 있음</span><span data-i18n="lg3">때때로, 또는 빈도 없이 기재</span></span>
+    <span><span class="badge l2" data-lv="2">낮음</span><span data-i18n="lg2">드물게</span></span>
+    <span><span class="badge l1" data-lv="1">매우 드묾</span><span data-i18n="lg1">매우 드물게</span></span>
   </div>
   <div class="items" id="items"></div>
   <div id="ft"></div>
 </section>
 
 <section class="card" aria-labelledby="l-organ">
-  <div class="label" id="l-organ">신기능·간기능이 떨어졌을 때</div>
-  <div class="hint">첨부문서 용법용량과 금기·신중투여 항목에서 찾은 내용입니다.</div>
+  <div class="label" id="l-organ" data-i18n="organ">신기능·간기능이 떨어졌을 때</div>
+  <div class="hint" data-i18n="organHint">첨부문서 용법용량과 금기·신중투여 항목에서 찾은 내용입니다.</div>
   <div class="tabs" role="tablist" id="otabs">
-    <button class="tab" role="tab" aria-selected="true" data-o="renal">신기능 저하</button>
-    <button class="tab" role="tab" aria-selected="false" data-o="hepatic">간기능 저하</button>
+    <button class="tab" role="tab" aria-selected="true" data-o="renal" data-i18n="renal">신기능 저하</button>
+    <button class="tab" role="tab" aria-selected="false" data-o="hepatic" data-i18n="hepatic">간기능 저하</button>
   </div>
   <div class="organ" id="organ"></div>
 </section>
 
 <footer><span id="dataver"></span> 
-  자료: 식품의약품안전처 의약품 제품 허가정보(첨부문서). 각 약은 대표 제품 1개의 첨부문서를 기준으로 하며, 문장 근거와 식약처 원문 링크를 함께 보여줍니다. 규칙 기반으로 자동 추출한 결과라 누락이나 오분류가 있을 수 있습니다. 진단이나 처방 변경은 의사·약사와 상의하세요. <span id="counts"></span><br><span id="statsState"></span> <button class="linkbtn" id="statsToggle" type="button">끄기</button> · <a id="feedback" target="_blank" rel="noopener" hidden>의견 보내기</a>
+  <span data-i18n="foot">자료: 식품의약품안전처 의약품 제품 허가정보(첨부문서). 각 약은 대표 제품 1개의 첨부문서를 기준으로 하며, 문장 근거와 식약처 원문 링크를 함께 보여줍니다. 규칙 기반으로 자동 추출한 결과라 누락이나 오분류가 있을 수 있습니다. 진단이나 처방 변경은 의사·약사와 상의하세요.</span> <span id="counts"></span> <span data-i18n="privacy">검색한 약과 문제는 저장하지 않으며, 창이나 패널을 닫으면 지워집니다.</span><br><span id="statsState"></span> <button class="linkbtn" id="statsToggle" type="button">끄기</button> · <a id="feedback" target="_blank" rel="noopener" hidden data-i18n="feedback">의견 보내기</a>
 </footer>
 </div>
 
-<div id="adbox" hidden><div class="hint" style="margin:0 0 4px">광고</div><iframe id="adframe" title="광고" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin" referrerpolicy="no-referrer" style="width:100%;height:90px;border:0;border-radius:8px;background:var(--paper)"></iframe></div>
-<div id="intro" class="intro" hidden><div class="introcard"><h2>시작하기 전에</h2><p>이 도구는 식약처 의약품 허가정보(첨부문서)에서 이상반응을 <b>규칙에 따라 자동으로 추출</b>해 보여줍니다. 누락이나 오분류가 있을 수 있으니 근거 문장과 원문을 확인하고, 진료 판단의 참고로만 사용하세요.</p><p>화면에서 약을 읽는 기능은 <b>이 컴퓨터 안에서만</b> 동작하며, 처방 내용이나 환자 정보를 어디에도 보내지 않습니다.</p><p style="font-size:.85rem">시험 기간에는 더 나은 도구를 만들기 위해 <b>익명 사용 통계</b>(사용 횟수, 검색한 성분, 고른 문제 항목 등)를 보냅니다. 화면에서 읽은 글자, 직접 쓴 문장, 환자 정보는 보내지 않습니다.</p><label style="font-size:.85rem;display:flex;gap:6px;align-items:center"><input type="checkbox" id="statsOk" checked> 익명 사용 통계 보내기 (나중에 아래에서 끌 수 있음)</label><button class="btn" id="introOk" type="button">확인하고 시작</button></div></div>
+<div id="adbox" hidden><div class="hint" style="margin:0 0 4px" data-i18n="ad">광고</div><iframe id="adframe" title="광고" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin" referrerpolicy="no-referrer" style="width:100%;height:90px;border:0;border-radius:8px;background:var(--paper)"></iframe></div>
+<div id="intro" class="intro" hidden><div class="introcard"><h2 data-i18n="introH">시작하기 전에</h2><div data-i18n-html="intro" style="display:flex;flex-direction:column;gap:10px"><p>이 도구는 식약처 의약품 허가정보(첨부문서)에서 이상반응을 <b>규칙에 따라 자동으로 추출</b>해 보여줍니다. 누락이나 오분류가 있을 수 있으니 근거 문장과 원문을 확인하고, 진료 판단의 참고로만 사용하세요.</p><p>화면에서 약을 읽는 기능은 <b>이 컴퓨터 안에서만</b> 동작하며, 처방 내용이나 환자 정보를 어디에도 보내지 않습니다.</p><p style="font-size:.85rem">시험 기간에는 더 나은 도구를 만들기 위해 <b>익명 사용 통계</b>(사용 횟수, 검색한 성분, 고른 문제 항목 등)를 보냅니다. 화면에서 읽은 글자, 직접 쓴 문장, 환자 정보는 보내지 않습니다.</p></div><label style="font-size:.85rem;display:flex;gap:6px;align-items:center"><input type="checkbox" id="statsOk" checked> <span data-i18n="statsOk">익명 사용 통계 보내기 (나중에 아래에서 끌 수 있음)</span></label><button class="btn" id="introOk" type="button" data-i18n="introOk">확인하고 시작</button></div></div>
 <script src="config.js"></script>
+<script src="i18n.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

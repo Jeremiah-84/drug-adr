@@ -43,41 +43,66 @@ async function boot(){
   }
   const D=await getJSON('index.json'); start(D);
 }
-boot().catch(e=>{document.getElementById('items').innerHTML='<div class="none">데이터를 불러오지 못했습니다. 새로고침해 주세요.</div>'});
+/* ---------- 언어 (한국어/English) : 설정만 저장하고 검색 기록은 저장하지 않음 ---------- */
+const LANG0=/^ko/i.test(navigator.language||'ko')?'ko':'en';  // 처음엔 브라우저 언어를 따름
+let LANG=(()=>{try{return localStorage.getItem('adr.lang')||LANG0}catch(e){return LANG0}})();
+const T=(k,...a)=>{const v=(I18N[LANG]&&I18N[LANG][k]!==undefined)?I18N[LANG][k]:I18N.ko[k];return typeof v==='function'?v(...a):v};
+function applyStatic(){document.documentElement.lang=LANG==='en'?'en':'ko';
+  document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=T(e.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=T(e.dataset.i18nPh));
+  document.querySelectorAll('[data-i18n-html]').forEach(e=>e.innerHTML=T(e.dataset.i18nHtml));
+  document.querySelectorAll('.legend [data-lv]').forEach(e=>e.textContent=LANG==='en'?I18N_EN.lv[e.dataset.lv]:({4:'높음',3:'가능성 있음',2:'낮음',1:'매우 드묾'})[e.dataset.lv]);
+  const lb=document.getElementById('langBtn');if(lb)lb.textContent=T('lang');
+  document.querySelectorAll('.brand-en').forEach(e=>e.hidden=LANG==='en');
+  document.title=LANG==='en'?'MediScan Pro':'메디스캔 프로 (MediScan Pro)'}
+applyStatic();
+boot().catch(e=>{document.getElementById('items').innerHTML='<div class="none">'+T('loadFail')+'</div>'});
 function start(D){
 const byId=Object.fromEntries(D.drugs.map(d=>[d.id,d]));
 const loading={};
 function loadDrug(id){const d=byId[id]; if(!d)return Promise.resolve(); if(d.adr)return Promise.resolve(d);
-  return loading[id]||(loading[id]=getJSON('d/'+d.f+'.json').then(x=>Object.assign(d,x)).catch(()=>Object.assign(d,{adr:{},organ:{renal:{t:[],e:[]},hepatic:{t:[],e:[]}},txt:[],product:'(불러오기 실패)'})))}
+  return loading[id]||(loading[id]=getJSON('d/'+d.f+'.json').then(x=>Object.assign(d,x)).catch(()=>Object.assign(d,{adr:{},organ:{renal:{t:[],e:[]},hepatic:{t:[],e:[]}},txt:[],product:T('failLoad')})))}
 function ensure(ids){return Promise.all(ids.map(loadDrug))}
-document.getElementById('dataver').textContent=`데이터 기준일 ${String(D.version).slice(0,10)}.`;
-document.getElementById('counts').textContent=`${D.drugs.some(d=>d.form&&!d.form.includes('경구'))?'경구제·주사제·외용제 ':'경구제 '}${D.drugs.length.toLocaleString()}개 성분, 제품명 ${Object.keys(D.products).length.toLocaleString()}개를 인식합니다.`;
+function renderMeta(){document.getElementById('dataver').textContent=T('dataver',String(D.version).slice(0,10));
+document.getElementById('counts').textContent=T('counts',D.drugs.some(d=>d.form&&!d.form.includes('경구')),D.drugs.length.toLocaleString(),Object.keys(D.products).length.toLocaleString())}
+renderMeta();
 const PROB=Object.fromEntries(D.problems.map(p=>[p.id,p]));
 const CATS=[...new Set(D.problems.map(p=>p.category))];
-const LV={4:'높음',3:'가능성 있음',2:'낮음',1:'매우 드묾'};
+const LVKO={4:'높음',3:'가능성 있음',2:'낮음',1:'매우 드묾'};
+const LV=new Proxy({},{get:(_,k)=>LANG==='en'?I18N_EN.lv[k]:LVKO[k]});
+const EN=()=>LANG==='en';
+const cap=x=>x?x.charAt(0).toUpperCase()+x.slice(1):x;
+const dn=d=>EN()&&d.en?cap(d.en):d.ko;                       // 약 이름
+const pn=p=>EN()?(I18N_EN.prob[p.id]||p.name):p.name;         // 문제 이름
+const cn=c=>EN()?(I18N_EN.cat[c]||c):c;                        // 분류 이름
+const tn=t=>EN()?(I18N_EN.tag[t]||t):t;                        // 신·간 표시
+const fq=f=>{if(!EN())return f;let x=f;for(const [rx,r] of I18N_EN.freq)x=x.replace(rx,r);return x};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-let sel=store.get('adr.drugs',[]).filter(id=>byId[id]);
-let cat=store.get('adr.cat','신장'), prob=store.get('adr.prob','renal_fx'), organTab='renal', ftq='';
-const ftag=d=>d.form&&!d.form.includes('경구')?` <small class="hint">(${d.form.join('·')})</small>`:'';
+// 검색 기록(약·문제)은 저장하지 않음: 패널이나 창을 닫으면 사라짐. 예전 버전이 남긴 기록도 지움
+try{['adr.drugs','adr.cat','adr.prob'].forEach(k=>localStorage.removeItem(k))}catch(e){}
+let sel=[];
+let cat='신장', prob='renal_fx', organTab='renal', ftq='';
+const FEN={'경구':'oral','주사':'injection','외용':'topical','기타':'other'};
+const ftag=d=>d.form&&!d.form.includes('경구')?` <small class="hint">(${d.form.map(f=>EN()?(FEN[f]||f):f).join('·')})</small>`:'';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s).toLowerCase().replace(/\s+/g,'');
 const link=d=>`https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${d.seq}`;
 const $=id=>document.getElementById(id);
 const PF=D.pform||{};
 const PRODS=Object.entries(D.products||{}).map(([name,ids])=>({name,n:norm(name),ids,form:PF[name]?PF[name].split('·'):null}));
-function save(){store.set('adr.drugs',sel)}
+function save(){}
 
 /* ---------- 약 추가 ---------- */
 const q=$('drugq'), sg=$('sugg'); let hits=[],hi=0,dup=false;
 function search(){
   const t=norm(q.value); if(!t){sg.hidden=true;return}
-  const all=D.drugs.filter(d=>[d.ko,d.en,d.brand].some(x=>norm(x).includes(t))).map(d=>({ids:[d.id],label:d.ko,sub:d.en,side:d.brand}));
-  const pr=t.length>=2?PRODS.filter(p=>p.n.startsWith(t)||(t.length>=3&&p.n.includes(t))).slice(0,12).map(p=>({ids:p.ids,label:p.name,sub:p.form?p.form.join('·'):'제품',side:p.ids.map(i=>byId[i].ko).join(' + ')})):[];
+  const all=D.drugs.filter(d=>[d.ko,d.en,d.brand].some(x=>norm(x).includes(t))).map(d=>({ids:[d.id],label:dn(d),sub:EN()?d.ko:d.en,side:d.brand}));
+  const pr=t.length>=2?PRODS.filter(p=>p.n.startsWith(t)||(t.length>=3&&p.n.includes(t))).slice(0,12).map(p=>({ids:p.ids,label:p.name,sub:p.form?p.form.map(f=>EN()?(FEN[f]||f):f).join('·'):T('product'),side:p.ids.map(i=>dn(byId[i])).join(' + ')})):[];
   const both=all.concat(pr);
   hits=both.filter(h=>h.ids.some(i=>!sel.includes(i))).slice(0,10); dup=both.length>0&&!hits.length; hi=0; renderSugg();
 }
 function renderSugg(){
-  if(!hits.length){sg.innerHTML=`<button disabled><span>${dup?'이미 추가된 약입니다':'아직 DB에 없는 약입니다'}</span></button>`;sg.hidden=false;return}
+  if(!hits.length){sg.innerHTML=`<button disabled><span>${dup?T('dupDrug'):T('noDrug')}</span></button>`;sg.hidden=false;return}
   sg.innerHTML=hits.map((h,i)=>`<button type="button" data-i="${i}" class="${i===hi?'on':''}"><span>${esc(h.label)} <small>${esc(h.sub)}</small></span><small>${esc(h.side)}</small></button>`).join('');
   sg.hidden=false;
 }
@@ -121,18 +146,18 @@ function findDrugs(text){
 function addFromText(text,how){const f=findDrugs(text),added=f.filter(id=>!sel.includes(id));sel=sel.concat(added);save();render();
   track('drugs_found',{how,found:f.length,added:added.length});for(const id of added)track('drug_add',{drug:id,how});return{f,added}}
 $('pasteGo').onclick=()=>{const r=addFromText($('paste').value,'paste');
-  $('pasteMsg').textContent=r.f.length?`${r.added.length}개 추가 (찾은 약 ${r.f.length}개)`:'아는 약을 찾지 못했습니다';$('paste').value=''};
+  $('pasteMsg').textContent=T('pasteMsg',r.added.length,r.f.length);$('paste').value=''};
 $('clearAll').onclick=()=>{track('new_patient',{n:sel.length});sel=[];save();render();q.focus()};
 
 /* 현재 탭 화면 글자 읽기: 복사가 막힌 화면도 글자로 되어 있으면 읽을 수 있음 */
 $('scan').onclick=async()=>{
   const hint=$('drughint');
-  if(!(window.chrome&&chrome.scripting)){hint.textContent='확장 프로그램 안에서만 동작합니다.';return}
-  hint.textContent='화면을 읽는 중…';
+  if(!(window.chrome&&chrome.scripting)){hint.textContent=T('extOnly');return}
+  hint.textContent=T('reading');
   try{
     const [tab]=await chrome.tabs.query({active:true,lastFocusedWindow:true});
-    if(!tab){hint.textContent='처방창 탭을 연 상태에서 눌러주세요.';return}
-    if(tab.url&&!/^https?:/.test(tab.url)){hint.textContent='이 화면은 읽을 수 없습니다. 처방창 탭을 연 상태에서 눌러주세요.';return}
+    if(!tab){hint.textContent=T('openTab');return}
+    if(tab.url&&!/^https?:/.test(tab.url)){hint.textContent=T('cantRead');return}
     // 지금 화면에 실제로 보이는 글자만 읽음 (접힌 지난 처방·숨은 메뉴·툴팁은 제외)
     const READ=()=>{
       const out=[], W=innerWidth, H=innerHeight;
@@ -155,21 +180,21 @@ $('scan').onclick=async()=>{
     catch(e1){
       // 아직 이 사이트 권한이 없으면 한 번만 허용을 요청 (처방창 사이트 주소를 알면 그 사이트만)
       const origins=tab.url?[new URL(tab.url).origin+'/*']:['https://*/*','http://*/*'];
-      hint.textContent='처방창 화면을 읽도록 허용해 주세요.';
+      hint.textContent=T('allow');
       const ok=await chrome.permissions.request({origins});
-      if(!ok){track('scan_fail',{why:'perm_denied'});hint.textContent='허용하지 않아 화면을 읽지 못했습니다. 아이콘을 눌러 패널을 연 뒤 다시 시도하거나, 처방 목록 붙여넣기를 사용하세요.';return}
+      if(!ok){track('scan_fail',{why:'perm_denied'});hint.textContent=T('denied');return}
       res=await chrome.scripting.executeScript({target:{tabId:tab.id,allFrames:true},func:READ});
     }
     const text=res.map(r=>r.result||'').join('\n');
     const r=addFromText(text,'scan');
-    hint.textContent=r.f.length?`화면에서 약 ${r.f.length}개를 찾아 ${r.added.length}개 추가했습니다.`:(text.trim().length<20?'화면에서 글자를 읽지 못했습니다. 처방창이 그림 형태일 수 있어요.':'화면에서 아는 약을 찾지 못했습니다.');
-  }catch(e){track('scan_fail',{why:'error'});hint.textContent='화면을 읽지 못했습니다: '+(e&&e.message||e)}
+    hint.textContent=r.f.length?T('scanned',r.f.length,r.added.length):(text.trim().length<20?T('noText'):T('noKnown'));
+  }catch(e){track('scan_fail',{why:'error'});hint.textContent=T('scanErr')+(e&&e.message||e)}
 };
 function takePending(){
   if(!(window.chrome&&chrome.storage))return;
   chrome.storage.session.get('pending').then(o=>{if(!o.pending)return;chrome.storage.session.remove('pending');
     const r=addFromText(o.pending.text,'menu');
-    $('drughint').textContent=r.f.length?`선택한 글에서 ${r.added.length}개 추가했습니다.`:`"${o.pending.text.slice(0,30)}"에서 아는 약을 찾지 못했습니다.`})}
+    $('drughint').textContent=r.f.length?T('selAdded',r.added.length):T('selNone',o.pending.text.slice(0,30))})}
 if(window.chrome&&chrome.storage)chrome.storage.onChanged.addListener((c,a)=>{if(a==='session'&&c.pending&&c.pending.newValue)takePending()});
 
 /* ---------- 문제 직접 입력 ---------- */
@@ -179,7 +204,8 @@ hypoglycemia:'저혈당',hyperglycemia:'고혈당,혈당상승,혈당증가,혈�
 dizziness:'어지러,어지럼,현기증,빙빙',headache:'두통,머리가아,머리아',edema:'부종,부음,붓기,부어,붓고,다리부',angioedema:'혈관부종,입술부,얼굴부,입술이부',cough:'기침,마른기침',myalgia:'근육통,쥐가,쥐남,근육경련,근육이아',arthralgia:'관절',fatigue:'피곤,피로,무기력,기운,무력',rash:'발진,두드러기,가려,소양,피부',sjs:'sjs,ten,dress,스티븐스,표피괴사',
 nausea:'메스꺼,구역,구토,토해,울렁',diarrhea:'설사,묽은변',constipation:'변비',dyspepsia:'소화,속쓰림,복통,배가아,배아,위통,더부룩',insomnia:'불면,잠이안,잠을못',somnolence:'졸림,졸려,졸음,나른,진정',hypotension:'저혈압,기립,혈압이떨,혈압저하',bradycardia:'서맥,맥박이느,맥이느',palpitation:'두근,빈맥,심계항진,맥박이빠',
 urinary:'빈뇨,소변,배뇨,오줌,요저류',sexual:'발기,성기능,성욕,사정',flushing:'홍조,얼굴이붉,화끈',hair:'탈모,머리카락,머리빠',tinnitus:'이명,귀에서,청력',vision:'시야,눈이침침,시력,흐릿',dry_mouth:'입마름,입이마,구강건조',mood:'우울,불안,기분,초조',uti:'요로감염,방광염,질염,생식기감염',gi_bleed:'흑변,위출혈,궤양,토혈,검은변',dyspnea:'숨참,호흡곤란,숨이차,숨차',neuropathy:'저림,저려,감각,손발저'};
-for(const p of D.problems){const a=(ALIAS[p.id]||'').split(',').filter(Boolean);a.push(...p.name.split(/[·(),\s]+/).filter(x=>x.length>=2));p.alias=[...new Set(a.map(norm))]}
+for(const p of D.problems){const a=(ALIAS[p.id]||'').split(',').concat((I18N_EN.alias[p.id]||'').split(',')).filter(Boolean);a.push(...p.name.split(/[·(),\s]+/).filter(x=>x.length>=2));
+  a.push(...(I18N_EN.prob[p.id]||'').toLowerCase().split(/[\/(),]+/).map(x=>x.trim()).filter(x=>x.length>=3));p.alias=[...new Set(a.map(norm))]}
 function matchProblems(text){
   const t=norm(text); if(t.length<1)return[];
   const sc=[];
@@ -195,18 +221,18 @@ function trackProb(via){clearTimeout(probT);probT=setTimeout(()=>{if(!sel.length
   const hits=sel.filter(id=>byId[id].adr&&byId[id].adr[prob]).length;
   track('problem_lookup',{problem:m.length?prob:'unmatched_text',via,n_drugs:sel.length,n_hits:m.length?hits:-1})},via==='text'?2000:300)}
 const pq=$('probq');
-pq.addEventListener('input',()=>{const m=matchProblems(pq.value);ftq=pq.value.trim();if(m.length){prob=m[0];store.set('adr.prob',prob)}renderPMatch(m);renderProbs();ensure(sel).then(renderResult);if(pq.value.trim())trackProb('text')});
+pq.addEventListener('input',()=>{const m=matchProblems(pq.value);ftq=pq.value.trim();if(m.length){prob=m[0]}renderPMatch(m);renderProbs();ensure(sel).then(renderResult);if(pq.value.trim())trackProb('text')});
 function renderPMatch(m){
-  $('pmatch').innerHTML=m.map(id=>`<button class="pb" aria-pressed="${id===prob}" data-p="${id}">${esc(PROB[id].name)}</button>`).join('')+(pq.value.trim()&&!m.length?'<span class="hint">목록에 맞는 항목이 없어 첨부문서 본문에서 찾습니다.</span>':'');
-  $('pmatch').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{prob=b.dataset.p;store.set('adr.prob',prob);renderPMatch(m);renderProbs();ensure(sel).then(renderResult);trackProb('suggest')});
+  $('pmatch').innerHTML=m.map(id=>`<button class="pb" aria-pressed="${id===prob}" data-p="${id}">${esc(pn(PROB[id]))}</button>`).join('')+(pq.value.trim()&&!m.length?'<span class="hint">'+T('noMatch')+'</span>':'');
+  $('pmatch').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{prob=b.dataset.p;renderPMatch(m);renderProbs();ensure(sel).then(renderResult);trackProb('suggest')});
 }
 function renderProbs(){
   const t=$('tabs');
-  t.innerHTML=CATS.map(c=>`<button class="tab" role="tab" aria-selected="${c===cat}" data-c="${c}">${c}</button>`).join('');
-  t.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{cat=b.dataset.c;store.set('adr.cat',cat);renderProbs()});
+  t.innerHTML=CATS.map(c=>`<button class="tab" role="tab" aria-selected="${c===cat}" data-c="${c}">${esc(cn(c))}</button>`).join('');
+  t.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{cat=b.dataset.c;renderProbs()});
   $('probs').innerHTML=D.problems.filter(x=>x.category===cat).map(x=>{const n=sel.filter(id=>(byId[id].p||[]).includes(x.id)).length;
-    return `<button class="pb" aria-pressed="${x.id===prob}" data-p="${x.id}">${esc(x.name)}${n?` · ${n}`:''}</button>`}).join('');
-  $('probs').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{prob=b.dataset.p;store.set('adr.prob',prob);pq.value='';ftq='';renderPMatch([]);renderProbs();ensure(sel).then(renderResult);trackProb('list')});
+    return `<button class="pb" aria-pressed="${x.id===prob}" data-p="${x.id}">${esc(pn(x))}${n?` · ${n}`:''}</button>`}).join('');
+  $('probs').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{prob=b.dataset.p;pq.value='';ftq='';renderPMatch([]);renderProbs();ensure(sel).then(renderResult);trackProb('list')});
 }
 
 /* ---------- 첨부문서 본문 검색 ---------- */
@@ -235,46 +261,46 @@ function renderFT(){
   rows.sort((x,y)=>(y.hit?y.hit.lv:0)-(x.hit?x.hit.lv:0));
   const h=rows.filter(r=>r.hit), miss=rows.filter(r=>!r.hit);
   const open=!matchProblems(ftq).length;
-  box.innerHTML=`<details ${open?'open':''}><summary>첨부문서 본문에서 "${esc(ftq)}" 직접 찾기 (${h.length}개 약)</summary><div class="items" style="margin-top:8px">`+
-    h.map(({d,hit})=>`<div class="item"><div class="top"><span class="badge l${hit.lv}">${LV[hit.lv]}</span><span class="name">${esc(d.ko)}</span></div><blockquote style="margin:0;padding:8px 10px;background:var(--bg);border-radius:6px;font-size:.85rem;overflow-wrap:anywhere">${hit.snip}</blockquote><div class="hint">${esc(d.product)} · <a href="${link(d)}" target="_blank" rel="noopener">식약처 원문</a></div></div>`).join('')+
-    (h.length?'':'<div class="none">선택한 약의 이상반응·경고 항목에서 이 말을 찾지 못했습니다.</div>')+
-    (miss.length&&h.length?`<div class="none">언급 없음: ${miss.map(r=>esc(r.d.ko)).join(', ')}</div>`:'')+'</div></details>';
+  box.innerHTML=`<details ${open?'open':''}><summary>${esc(T('ftSum',ftq,h.length))}</summary><div class="items" style="margin-top:8px">`+
+    h.map(({d,hit})=>`<div class="item"><div class="top"><span class="badge l${hit.lv}">${LV[hit.lv]}</span><span class="name">${esc(dn(d))}</span></div><blockquote style="margin:0;padding:8px 10px;background:var(--bg);border-radius:6px;font-size:.85rem;overflow-wrap:anywhere">${hit.snip}</blockquote><div class="hint">${esc(d.product)} · <a href="${link(d)}" target="_blank" rel="noopener">${T('source')}</a></div></div>`).join('')+
+    (h.length?'':'<div class="none">'+T('ftNone')+'</div>')+
+    (miss.length&&h.length?`<div class="none">${T('ftMiss')}${miss.map(r=>esc(dn(r.d))).join(', ')}</div>`:'')+'</div></details>';
 }
 
 /* ---------- 결과 ---------- */
 function renderResult(){
   const matched=!ftq||matchProblems(ftq).length;
   if(matched){
-    const P=PROB[prob]; $('rtitle').textContent=`${P.name}: 원인 가능성이 있는 약`;
+    const P=PROB[prob]; $('rtitle').textContent=T('rtitle',pn(P));
     const rows=sel.map(id=>({d:byId[id],a:byId[id].adr[prob]})).sort((x,y)=>(y.a?y.a[0]:0)-(x.a?x.a[0]:0));
     const hit=rows.filter(r=>r.a),miss=rows.filter(r=>!r.a);
-    let h=hit.map(({d,a})=>`<div class="item"><div class="top"><span class="badge l${a[0]}">${LV[a[0]]}</span><span class="name">${esc(d.ko)}${ftag(d)}</span>${d.tier===2?'<span class="tier2">자동 선정 문서</span>':''}<span class="freq">첨부문서: ${esc(a[1])}</span></div>
-      <details><summary>근거 문장 보기</summary><blockquote>${esc(a[2])}</blockquote><div class="hint">${esc(d.product)} · <a href="${link(d)}" target="_blank" rel="noopener">식약처 원문</a></div></details></div>`).join('');
-    if(!sel.length)h='<div class="none">위에서 약을 먼저 추가하세요.</div>';
-    else if(!hit.length)h+='<div class="none">선택한 약의 첨부문서에서 이 문제를 찾지 못했습니다.</div>';
-    if(miss.length&&hit.length)h+=`<div class="none">첨부문서에 언급 없음: ${miss.map(r=>esc(r.d.ko)).join(', ')}</div>`;
+    let h=hit.map(({d,a})=>`<div class="item"><div class="top"><span class="badge l${a[0]}">${LV[a[0]]}</span><span class="name">${esc(dn(d))}${ftag(d)}</span>${d.tier===2?`<span class="tier2">${T('autoDoc')}</span>`:''}<span class="freq">${T('label')}${esc(fq(a[1]))}</span></div>
+      <details><summary>${T('evidence')}</summary><blockquote>${esc(a[2])}</blockquote><div class="hint">${esc(d.product)} · <a href="${link(d)}" target="_blank" rel="noopener">${T('source')}</a></div></details></div>`).join('');
+    if(!sel.length)h='<div class="none">'+T('addFirst')+'</div>';
+    else if(!hit.length)h+='<div class="none">'+T('notFound')+'</div>';
+    if(miss.length&&hit.length)h+=`<div class="none">${T('notMentioned')}${miss.map(r=>esc(dn(r.d))).join(', ')}</div>`;
     $('items').innerHTML=h;
-  }else{$('rtitle').textContent=`"${ftq}": 원인 가능성이 있는 약`;$('items').innerHTML='<div class="hint">정리된 항목에 없는 말이라 첨부문서 원문에서 바로 찾았습니다. 근거 문장을 꼭 확인하세요.</div>'}
+  }else{$('rtitle').textContent=T('rtitle',`"${ftq}"`);$('items').innerHTML='<div class="hint">'+T('ftOnly')+'</div>'}
   renderFT();
 }
 const TAGCLS={'금기':'t-금기','용량 조절':'t-용량','주의':'t-주의','조절 불필요':'t-불필요'};
 document.querySelectorAll('#otabs .tab').forEach(b=>b.onclick=()=>{organTab=b.dataset.o;track('organ_tab',{tab:organTab,n_drugs:sel.length});document.querySelectorAll('#otabs .tab').forEach(x=>x.setAttribute('aria-selected',x===b));renderOrgan()});
 function renderOrgan(){
   $('organ').innerHTML=sel.map(id=>{const d=byId[id],g=d.organ[organTab];
-    const tags=g.t.length?g.t.map(t=>`<span class="tag ${TAGCLS[t]}">${t}</span>`).join(''):'<span class="tag t-불필요">언급 없음</span>';
-    const ev=g.e.length?`<details><summary>근거 문장 보기</summary>${g.e.map(e=>`<blockquote><b>${esc(e[0])}</b> · ${esc(e[1])}</blockquote>`).join('')}<div class="hint"><a href="${link(d)}" target="_blank" rel="noopener">식약처 원문</a></div></details>`:'';
-    return `<div class="og"><div class="top"><span class="name"><b>${esc(d.ko)}</b></span>${tags}</div>${ev}</div>`}).join('')||'<span class="none">약을 추가하면 여기에 표시됩니다.</span>';
+    const tags=g.t.length?g.t.map(t=>`<span class="tag ${TAGCLS[t]}">${esc(tn(t))}</span>`).join(''):`<span class="tag t-불필요">${T('noMention')}</span>`;
+    const ev=g.e.length?`<details><summary>${T('evidence')}</summary>${g.e.map(e=>`<blockquote><b>${esc(tn(e[0]))}</b> · ${esc(e[1])}</blockquote>`).join('')}<div class="hint"><a href="${link(d)}" target="_blank" rel="noopener">${T('source')}</a></div></details>`:'';
+    return `<div class="og"><div class="top"><span class="name"><b>${esc(dn(d))}</b></span>${tags}</div>${ev}</div>`}).join('')||`<span class="none">${T('organEmpty')}</span>`;
 }
 function renderChips(){
   const c=$('chips');
-  c.innerHTML=sel.map(id=>`<span class="chip">${esc(byId[id].ko)}<button type="button" aria-label="${esc(byId[id].ko)} 빼기" data-rm="${id}">×</button></span>`).join('')||'<span class="none">약을 하나 이상 추가하세요.</span>';
+  c.innerHTML=sel.map(id=>`<span class="chip">${esc(dn(byId[id]))}<button type="button" aria-label="${esc(T('remove',dn(byId[id])))}" data-rm="${id}">×</button></span>`).join('')||`<span class="none">${T('chipsEmpty')}</span>`;
   c.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{sel=sel.filter(x=>x!==b.dataset.rm);save();render()});
 }
 function render(){renderChips();renderProbs();ensure(sel).then(()=>{renderResult();renderOrgan()})}
 if(!IS_EXT){$('scan').hidden=true}
 try{if(!localStorage.getItem('adr.introOk')){$('intro').hidden=false}}catch(e){$('intro').hidden=false}
 $('introOk').onclick=()=>{$('intro').hidden=true;try{localStorage.setItem('adr.introOk','1');localStorage.setItem('adr.stats',$('statsOk').checked?'1':'0')}catch(e){};renderStats();track('intro_ok')};
-function renderStats(){const on=STATS.on();$('statsState').textContent=on?'익명 사용 통계 보내는 중':'사용 통계 꺼짐';$('statsToggle').textContent=on?'끄기':'켜기'}
+function renderStats(){const on=STATS.on();$('statsState').textContent=on?T('statsOn'):T('statsOff');$('statsToggle').textContent=on?T('off'):T('on')}
 $('statsToggle').onclick=()=>{const on=STATS.on();if(on){track('stats_off');STATS.flush()}try{localStorage.setItem('adr.stats',on?'0':'1')}catch(e){};renderStats()};
 renderStats();
 document.addEventListener('toggle',e=>{const d=e.target;if(d.tagName==='DETAILS'&&d.open&&d.closest('#items,#organ,#ft'))track('evidence_open',{where:d.closest('#items,#organ,#ft').id})},true);
@@ -287,5 +313,7 @@ if(adsrc){const f=$('adframe');f.src=adsrc;f.onload=()=>{$('adbox').hidden=false
   // 광고 페이지는 노출·클릭 신호만 보낼 수 있고, 이쪽 내용은 볼 수 없습니다
   addEventListener('message',e=>{if(e.source!==f.contentWindow||!e.data||typeof e.data!=='object')return;
     const id=String(e.data.ad||'').slice(0,40);if(e.data.adr==='ad_view')track('ad_view',{ad:id});else if(e.data.adr==='ad_click')track('ad_click',{ad:id})})}
+$('langBtn').onclick=()=>{LANG=LANG==='en'?'ko':'en';try{localStorage.setItem('adr.lang',LANG)}catch(e){};track('lang',{lang:LANG});
+  applyStatic();renderMeta();renderStats();renderPMatch(pq.value.trim()?matchProblems(pq.value):[]);render()};
 render();takePending();
 }

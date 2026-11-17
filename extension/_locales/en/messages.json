@@ -1,0 +1,20 @@
+{
+  "extName": {
+    "message": "MediScan Pro - Drug Adverse Effect & Side Effect Checker"
+  },
+  "extShortName": {
+    "message": "MediScan Pro"
+  },
+  "extDesc": {
+    "message": "Drug adverse effect & side effect checker: find drugs that may cause renal decline, high liver enzymes or new symptoms."
+  },
+  "actionTitle": {
+    "message": "Open MediScan Pro"
+  },
+  "menuAdd": {
+    "message": "Add to MediScan Pro: \"%s\""
+  },
+  "cmdOpen": {
+    "message": "Open side panel"
+  }
+}
