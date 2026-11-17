@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>같이 먹어도 되나요? · 약 바로알기</title>
+<meta name="description" content="감기약, 진통제, 처방약을 함께 먹을 때 같은 성분이 겹치는지 확인하세요.">
+<link rel="icon" href="../icon-192.png">
+<link rel="stylesheet" href="portal.css">
+</head>
+<body data-page="check" data-base="">
+<main><div class="wrap">
+  <h1>같이 먹어도 되나요?</h1>
+  <p class="lead">먹고 있거나 먹으려는 약을 하나씩 넣어 보세요. 같은 성분이 두 번 들어가는지, 비슷한 계열의 약이 겹치는지 알려드려요. 입력한 약은 이 기기 밖으로 보내지 않아요.</p>
+  <div class="search" style="margin-bottom:12px">
+    <input id="q" type="search" placeholder="약 이름 입력 후 목록에서 고르기 (예: 판콜에이내복, 타이레놀)" autocomplete="off" aria-label="약 추가">
+    <div class="sugg" id="sugg" hidden></div>
+  </div>
+  <div class="chips" id="list"></div>
+  <div id="out" style="margin-top:20px"></div>
+  <div class="note" style="margin-top:24px">이 확인은 <b>성분 이름이 겹치는지</b>만 봅니다. 약끼리 서로 효과를 바꾸는 상호작용은 아직 확인하지 않아요. 처방약을 드시는 중이라면 일반약을 사기 전에 약사에게 지금 먹는 약을 알려 주세요.</div>
+</div></main>
+<script src="portal.js"></script>
+<script>
+const {esc,load}=Portal;
+// 같은 계열 묶음 (참고용, 의사 감수 필요)
+const GROUPS=[
+  {name:'소염진통제(NSAID)',why:'위장 출혈, 신장 부담이 커질 수 있어요. 보통 한 가지만 먹어요.',ids:['ibuprofen','dexibuprofen','naproxen','loxoprofen','aceclofenac','celecoxib','meloxicam','diclofenac','pelubiprofen','talniflumate','etodolac','zaltoprofen','piroxicam','ketorolac','mefenamic_acid','nabumetone','etoricoxib','polmacoxib']},
+  {name:'졸릴 수 있는 항히스타민제',why:'졸음, 입마름, 어르신의 혼동이 심해질 수 있어요.',ids:['chlorpheniramine','diphenhydramine','doxylamine','hydroxyzine','cyproheptadine','promethazine','dimenhydrinate','mequitazine','clemastine']},
+  {name:'코막힘 성분(혈관 수축제)',why:'혈압이 오르거나 가슴이 두근거릴 수 있어요.',ids:['pseudoephedrine','methylephedrine','ephedrine']},
+];
+let picked=[];const listEl=document.getElementById('list'),out=document.getElementById('out');
+Portal.attachSearch(document.getElementById('q'),document.getElementById('sugg'),it=>{
+  if(!picked.some(p=>p.label===it.label))picked.push(it);document.getElementById('q').value='';render();
+});
+listEl.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b){picked.splice(+b.dataset.i,1);render()}});
+(async()=>{const s=new URLSearchParams(location.search).get('items');if(!s)return;const db=await load();
+  for(const name of s.split('|')){const ids=db.d.products[name];if(ids)picked.push({label:name,ids});else{const r=Portal.search(db,name,1)[0];if(r)picked.push(r)}}render()})();
+async function render(){
+  listEl.innerHTML=picked.map((p,i)=>`<span class="chip">${esc(p.label)} <button data-i="${i}" aria-label="${esc(p.label)} 빼기" style="border:0;background:none;color:var(--muted);cursor:pointer;font:inherit">✕</button></span>`).join('');
+  if(picked.length<2){out.innerHTML=picked.length?'<p style="color:var(--muted)">약을 하나 더 넣어 주세요.</p>':'';return}
+  const db=await load();const name=id=>db.byId[id]?.ko||id;
+  const by={};picked.forEach(p=>p.ids.forEach(id=>(by[id]=by[id]||[]).push(p.label)));
+  const dup=Object.entries(by).filter(([,v])=>v.length>1);
+  const grp=GROUPS.map(g=>{const hit=picked.filter(p=>p.ids.some(id=>g.ids.includes(id)));return{...g,hit}}).filter(g=>g.hit.length>1);
+  let h='';
+  if(dup.length)h+=`<div class="alert"><b>같은 성분이 겹쳐요</b><ul>${dup.map(([id,v])=>`<li><b>${esc(name(id))}</b> — ${v.map(esc).join(', ')}${id==='acetaminophen'?' · <a href="guide/acetaminophen.html">하루 최대량 확인</a>':''}</li>`).join('')}</ul>같은 성분을 두 제품으로 먹으면 하루 권장량을 넘기기 쉬워요. 한 가지만 먹거나 약사와 상의하세요.</div>`;
+  const grpOnly=grp.filter(g=>!dup.some(([id,v])=>g.ids.includes(id)&&v.length===g.hit.length));
+  if(grpOnly.length)h+=`<div class="note" style="margin-top:12px"><b>비슷한 계열이 겹쳐요</b> <span class="tag draft">참고</span><ul>${grpOnly.map(g=>`<li><b>${esc(g.name)}</b> — ${g.hit.map(p=>esc(p.label)).join(', ')}<br><span style="color:var(--muted)">${esc(g.why)}</span></li>`).join('')}</ul></div>`;
+  if(!h)h='<div class="card"><b>겹치는 성분을 찾지 못했어요.</b><div style="color:var(--muted)">그래도 처음 같이 먹는 약이라면 약사에게 한 번 확인받으세요.</div></div>';
+  h+=`<h2>넣은 약의 성분</h2><div class="tablewrap"><table><tr><th>약</th><th>성분</th></tr>${picked.map(p=>`<tr><td>${esc(p.label)}</td><td>${p.ids.map(id=>db.byId[id]?`<a href="drug.html?id=${encodeURIComponent(id)}">${esc(name(id))}</a>`:esc(id)).join(', ')}</td></tr>`).join('')}</table></div>`;
+  out.innerHTML=h;
+}
+</script>
+</body>
+</html>

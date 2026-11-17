@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>약 사전 · 약 바로알기</title>
+<meta name="description" content="식약처 허가정보 기준 약 사전. 성분과 제품별 이상반응, 신장·간 주의 사항.">
+<link rel="icon" href="../icon-192.png">
+<link rel="stylesheet" href="portal.css">
+</head>
+<body data-page="drug" data-base="">
+<main><div class="wrap">
+  <h1 id="title">약 사전</h1>
+  <p class="lead" id="lead">제품명이나 성분명으로 찾아보세요. 식약처 첨부문서에 적힌 이상반응을 가능성 단계로 보여드려요.</p>
+  <div class="search" style="margin-bottom:24px">
+    <input id="q" type="search" placeholder="예: 타이레놀, 판콜, 로수바스타틴" autocomplete="off" aria-label="약 검색">
+    <div class="sugg" id="sugg" hidden></div>
+  </div>
+  <div id="out"></div>
+</div></main>
+<script src="portal.js"></script>
+<script>
+const {esc,DATA,load}=Portal;
+const out=document.getElementById('out');
+const LV={4:'높음',3:'가능성 있음',2:'낮음',1:'매우 드묾'};
+const LVTXT={4:'흔하게 보고된 이상반응',3:'보고된 적 있는 이상반응 (빈도 정보가 없거나 때때로)',2:'드물게 보고된 이상반응',1:'매우 드물게 보고된 이상반응'};
+const ORG={'금기':'이 약을 쓰면 안 되는 경우가 있어요','용량 조절':'양을 줄이거나 간격을 늘려야 할 수 있어요','주의':'주의해서 써야 해요','조절 불필요':'대개 양을 바꿀 필요가 없어요'};
+const nedrug=seq=>`https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${seq}`;
+Portal.attachSearch(document.getElementById('q'),document.getElementById('sugg'),it=>{
+  const u=it.type==='product'?'?p='+encodeURIComponent(it.label):'?id='+encodeURIComponent(it.ids[0]);
+  history.pushState(null,'',u);route();
+});
+addEventListener('popstate',route);
+route();
+
+async function route(){
+  const sp=new URLSearchParams(location.search);
+  if(sp.get('id'))return showDrug(sp.get('id'));
+  if(sp.get('p'))return showProduct(sp.get('p'));
+  document.getElementById('title').textContent='약 사전';
+  out.innerHTML=`<div class="note">이 사전은 식약처 허가정보에서 성분마다 대표 제품 1개의 첨부문서를 골라 정리했어요. 같은 성분이라도 제품에 따라 문구가 조금 다를 수 있어요.</div>`;
+}
+async function showProduct(name){
+  const db=await load();const ids=db.d.products[name];
+  if(!ids){out.innerHTML='<p>제품을 찾지 못했어요.</p>';return}
+  if(ids.length===1&&db.byId[ids[0]])return showDrug(ids[0],name);
+  document.title=name+' · 약 바로알기';
+  document.getElementById('title').textContent=name;
+  out.innerHTML=`<p class="lead">이 제품에는 성분이 ${ids.length}가지 들어 있어요. 성분을 눌러 이상반응을 확인하세요.</p>
+  <div class="grid">${ids.map(id=>{const x=db.byId[id];return x?`<a class="tile" href="?id=${encodeURIComponent(id)}"><b>${esc(x.ko||x.en)}</b><span>${esc(x.en)}</span></a>`:`<div class="tile"><b>${esc(id)}</b><span>아직 사전에 없는 성분이에요</span></div>`}).join('')}</div>
+  <p class="note" style="margin-top:20px">다른 감기약·진통제와 같이 먹을 생각이라면 <a href="check.html?items=${encodeURIComponent(name)}">성분이 겹치는지 확인</a>해 보세요.</p>`;
+}
+async function showDrug(id,fromProduct){
+  const db=await load();const x=db.byId[id];
+  if(!x){out.innerHTML='<p>이 성분은 아직 사전에 없어요.</p>';return}
+  document.title=(x.ko||x.en)+' 이상반응과 주의사항 · 약 바로알기';
+  document.getElementById('title').textContent=x.ko||x.en;
+  out.innerHTML='<p>불러오는 중…</p>';
+  let r;try{r=await fetch(DATA+'d/'+x.f+'.json').then(r=>r.json())}catch(e){out.innerHTML='<p>자료를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.</p>';return}
+  const groups={4:[],3:[],2:[],1:[]};
+  for(const [pid,[lv,freq,q]] of Object.entries(r.adr||{})){const p=db.probs[pid];(groups[lv]||groups[3]).push({name:p?p.name:pid,cat:p?p.category:'',freq,q})}
+  const same=db.prods.filter(p=>p.ids.length===1&&p.ids[0]===id).map(p=>p.name);
+  const combo=db.prods.filter(p=>p.ids.length>1&&p.ids.includes(id)).length;
+  const organ=r.organ||{};
+  const orgRow=(k,label)=>{const o=organ[k];if(!o||!o.t||!o.t.length)return`<dt>${label}</dt><dd style="color:var(--muted)">첨부문서에 따로 적힌 내용을 찾지 못했어요</dd>`;
+    return`<dt>${label}</dt><dd>${o.t.map(t=>`<b>${esc(t)}</b> · ${esc(ORG[t]||'')}`).join('<br>')}${(o.e||[]).slice(0,2).map(e=>`<div class="q">“${esc(e[1])}”</div>`).join('')}</dd>`};
+  const date=r.date?`${r.date.slice(0,4)}.${r.date.slice(4,6)}.${r.date.slice(6,8)}`:'';
+  out.innerHTML=`
+  <p class="lead">${esc(x.en)}${fromProduct?` · <b>${esc(fromProduct)}</b>의 성분`:''}</p>
+  <div class="card" style="margin-bottom:16px"><dl class="kv">
+    <dt>기준 문서</dt><dd>${esc(r.product)} 첨부문서${date?` (식약처 변경일 ${date})`:''} · <a href="${nedrug(r.seq)}" target="_blank" rel="noopener">식약처 원문 보기</a></dd>
+    <dt>같은 성분 제품</dt><dd>${same.length?esc(same.slice(0,12).join(', '))+(same.length>12?` 외 ${same.length-12}개`:''):'—'}${combo?` · 이 성분이 든 복합제 ${combo}개`:''}</dd>
+  </dl></div>
+  <p class="alert">이상반응 목록은 "이런 일이 보고된 적이 있다"는 뜻이지, 누구에게나 생긴다는 뜻이 아니에요. 걱정되는 증상이 있어도 약을 스스로 끊지 말고 의사·약사와 먼저 상의하세요.</p>
+  <h2>흔하게 보고되는 순서로 본 이상반응</h2>
+  ${[4,3,2,1].filter(l=>groups[l].length).map(l=>`<h3><span class="lv lv${l}">${LV[l]}</span> <span style="font-weight:400;color:var(--muted);font-size:.9rem">${LVTXT[l]}</span></h3>
+  <div class="card"><ul class="adr">${groups[l].map(a=>`<li><div><b>${esc(a.name)}</b> <span style="color:var(--muted);font-size:.85rem">${esc(a.cat)}</span><div class="q">“${esc(a.q)}”</div></div></li>`).join('')}</ul></div>`).join('')||'<p>정리된 이상반응이 없어요. 원문을 확인해 주세요.</p>'}
+  <h2>신장·간이 약한 분</h2>
+  <div class="card"><dl class="kv">${orgRow('renal','신장')}${orgRow('hepatic','간')}</dl></div>
+  <h2>더 해 볼 수 있는 것</h2>
+  <div class="grid">
+    <a class="tile" href="../"><b>이 증상, 이 약 때문일까?</b><span>먹는 약을 모두 넣고 증상으로 찾아보기</span></a>
+    <a class="tile" href="check.html"><b>같이 먹어도 되나요?</b><span>다른 약과 성분이 겹치는지 확인</span></a>
+  </div>
+  <p style="color:var(--muted);font-size:.85rem;margin-top:24px">첨부문서 문장을 규칙에 따라 자동으로 분류한 결과라 빠지거나 잘못 분류된 항목이 있을 수 있어요. 정확한 내용은 식약처 원문을 확인하세요. <a href="about.html#report">오류 신고</a></p>`;
+  scrollTo({top:0});
+}
+</script>
+</body>
+</html>
