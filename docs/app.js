@@ -122,24 +122,25 @@ const fsel=$('formsel');
 if(fsel){fsel.querySelectorAll('input').forEach(i=>{i.checked=FORMS.includes(i.value);i.onchange=()=>{
   FORMS=[...fsel.querySelectorAll('input:checked')].map(x=>x.value);store.set('adr.forms',FORMS);track('forms_set',{forms:FORMS.join(',')})}})}
 const formOk=fs=>{const f=(fs&&fs.length?fs:['경구']).map(x=>x==='기타'?'주사':x);return f.some(x=>FORMS.includes(x))};
-// 성분명 바로 뒤에 "주사·주·연고·점안" 등이 붙어 있으면 그 제형을 켰을 때만 인정
-const SUF={주사:/^[가-힣]{0,6}?(주사|주\b|주\d|주[(\s,]|수액)/,외용:/^[가-힣]{0,6}?(연고|크림|겔|로션|패취|패치|플라스타|점안|점비|점이|좌제|외용|스프레이|흡입)/};
-function hitKey(t,k){let i=t.indexOf(k);while(i>=0){const after=t.slice(i+k.length,i+k.length+12);
-  const blocked=Object.entries(SUF).some(([f,rx])=>!FORMS.includes(f)&&rx.test(after));
-  if(!blocked)return true; i=t.indexOf(k,i+1)}return false}
+// 이름 바로 뒤에 붙은 말로 그 자리의 제형을 판단: 주사·주 → 주사, 연고·점안 등 → 외용, 정·캡슐·시럽 등 → 먹는 약
+const SUF={주사:/^[가-힣]{0,6}?(주사|주(?![가-힣])|수액)/,외용:/^[가-힣]{0,6}?(연고|크림|겔|로션|패취|패치|플라스타|점안|점비|점이|좌제|외용|스프레이|흡입)/,경구:/^[가-힣]{0,6}?(정|캡슐|캅셀|서방|시럽|산|과립|현탁|액|츄|엘릭서|환)/};
+function formAt(t,i,len){const after=t.slice(i+len,i+len+12);for(const f of ['주사','외용','경구'])if(SUF[f].test(after))return f;return null}
+// 글 속에서 이름 k 가 고른 제형으로 쓰인 곳이 하나라도 있으면 인정. 제형을 알 수 없는 자리는 그 약(제품)의 제형으로 판단
+function hitKey(t,k,forms,needSuf){let i=t.indexOf(k);while(i>=0){const f=formAt(t,i,k.length);
+  if(f?FORMS.includes(f):(!needSuf&&formOk(forms)))return true; i=t.indexOf(k,i+1)}return false}
 function findDrugs(text){
   const t=norm(text), found=[];
   for(const d of D.drugs){
     if(!formOk(d.form))continue;
-    // 두 글자 이름(예: 미보)은 뒤에 정·캡슐 등 제형이 붙을 때만 인정 (다른 낱말 속 글자와 헷갈리지 않게)
-    const keys=[d.ko,d.en,d.brand].filter(Boolean).map(norm).map(k=>k.replace(/\(.*\)$/,'')).filter(k=>k.length>=3||(k.length===2&&/[가-힣]/.test(k)));
+    // 두 글자 이름(예: 미보)은 뒤에 정·캡슐·주 등 제형이 붙을 때만 인정 (다른 낱말 속 글자와 헷갈리지 않게)
+    const keys=[d.ko,d.en,d.brand].filter(Boolean).map(norm).map(k=>k.replace(/\(.*$/,'')).filter(k=>k.length>=3||(k.length===2&&/[가-힣]/.test(k)));
     if(d.id==='amoxicillin/clavulanate')keys.push('아목시실린','클라불란');
-    if(keys.some(k=>k.length>=3?hitKey(t,k):new RegExp(k+'(정|캡슐|서방|시럽|산|액|연고|크림|주)').test(t)))found.push(d.id);
+    if(keys.some(k=>hitKey(t,k,d.form,k.length<3)))found.push(d.id);
   }
-  // 제품명(1만 4천 개)으로 찾기: 3글자 이상은 그대로, 2글자는 뒤에 제형(정·캡슐 등)이 붙을 때만
+  // 제품명(2만 개)으로 찾기: 3글자 이상은 그대로, 2글자는 뒤에 제형이 붙을 때만
   for(const p of PRODS){
-    if(p.form&&!formOk(p.form))continue;
-    if(p.n.length>=3?t.includes(p.n):new RegExp(p.n+'(정|캡슐|서방|시럽|산|액)').test(t)) for(const id of p.ids) if(!found.includes(id)) found.push(id);
+    if(!formOk(p.form))continue;
+    if(hitKey(t,p.n,p.form,p.n.length<3)) for(const id of p.ids) if(!found.includes(id)) found.push(id);
   }
   return found;
 }

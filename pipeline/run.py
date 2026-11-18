@@ -214,8 +214,8 @@ def main():
         if i % 100 == 0: print("추출", i, "/", len(drugs), flush=True)
     known = {x["id"] for x in index}
     prod_idx = {k: sorted(v & known) for k, v in products.items() if v & known}
-    # 경구 제형이 없는 제품명만 제형을 적어 둠 (화면 읽기에서 주사·외용을 따로 켜고 끌 수 있게)
-    pform = {k: "·".join(sorted(pforms[k], key="경구주사외용기타".index)) for k in prod_idx if "경구" not in pforms[k]}
+    # 먹는 약만 있는 제품명이 아니면 제형을 적어 둠 (화면 읽기에서 주사·외용을 따로 켜고 끌 수 있게)
+    pform = {k: "·".join(sorted(pforms[k], key="경구주사외용기타".index)) for k in prod_idx if pforms[k] != {"경구"}}
     # 약 상자 바코드 → 제품명(또는 성분 목록). 표준코드 880+업체4+품목4 의 가운데 8자리를 열쇠로 씀.
     # 바코드를 모아 둔 pipeline/barcodes.json 이 우선이고, 없으면 보험코드(EDI) 앞 8자리로 대신함 (대부분 같음)
     bpath = os.path.join(HERE, "barcodes.json"); bars = json.load(open(bpath)) if os.path.exists(bpath) else {}
