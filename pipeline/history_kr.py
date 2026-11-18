@@ -9,7 +9,7 @@ run.py 가 받아 둔 목록(.cache/list.json)이 있으면 그대로 씁니다.
 """
 import argparse, json, os, re, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from run import fetch_list
+from run import fetch_list, base_name, SPEC
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -35,6 +35,34 @@ def first_permits(items, drugs):
                             "entp": p.get("ENTP_NAME"), "cancel": p.get("CANCEL_NAME") not in (None, "", "정상"), "count": n}
     return out
 
+def all_first_permits(items, index, skip):
+    """약 사전의 성분 전체(skip 제외)에 대해 가장 이른 국내 허가 품목을 찾음. 점 타임라인의 작은 점에 씀."""
+    rxs, by_tok = {}, {}
+    for d in index:
+        gid = d["id"]
+        if gid in skip: continue
+        rxs[gid] = re.compile(SPEC.get(gid, r"(?<![a-z])" + re.escape(gid) + r"(?![a-z])"))
+        tok = re.findall(r"[a-z0-9]{3,}", gid)
+        by_tok.setdefault(tok[0] if tok and gid not in SPEC else "*", []).append(gid)
+    always = by_tok.pop("*", [])
+    best = {}
+    for p in items:
+        name = p.get("ITEM_NAME") or ""
+        date = re.sub(r"\D", "", str(p.get("ITEM_PERMIT_DATE") or ""))
+        if len(date) != 8 or "수출용" in name: continue
+        raw = (p.get("ITEM_INGR_NAME") or "").lower()
+        s = base_name(raw) + " " + raw
+        toks = set(re.findall(r"[a-z0-9]{3,}", s))
+        for gid in always + [g for t in toks for g in by_tok.get(t, ())]:
+            if rxs[gid].search(s) and (gid not in best or date < best[gid][0]):
+                best[gid] = (date, name, p.get("ITEM_SEQ"))
+    out = []
+    for d in index:
+        b = best.get(d["id"])
+        if b: out.append([d["id"], d["ko"], d.get("brand") or "", f"{b[0][:4]}-{b[0][4:6]}-{b[0][6:]}", b[1], b[2]])
+    out.sort(key=lambda r: r[3])
+    return out
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="docs/data"); ap.add_argument("--cache", default=".cache")
@@ -44,6 +72,11 @@ def main():
     drugs = json.load(open(os.path.join(ROOT, "docs", "portal", "history.json")))["drugs"]
     out = first_permits(items, drugs)
     json.dump(out, open(os.path.join(a.out, "history_kr.json"), "w"), ensure_ascii=False, indent=0)
+    index = json.load(open(os.path.join(a.out, "index.json")))["drugs"]
+    allp = all_first_permits(items, index, {d["id"] for d in drugs})
+    json.dump({"note": "약 사전 성분별 가장 이른 국내 허가 품목: [id, 한글명, 대표 제품, 허가일, 품목명, 품목기준코드]", "items": allp},
+              open(os.path.join(a.out, "history_all.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+    print("전체 성분 국내 허가 기록", len(allp), "/", len(index))
     print("국내 첫 허가일", len(out), "/", len(drugs))
     for d in drugs:
         r = out.get(d["id"])

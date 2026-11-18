@@ -1,0 +1,28 @@
+# 임시: 타임라인 PR 브랜치에서 국내 첫 허가일을 한 번 채우고 지울 워크플로
+name: 국내 첫 허가일 채우기 (임시)
+on:
+  push:
+    branches: [claude/project-thread-n5k9kh]
+    paths: [.github/workflows/history-kr-once.yml]
+permissions:
+  contents: write
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 제품 허가 목록에서 국내 첫 허가일 찾기
+        env:
+          MFDS_KEY: ${{ secrets.MFDS_KEY }}
+        run: python3 pipeline/history_kr.py --out docs/data --cache .cache
+      - name: 결과 올리기
+        run: |
+          git config user.name "data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add docs/data/history_kr.json docs/data/history_all.json
+          git diff --cached --quiet || git commit -m "국내 첫 허가일 채우기"
+          git push
