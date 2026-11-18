@@ -25,19 +25,21 @@
   --c-pain:#f0848d;--c-inf:#8ab8e6;--c-cv:#f0a060;--c-neuro:#b99cf0;--c-meta:#4cc9a6;--c-onc:#e3bd52;--c-gi:#5fc9d9;--c-etc:#b4bdb9;
   position:relative;border-radius:var(--radius);overflow:hidden;color:var(--s-ink);user-select:none;-webkit-user-select:none;
   background:radial-gradient(120% 90% at 50% 110%,#12302a 0,transparent 60%),var(--s-bg);box-shadow:var(--shadow-lg)}
-.plot{position:relative;height:340px;touch-action:pan-y;cursor:grab;overflow:hidden;overflow:clip}
+.plot{position:relative;height:420px;touch-action:pan-y;cursor:grab;overflow:hidden;overflow:clip}
 .plot.drag{cursor:grabbing}
-@media (max-width:640px){.plot{height:330px}}
+@media (max-width:640px){.plot{height:380px}}
+.plot canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.plot.hit{cursor:pointer}
 .era{position:absolute;top:0;bottom:0;border-left:1px dashed var(--s-line);pointer-events:none}
 .era span{position:absolute;top:48px;left:10px;font-size:.74rem;font-weight:600;color:var(--s-muted);white-space:nowrap;letter-spacing:.01em}
 .base{position:absolute;left:0;right:0;bottom:44px;height:1px;background:var(--s-line)}
 .tick{position:absolute;bottom:0;height:44px;transform:translateX(-50%);font-size:.72rem;color:var(--s-muted);font-variant-numeric:tabular-nums;pointer-events:none;padding-top:14px}
 .tick::before{content:"";position:absolute;left:50%;top:0;width:1px;height:6px;background:var(--s-line)}
-.pt{position:absolute;left:-10px;bottom:-10px;width:20px;height:20px;border:0;padding:0;background:none;cursor:pointer;will-change:transform;border-radius:50%}
-.pt i{position:absolute;left:4px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 0 var(--c);transition:transform .25s cubic-bezier(.2,.9,.3,1.4),box-shadow .25s,opacity .3s}
-.pt b{position:absolute;left:22px;top:1px;font-size:.76rem;font-weight:600;white-space:nowrap;color:var(--s-ink);opacity:0;transition:opacity .25s;pointer-events:none}
-.labels .pt b{opacity:.88}
-.pt:hover i,.pt:focus-visible i,.pt.on i{transform:scale(1.7);box-shadow:0 0 0 6px color-mix(in srgb,var(--c) 22%,transparent),0 0 18px var(--c)}
+.pt{position:absolute;left:-13px;bottom:-13px;width:26px;height:26px;z-index:2;border:0;padding:0;background:none;cursor:pointer;will-change:transform;border-radius:50%}
+.pt i{position:absolute;left:5px;top:5px;width:16px;height:16px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px var(--s-bg);transition:transform .25s cubic-bezier(.2,.9,.3,1.4),box-shadow .25s,opacity .3s}
+.pt b{position:absolute;left:26px;top:3px;font-size:.76rem;font-weight:600;white-space:nowrap;color:var(--s-ink);opacity:0;transition:opacity .25s;pointer-events:none}
+.labels .pt b{opacity:1;background:rgba(10,15,14,.82);padding:0 6px;border-radius:6px;top:2px}
+.pt:hover i,.pt:focus-visible i,.pt.on i{transform:scale(1.5);box-shadow:0 0 0 6px color-mix(in srgb,var(--c) 22%,transparent),0 0 18px var(--c)}
 .pt:focus-visible{outline:none}
 .plot.hov .pt:not(:hover):not(.on) i{opacity:.35}
 .pt.off{pointer-events:none}.pt.off i{opacity:.08!important;transform:scale(.6)}.pt.off b{opacity:0!important}
@@ -67,6 +69,17 @@
 .tl-hint svg{width:16px;height:16px}
 @media (prefers-reduced-motion:reduce){.pt i,.tip{transition:none}.pt.in i{animation:none}}
 
+/* 상세 창 사진 */
+.media{margin-top:18px}
+.media .main{display:block;border-radius:12px;overflow:hidden;background:var(--bg2);border:1px solid var(--line)}
+.media .main img{display:block;width:100%;max-height:260px;object-fit:contain;background:#fff}
+.media .thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.media .thumbs button{padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;cursor:pointer;height:70px}
+.media .thumbs button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.media .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.media .cap{color:var(--muted);font-size:.8rem;margin-top:6px;line-height:1.5}
+.media .cap a{color:var(--muted)}
+.mini .lead2{color:var(--ink2);font-size:.95rem;margin:14px 0 0}
 /* 세로 목록 */
 .list{display:flex;flex-direction:column;margin-top:8px}
 .decade{display:grid;grid-template-columns:88px 1fr;gap:16px;padding:18px 0;border-top:1px solid var(--line)}
@@ -118,7 +131,7 @@
 
   <div class="section" style="margin-top:28px">
     <div class="ctrl">
-      <span style="color:var(--muted);font-size:.9rem">점 하나가 약 하나예요 · 세계에서 처음 허가·출시된 해 기준</span>
+      <span style="color:var(--muted);font-size:.9rem">점 하나가 약 하나예요 · 큰 점은 세계 첫 허가·출시 해, 작은 점은 국내 허가 기록 해</span>
       <div class="cats" id="cats" aria-label="분야"></div>
     </div>
     <div class="stage" id="stage">
@@ -128,7 +141,7 @@
       <div class="brush" id="brush" aria-hidden="true"></div>
       <div class="tip" id="tip" role="status"></div>
     </div>
-    <p class="tl-hint"><i data-i="info"></i><span id="hint">점에 마우스를 올리면 이름이, 누르면 자세한 이야기가 나와요. 끌어서 옮기고, + 버튼이나 Ctrl+휠(휴대폰은 두 손가락)로 확대해요.</span></p>
+    <p class="tl-hint"><i data-i="info"></i><span id="hint">큰 점은 이야기가 있는 약 38개, 작은 점은 약 사전의 나머지 성분이에요(작은 점은 국내 허가 기록 연도). 마우스를 올리면 이름이, 누르면 자세한 내용이 나와요. 끌어서 옮기고, + 버튼이나 Ctrl+휠(휴대폰은 두 손가락)로 확대해요.</span></p>
   </div>
 
   <div class="section">
@@ -156,7 +169,7 @@
 (function(){
 const {esc,icon}=Portal;
 const NO_DICT=new Set(['insulin','penicillin']);   // 약 사전(경구 위주)에 아직 없는 성분
-let H=null,KR={},cats={},sel=null;
+let H=null,KR={},cats={},sel=null,ALL=[],hovX=-1,hits=[];
 const $=id=>document.getElementById(id);
 const color=d=>`var(--c-${d.cat})`;
 const yearOf=d=>d.y;
@@ -178,7 +191,7 @@ function step(){
 }
 function build(){
   const items=H.drugs.slice().sort((a,b)=>a.y-b.y||a.cat.localeCompare(b.cat));
-  plot.innerHTML=H.eras.map((e,i)=>`<div class="era" data-era="${i}"><span>${esc(e.t)}</span></div>`).join('')+'<div class="base"></div><div id="ticks"></div>'+
+  plot.innerHTML=H.eras.map((e,i)=>`<div class="era" data-era="${i}"><span>${esc(e.t)}</span></div>`).join('')+'<div class="base"></div><div id="ticks"></div><canvas id="cv"></canvas>'+
     items.map((d,i)=>`<button type="button" class="pt in" data-id="${d.id}" style="--c:${color(d)};--d:${(i*22)}ms" aria-label="${esc(d.ko)}, ${d.y}년, ${esc(d.when)}"><i></i><b>${esc(d.ko)}</b></button>`).join('')+
     H.events.map((e,i)=>`<button type="button" class="evm" data-ev="${i}" aria-label="${e.y}년 ${esc(e.t)}"></button>`).join('');
   pts=[...plot.querySelectorAll('.pt')].map(el=>{const d=H.drugs.find(x=>x.id===el.dataset.id);return{el,d,cy:0,ty:0,lw:el.querySelector('b').offsetWidth||60}});
@@ -188,18 +201,33 @@ function build(){
   setTimeout(()=>pts.forEach(p=>p.el.classList.remove('in')),1600);
   measure();
 }
-function measure(){W=plot.clientWidth;PH=plot.clientHeight;kick()}
+function measure(){W=plot.clientWidth;PH=plot.clientHeight;const c=$('cv');if(c){const r=devicePixelRatio||1;c.width=W*r;c.height=PH*r;c.getContext('2d').setTransform(r,0,0,r,0,0)}kick()}
+// 작은 점: 약 사전의 나머지 성분 (캔버스에 그려 1천 개가 넘어도 부드럽게)
+function drawAll(ppy){
+  const c=$('cv');if(!c)return;const g=c.getContext('2d');g.clearRect(0,0,W,PH);hits=[];
+  if(!cats.more||!ALL.length)return;
+  const r=Math.max(1.7,Math.min(ppy*.2,3.6)),bw=r*2+1.3,bins=new Map();
+  ALL.forEach((it,i)=>{const x=xOf(it.t);if(x<-6||x>W+6)return;const b=Math.floor(x/bw);(bins.get(b)||bins.set(b,[]).get(b)).push(i)});
+  let max=1;bins.forEach(v=>max=Math.max(max,v.length));
+  const dy=Math.min(r*2+1.3,(PH-44-70)/max);
+  g.fillStyle='rgba(233,240,237,.42)';g.beginPath();
+  bins.forEach((v,b)=>{const x=(b+.5)*bw;v.forEach((i,k)=>{const y=PH-44-8-k*dy;hits.push([x,y,i]);if(i!==hovX){g.moveTo(x+r,y);g.arc(x,y,r,0,7)}})});
+  g.fill();
+  if(hovX>=0){const h=hits.find(q=>q[2]===hovX);if(h){g.fillStyle='#ffffff';g.beginPath();g.arc(h[0],h[1],r+2.5,0,7);g.fill();g.strokeStyle='rgba(76,201,166,.7)';g.lineWidth=3;g.stroke()}}
+  hits.r=r;
+}
 plot.addEventListener('scroll',()=>{plot.scrollLeft=0;plot.scrollTop=0});   // 포커스·검색으로 안쪽이 밀리지 않게
 function layout(){
   const ppy=W/(view.b-view.a),labels=ppy>=22;          // 1년에 22px 넘게 벌어지면 이름을 늘 보여 줌
   plot.classList.toggle('labels',labels);
   // 가까운 점은 위로 쌓기 (이름이 보일 때는 이름 폭만큼 띄움)
-  const lv=[],STEP=W<640?15:17,BASE=58;
+  drawAll(ppy);
+  const lv=[],STEP=W<640?18:21,BASE=60;
   for(const p of pts){
     const on=cats[p.d.cat];p.el.classList.toggle('off',!on);
     p.x=xOf(p.d.y);
     if(!on){p.ty=BASE-10;continue}
-    const w=labels?p.lw+26:15;let r=0;while(lv[r]!=null&&lv[r]>p.x-7)r++;lv[r]=p.x+w;
+    const w=labels?p.lw+30:19;let r=0;while(lv[r]!=null&&lv[r]>p.x-9)r++;lv[r]=p.x+w;
     p.ty=BASE+r*STEP;
   }
   const maxY=PH-56;for(const p of pts){p.ty=Math.min(p.ty,maxY);p.cy+=reduce?p.ty-p.cy:(p.ty-p.cy)*.25;p.el.style.transform=`translate3d(${p.x}px,${-p.cy}px,0)`}
@@ -272,6 +300,22 @@ plot.addEventListener('focusin',e=>{const p=e.target.closest('.pt,.evm');if(!p)r
   if(y<goal.a||y>goal.b){const s=goal.b-goal.a;setGoal({a:y-s/2,b:y+s/2},true)}
   p.dispatchEvent(new PointerEvent('pointerover',{bubbles:true}))});
 plot.addEventListener('focusout',hideTip);
+plot.addEventListener('pointermove',e=>{
+  if(drag&&moved)return;
+  if(e.target.closest('.pt,.evm')){if(hovX>=0){hovX=-1;plot.classList.remove('hit');kick()}return}
+  const pr=plot.getBoundingClientRect(),mx=e.clientX-pr.left,my=e.clientY-pr.top,lim=(hits.r||2)+5;
+  let best=-1,bd=lim*lim;for(const h of hits){const dx=h[0]-mx,dy=h[1]-my,d=dx*dx+dy*dy;if(d<bd){bd=d;best=h[2]}}
+  if(best!==hovX){hovX=best;plot.classList.toggle('hit',best>=0);kick();
+    if(best>=0){const it=ALL[best],h=hits.find(q=>q[2]===best);showTipAt(h[0],h[1],`<span class="cat" style="color:#cfd8d4">그 밖의 성분</span><b>${esc(it.ko)}</b><small>국내 허가 기록 ${it.d.slice(0,4)}${it.brand?' · '+esc(it.brand):''}</small>`)}else hideTip()}
+});
+plot.addEventListener('pointerleave',()=>{if(hovX>=0){hovX=-1;kick()}});
+plot.addEventListener('click',e=>{if(hovX>=0&&!e.target.closest('.pt,.evm'))openMini(ALL[hovX])});
+function showTipAt(px,py,html){
+  tip.innerHTML=html;tip.style.setProperty('--c','var(--s-ink)');
+  const tw=tip.offsetWidth,th=tip.offsetHeight,sw=stage.clientWidth;
+  let x=Math.max(8,Math.min(px-tw/2,sw-tw-8)),y=plot.offsetTop+py-th-14;if(y<8)y=plot.offsetTop+py+14;
+  tip.style.left=x+'px';tip.style.top=y+'px';tip.classList.add('show');
+}
 plot.addEventListener('click',e=>{const v=e.target.closest('.evm');if(v)window.open(H.events[+v.dataset.ev].u,'_blank','noopener')});
 
 function list(){
@@ -304,6 +348,7 @@ function open(id,push=true){
     <div><small>국내 허가 기록 (가장 이른 품목)</small>${k?`<b>${esc(k.date.replace(/-/g,'.'))}</b><span>${esc(k.item||'')}${k.entp?' · '+esc(k.entp):''}${k.cancel?' (지금은 취소·취하된 품목)':''}</span><a href="https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${encodeURIComponent(k.seq)}" target="_blank" rel="noopener">의약품안전나라에서 보기</a>`:'<b style="color:var(--muted);font-size:1rem">자료 준비 중</b><span>식약처 제품 허가 목록에서 다음 데이터 갱신 때 채워져요.</span>'}</div>
     ${k?`<div class="gapline">${ky>=d.y?`세계 첫 허가·출시 뒤 ${ky-d.y}년 만의 기록이에요. `:''}식약처 허가 목록에 남은 가장 이른 품목이라, 품목 양도·재허가로 번호가 바뀐 약은 실제 국내 도입보다 늦게 나올 수 있어요.</div>`:''}
   </div>
+  <div class="media" id="media"></div>
   <h3>개발 배경</h3>${d.bg.map(p=>`<p>${esc(p)}</p>`).join('')}
   <h3>그 시절</h3><p>${esc(d.ctx)}</p>
   <h3>당시 신문 찾아보기</h3><ul class="links">${news.join('')}</ul>
@@ -313,18 +358,64 @@ function open(id,push=true){
   document.body.classList.add('open');
   $('xBtn').onclick=close;$('sheet').scrollTop=0;$('sheet').focus({preventScroll:true});
   if(push)history.replaceState(null,'','#'+id);
+  loadMedia(d);
+}
+// 사진: 위키백과 문서에 실린 그림(대부분 위키미디어 공용)을 그대로 보여 주고 원본·저작권 정보로 연결
+const MEDIA={};
+function wikiTitle(d){const w=d.src.find(s=>/en\.wikipedia\.org\/wiki\//.test(s.u));return w?decodeURIComponent(w.u.split('/wiki/')[1]):null}
+async function loadMedia(d){
+  const box=$('media'),t=wikiTitle(d);if(!box||!t)return;
+  try{
+    if(!MEDIA[t])MEDIA[t]=fetch('https://en.wikipedia.org/api/rest_v1/page/media-list/'+encodeURIComponent(t)).then(r=>r.ok?r.json():{items:[]});
+    const items=((await MEDIA[t]).items||[]).filter(x=>x.type==='image'&&x.showInGallery!==false&&x.srcset&&x.srcset.length&&!/logo|icon|flag|symbol|\.svg$/i.test(x.title)).slice(0,3);
+    if(sel!==d.id||!items.length){if(sel===d.id)box.innerHTML=videoLinks(d);return}
+    const src=x=>{const u=(x.srcset.find(s=>s.scale==='2x')||x.srcset[0]).src;return u.startsWith('//')?'https:'+u:u};
+    const cap=x=>(x.caption&&x.caption.text||'').slice(0,160);
+    const show=i=>{const x=items[i];box.querySelector('.main img').src=src(x);box.querySelector('.main img').alt=cap(x)||d.ko;
+      box.querySelector('.cap').innerHTML=`${esc(cap(x))}${cap(x)?' · ':''}<a href="https://en.wikipedia.org/wiki/${encodeURIComponent(x.title)}" target="_blank" rel="noopener">원본과 저작권 정보</a> (위키백과·위키미디어 공용)`;
+      box.querySelectorAll('.thumbs button').forEach((b,j)=>b.setAttribute('aria-pressed',j===i))};
+    box.innerHTML=`<h3 style="margin-top:0">사진</h3><a class="main" href="https://en.wikipedia.org/wiki/${encodeURIComponent(items[0].title)}" target="_blank" rel="noopener"><img loading="lazy" referrerpolicy="no-referrer"></a>
+      ${items.length>1?`<div class="thumbs">${items.map((x,i)=>`<button type="button" data-m="${i}" aria-label="사진 ${i+1}"><img loading="lazy" referrerpolicy="no-referrer" src="${esc(src(x))}" alt=""></button>`).join('')}</div>`:''}
+      <div class="cap"></div>${videoLinks(d)}`;
+    box.querySelectorAll('.thumbs button').forEach(b=>b.onclick=e=>{e.stopPropagation();show(+b.dataset.m);box.querySelector('.main').href=`https://en.wikipedia.org/wiki/${encodeURIComponent(items[+b.dataset.m].title)}`});
+    show(0);
+  }catch(e){if(sel===d.id)box.innerHTML=videoLinks(d)}
+}
+function videoLinks(d){
+  const q=encodeURIComponent(`${d.en} history`),qk=encodeURIComponent(`${d.ko} 역사`);
+  return `<h3>관련 영상 찾아보기</h3><ul class="links">
+    <li><a href="https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&type=video&search=${encodeURIComponent(d.en)}" target="_blank" rel="noopener">${icon('ext')}위키미디어 공용 영상 (자유 이용 자료)</a></li>
+    <li><a href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">${icon('ext')}YouTube 검색 · ${esc(d.en)} history</a></li>
+    <li><a href="https://www.youtube.com/results?search_query=${qk}" target="_blank" rel="noopener">${icon('ext')}YouTube 검색 · ${esc(d.ko)} 역사</a></li></ul>`;
+}
+// 작은 점을 눌렀을 때: 이름·국내 허가 기록·약 사전 링크만
+function openMini(it){
+  sel=it.id;document.querySelectorAll('.pt.on').forEach(c=>c.classList.remove('on'));
+  const nd=`https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${encodeURIComponent(it.seq)}`;
+  $('sheetIn').innerHTML=`<button class="x" type="button" aria-label="닫기" id="xBtn">×</button><div class="mini">
+  <span class="tag">약 사전 성분</span>
+  <h2 id="sName">${esc(it.ko)}</h2><div class="en">${esc(it.id)}${it.brand?' · 대표 제품 '+esc(it.brand):''}</div>
+  <div class="dates"><div style="grid-column:1/-1"><small>국내 허가 기록 (가장 이른 품목)</small><b>${esc(it.d.replace(/-/g,'.'))}</b><span>${esc(it.item)}</span><a href="${nd}" target="_blank" rel="noopener">의약품안전나라에서 보기</a></div>
+  <div class="gapline">식약처 허가 목록에 남은 가장 이른 품목이에요. 품목 양도·재허가로 번호가 바뀐 약은 실제 국내 도입보다 늦게 나올 수 있어요.</div></div>
+  <p style="margin-top:22px"><a class="btn" href="drug.html?id=${encodeURIComponent(it.id)}">${icon('book')}약 사전에서 이상반응 보기</a></p></div>`;
+  document.body.classList.add('open');$('xBtn').onclick=close;$('sheet').scrollTop=0;$('sheet').focus({preventScroll:true});
+  history.replaceState(null,'','#'+it.id);
 }
 function close(){document.body.classList.remove('open');sel=null;document.querySelectorAll('.pt.on').forEach(c=>c.classList.remove('on'));history.replaceState(null,'',location.pathname+location.search)}
 
 function cats_(){
-  $('cats').innerHTML=Object.entries(H.cats).map(([k,v])=>`<button type="button" data-c="${k}" aria-pressed="${cats[k]}" style="--c:var(--c-${k})"><i></i>${esc(v)}</button>`).join('');
+  $('cats').innerHTML=Object.entries(H.cats).map(([k,v])=>`<button type="button" data-c="${k}" aria-pressed="${cats[k]}" style="--c:var(--c-${k})"><i></i>${esc(v)}</button>`).join('')+
+    (ALL.length?`<button type="button" data-c="more" aria-pressed="${cats.more}" style="--c:var(--muted)"><i style="width:6px;height:6px"></i>그 밖의 성분 ${ALL.length.toLocaleString()}개</button>`:'');
 }
 function render(){list();kick()}
 
-Promise.all([fetch('history.json').then(r=>r.json()),fetch(Portal.DATA+'history_kr.json').then(r=>r.ok?r.json():{}).catch(()=>({}))]).then(([h,kr])=>{
-  H=h;KR=kr||{};Object.keys(H.cats).forEach(k=>cats[k]=true);
+Promise.all([fetch('history.json').then(r=>r.json()),fetch(Portal.DATA+'history_kr.json').then(r=>r.ok?r.json():{}).catch(()=>({})),
+  fetch(Portal.DATA+'history_all.json').then(r=>r.ok?r.json():{items:[]}).catch(()=>({items:[]}))]).then(([h,kr,all])=>{
+  H=h;KR=kr||{};Object.keys(H.cats).forEach(k=>cats[k]=true);cats.more=true;
+  const cur=new Set(H.drugs.map(d=>d.id));
+  ALL=(all.items||[]).filter(r=>!cur.has(r[0])&&+r[3].slice(0,4)>=D0).map(([id,ko,brand,d,item,seq])=>{const y=+d.slice(0,4),doy=(+d.slice(5,7)-1)*30.4+(+d.slice(8,10));return{id,ko,brand,d,item,seq,t:y+doy/366}});
   cats_();build();render();
-  const id=decodeURIComponent(location.hash.slice(1));if(id)open(id,false);
+  const id=decodeURIComponent(location.hash.slice(1));if(id){if(cur.has(id))open(id,false);else{const it=ALL.find(x=>x.id===id);if(it)openMini(it)}}
 });
 document.addEventListener('click',e=>{
   const c=e.target.closest('[data-id]');if(c&&!c.classList.contains('off')){open(c.dataset.id);return}
