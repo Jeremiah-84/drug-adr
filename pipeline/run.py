@@ -182,7 +182,7 @@ def main():
             forms[keep] = sorted(set(forms.get(keep, ["경구"])) | set(forms.get(g, [])), key="경구주사외용기타".index)
             del drugs[g]
     print("합친 성분", len(alias))
-    products, pforms = {}, {}
+    products, pforms, seqhit = {}, {}, {}
     for p in prods:
         s = base_name(p.get("ITEM_INGR_NAME") or "") + " " + (p.get("ITEM_INGR_NAME") or "").lower()
         hit = [gid for gid, rx in allrx.items() if rx.search(s)]
@@ -190,6 +190,7 @@ def main():
         hit = list(dict.fromkeys(alias.get(h, h) for h in hit))
         if not hit: continue
         bc = brand_core(p["ITEM_NAME"])
+        seqhit[p["ITEM_SEQ"]] = (None if noisy(bc) else bc, hit, str(p.get("EDI_CODE") or ""))
         if noisy(bc): continue
         products.setdefault(bc, set()).update(hit); pforms.setdefault(bc, set()).add(form_of(p["ITEM_NAME"]))
 
@@ -215,6 +216,20 @@ def main():
     prod_idx = {k: sorted(v & known) for k, v in products.items() if v & known}
     # 경구 제형이 없는 제품명만 제형을 적어 둠 (화면 읽기에서 주사·외용을 따로 켜고 끌 수 있게)
     pform = {k: "·".join(sorted(pforms[k], key="경구주사외용기타".index)) for k in prod_idx if "경구" not in pforms[k]}
+    # 약 상자 바코드 → 제품명(또는 성분 목록). 표준코드 880+업체4+품목4 의 가운데 8자리를 열쇠로 씀.
+    # 바코드를 모아 둔 pipeline/barcodes.json 이 우선이고, 없으면 보험코드(EDI) 앞 8자리로 대신함 (대부분 같음)
+    bpath = os.path.join(HERE, "barcodes.json"); bars = json.load(open(bpath)) if os.path.exists(bpath) else {}
+    bmap = {}
+    for seq, (bc, hit, edi) in seqhit.items():
+        val = bc if bc in prod_idx else sorted(set(hit) & known)
+        if not val: continue
+        for c in bars.get(seq, "").split(","):
+            if len(c) == 13 and c.startswith("880"): bmap[c[3:11]] = val
+        for e in edi.split(","):
+            e = e.strip()
+            if len(e) == 9 and e.isdigit(): bmap.setdefault(e[:8], val)
+    json.dump({"m": bmap}, open(os.path.join(a.out, "barcode.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+    print("바코드", len(bmap))
     version = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H%M")  # 같은 날 여러 번 올려도 캐시가 새로 받도록 시각 포함
     json.dump({"version": version, "drugs": index, "problems": [{"id": p, "category": c, "name": n} for p, c, n, _ in PROBLEMS],
                "products": prod_idx, "pform": pform}, open(os.path.join(a.out, "index.json"), "w"), ensure_ascii=False, separators=(",", ":"))

@@ -98,6 +98,7 @@ mark{background:var(--mid-soft);color:inherit;padding:0 1px;border-radius:3px}
 .tier2{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
 [hidden]{display:none!important}
 #adbox{margin-top:4px}
+.camrow .btn{flex:1 1 auto}.bcview{position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:8px;overflow:hidden}.bcview video{width:100%;height:100%;object-fit:cover}.bcview .aim{position:absolute;left:12%;right:12%;top:30%;bottom:30%;border:2px solid #fff;border-radius:8px;box-shadow:0 0 0 999px rgba(0,0,0,.25)}
 .formsel{gap:4px 12px;font-size:.85rem}.formsel label{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
 .linkbtn{font:inherit;background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;cursor:pointer}
 footer a{color:var(--accent)}
@@ -117,6 +118,8 @@ footer a{color:var(--accent)}
     <div class="sugg" id="sugg" hidden></div>
   </div>
   <div class="row"><button class="btn" id="scan" type="button" data-i18n="scan">지금 보고 있는 화면에서 약 찾기</button></div>
+  <div class="row camrow" id="camrow" hidden><button class="btn" id="camText" type="button" data-i18n="camText">📷 처방전·약봉투 글자 찍기</button><button class="btn" id="camBar" type="button" data-i18n="camBar">▦ 약 상자 바코드 찍기</button>
+    <input type="file" id="photoIn" accept="image/*" hidden><input type="file" id="bcIn" accept="image/*" hidden><span class="hint" data-i18n="camPriv" style="flex-basis:100%">사진은 이 기기 안에서만 처리하고 어디에도 보내지 않습니다.</span></div>
   <div class="row formsel" id="formsel"><span class="hint" data-i18n="formsHint">화면·붙여넣기에서 찾을 약:</span>
     <label><input type="checkbox" value="경구" checked> <span data-i18n="fOral">먹는 약</span></label>
     <label><input type="checkbox" value="주사"> <span data-i18n="fInj">주사</span></label>
@@ -168,6 +171,7 @@ footer a{color:var(--accent)}
 </div>
 
 <div id="adbox" hidden><div class="hint" style="margin:0 0 4px" data-i18n="ad">광고</div><iframe id="adframe" title="광고" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin" referrerpolicy="no-referrer" style="width:100%;height:90px;border:0;border-radius:8px;background:var(--paper)"></iframe></div>
+<div id="bcbox" class="intro" hidden><div class="introcard" style="width:100%"><h2 data-i18n="bcTitle">바코드를 네모 안에 비춰 주세요</h2><div class="bcview"><video id="bcvid" playsinline muted autoplay></video><div class="aim"></div></div><div class="hint" id="bcmsg"></div><div class="row"><button class="btn ghost" id="bcPhoto" type="button" data-i18n="bcPhoto">사진으로 고르기</button><button class="btn" id="bcClose" type="button" data-i18n="bcClose">다 찍었어요</button></div></div></div>
 <div id="intro" class="intro" hidden><div class="introcard"><h2 data-i18n="introH">시작하기 전에</h2><div data-i18n-html="intro" style="display:flex;flex-direction:column;gap:10px"><p>이 도구는 식약처 의약품 허가정보(첨부문서)에서 이상반응을 <b>규칙에 따라 자동으로 추출</b>해 보여줍니다. 누락이나 오분류가 있을 수 있으니 근거 문장과 원문을 확인하고, 진료 판단의 참고로만 사용하세요.</p><p>화면에서 약을 읽는 기능은 <b>이 컴퓨터 안에서만</b> 동작하며, 처방 내용이나 환자 정보를 어디에도 보내지 않습니다.</p><p style="font-size:.85rem">시험 기간에는 더 나은 도구를 만들기 위해 <b>익명 사용 통계</b>(사용 횟수, 검색한 성분, 고른 문제 항목 등)를 보냅니다. 화면에서 읽은 글자, 직접 쓴 문장, 환자 정보는 보내지 않습니다.</p></div><label style="font-size:.85rem;display:flex;gap:6px;align-items:center"><input type="checkbox" id="statsOk" checked> <span data-i18n="statsOk">익명 사용 통계 보내기 (나중에 아래에서 끌 수 있음)</span></label><button class="btn" id="introOk" type="button" data-i18n="introOk">확인하고 시작</button></div></div>
 <script src="config.js"></script>
 <script src="i18n.js"></script>

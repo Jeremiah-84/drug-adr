@@ -197,6 +197,71 @@ function takePending(){
     $('drughint').textContent=r.f.length?T('selAdded',r.added.length):T('selNone',o.pending.text.slice(0,30))})}
 if(window.chrome&&chrome.storage)chrome.storage.onChanged.addListener((c,a)=>{if(a==='session'&&c.pending&&c.pending.newValue)takePending()});
 
+/* ---------- 휴대폰 카메라: 사진 글자 읽기(OCR)와 약 상자 바코드 (웹 버전, 모두 이 기기 안에서 처리) ---------- */
+const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error(src));document.head.appendChild(s)});
+const here=p=>new URL(p,location.href).href;
+let ocrW=null, ocrProg=()=>{};
+async function ocrWorker(){
+  if(ocrW)return ocrW;
+  if(!window.Tesseract)await loadScript('vendor/ocr/tesseract.min.js');
+  // 프로그램·한글 자료 모두 이 사이트에서 받음 (사진은 밖으로 나가지 않음)
+  ocrW=await Tesseract.createWorker(['kor','eng'],1,{workerPath:here('vendor/ocr/worker.min.js'),corePath:here('vendor/ocr/'),langPath:here('vendor/ocr/'),gzip:true,
+    logger:m=>{if(m.status==='recognizing text')ocrProg(Math.round((m.progress||0)*100))}});
+  return ocrW}
+async function photoCanvas(file,max){
+  let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'})}catch(e){bmp=await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=URL.createObjectURL(file)})}
+  const w0=bmp.width,h0=bmp.height,k=Math.min(1,max/Math.max(w0,h0)),c=document.createElement('canvas');
+  c.width=Math.round(w0*k);c.height=Math.round(h0*k);const g=c.getContext('2d');g.filter='grayscale(1) contrast(1.3)';g.drawImage(bmp,0,0,c.width,c.height);return c}
+if(!IS_EXT&&$('camrow')){
+  $('camrow').hidden=false;
+  $('camText').onclick=()=>{$('photoIn').value='';$('photoIn').click()};
+  $('photoIn').onchange=async()=>{const f=$('photoIn').files[0];if(!f)return;const hint=$('drughint');
+    hint.textContent=T('ocrLoad');track('ocr_start');
+    try{const w=await ocrWorker();ocrProg=p=>{hint.textContent=T('ocrRun',p)};
+      const {data}=await w.recognize(await photoCanvas(f,2400));
+      const text=(data&&data.text)||'';
+      $('paste').value=text;$('pastebox').open=true;
+      const r=addFromText(text,'ocr');
+      hint.textContent=r.f.length?T('ocrDone',r.f.length,r.added.length):T('ocrNone');
+    }catch(e){track('ocr_fail');hint.textContent=T('ocrErr')+(e&&e.message||e)}};
+
+  let BC=null, det=null, stream=null, loop=null, seen=new Set(), found=[];
+  const bcmsg=$('bcmsg');
+  async function getDetector(){
+    if(det)return det;const formats=['ean_13','data_matrix','code_128'];
+    if('BarcodeDetector' in window){try{const f=await BarcodeDetector.getSupportedFormats();if(f.includes('ean_13')&&f.includes('data_matrix'))return det=new BarcodeDetector({formats})}catch(e){}}
+    if(!window.BarcodeDetectionAPI)await loadScript('vendor/barcode/ponyfill.js');
+    const A=window.BarcodeDetectionAPI;
+    A.prepareZXingModule({overrides:{locateFile:(p,pre)=>p.endsWith('.wasm')?here('vendor/barcode/'+p):pre+p}});
+    return det=new A.BarcodeDetector({formats})}
+  // 국내 의약품 표준코드: 880 + 업체(4) + 품목(4) + 포장(1) + 검증(1). 2차원 바코드(GS1)는 (01) 뒤 14자리 안에 들어 있음
+  function code13(raw){const s=String(raw||'').replace(/\D/g,'');
+    if(/^01\d{14}/.test(s)&&s.slice(3,6)==='880')return s.slice(3,16);
+    if(/^880\d{10}$/.test(s))return s;
+    const m=s.match(/880\d{10}/);return m?m[0]:null}
+  async function onCode(raw){
+    const c=code13(raw);if(!c||seen.has(c))return;seen.add(c);
+    if(!BC){try{BC=(await getJSON('barcode.json')).m||{}}catch(e){BC={}}}
+    const v=BC[c.slice(3,11)], ids=Array.isArray(v)?v:(v&&(D.products||{})[v]);
+    if(ids&&ids.length){const added=ids.filter(id=>!sel.includes(id));sel=sel.concat(added);save();render();
+      for(const id of added)track('drug_add',{drug:id,how:'barcode'});
+      found.push(ids.map(id=>byId[id]?dn(byId[id]):id).join('·'));bcmsg.textContent=T('bcFound',found.join(', '));if(navigator.vibrate)navigator.vibrate(60)}
+    else{track('barcode_unknown');bcmsg.textContent=T('bcUnknown',c)}}
+  function stopCam(){clearInterval(loop);loop=null;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('bcvid').srcObject=null}
+  $('camBar').onclick=async()=>{seen=new Set();found=[];$('bcbox').hidden=false;bcmsg.textContent=T('bcLoad');track('barcode_start');
+    try{const d=await getDetector();
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+      const v=$('bcvid');v.srcObject=stream;await v.play();bcmsg.textContent=T('bcAim');
+      let busy=false;loop=setInterval(async()=>{if(busy||v.readyState<2)return;busy=true;
+        try{for(const b of await d.detect(v))await onCode(b.rawValue)}catch(e){}busy=false},250);
+    }catch(e){stopCam();bcmsg.textContent=T('bcNoCam')}};
+  $('bcClose').onclick=()=>{stopCam();$('bcbox').hidden=true;if(found.length)$('drughint').textContent=T('bcFound',found.join(', '))};
+  $('bcPhoto').onclick=()=>{$('bcIn').value='';$('bcIn').click()};
+  $('bcIn').onchange=async()=>{const f=$('bcIn').files[0];if(!f)return;
+    try{const d=await getDetector(),r=await d.detect(await photoCanvas(f,1600));if(!r.length){bcmsg.textContent=T('bcNoCode');return}
+      for(const b of r)await onCode(b.rawValue)}catch(e){bcmsg.textContent=T('bcNoCode')}};
+}
+
 /* ---------- 문제 직접 입력 ---------- */
 const ALIAS={renal_fx:'egfr,gfr,신기능,신장,콩팥,크레아티닌,creatinine,cr,bun,신부전,신손상,aki,사구체',hyperK:'고칼륨,칼륨상승,칼륨증가,포타슘,potassium,k상승,k증가',hypoK:'저칼륨,칼륨감소,칼륨저하',hypoNa:'나트륨,소디움,sodium,저나트륨,na',proteinuria:'단백뇨,혈뇨,소변에피',
 lft:'간수치,ast,alt,got,gpt,간기능,간효소,alp,ggt,감마,lft,간검사',hepatitis:'간염,간손상,간독성,간부전',cholestasis:'황달,빌리루빈,bilirubin,담즙',anemia:'빈혈,헤모글로빈,hb,혈색소',thrombocytopenia:'혈소판,plt',leukopenia:'백혈구,호중구,wbc,anc',bleeding:'출혈,멍,코피,피가',
@@ -297,7 +362,7 @@ function renderChips(){
   c.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{sel=sel.filter(x=>x!==b.dataset.rm);save();render()});
 }
 function render(){renderChips();renderProbs();ensure(sel).then(()=>{renderResult();renderOrgan()})}
-if(!IS_EXT){$('scan').hidden=true}
+if(!IS_EXT){$('scan').hidden=true;const sb=document.querySelector('[data-i18n="sub"]');if(sb){sb.dataset.i18n='subWeb';sb.textContent=T('subWeb')}}
 try{if(!localStorage.getItem('adr.introOk')){$('intro').hidden=false}}catch(e){$('intro').hidden=false}
 $('introOk').onclick=()=>{$('intro').hidden=true;try{localStorage.setItem('adr.introOk','1');localStorage.setItem('adr.stats',$('statsOk').checked?'1':'0')}catch(e){};renderStats();track('intro_ok')};
 function renderStats(){const on=STATS.on();$('statsState').textContent=on?T('statsOn'):T('statsOff');$('statsToggle').textContent=on?T('off'):T('on')}
