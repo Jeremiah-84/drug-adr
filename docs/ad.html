@@ -7,22 +7,33 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:13px/1.
 a.slot{box-sizing:border-box;height:100%;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:10px;padding:8px 12px;color:inherit;text-decoration:none;background:var(--soft)}
 .slot .ic{flex:none;width:44px;height:44px;border-radius:8px;background:var(--accent);color:var(--bg);display:grid;place-items:center;font-weight:700;font-size:12px}
 .slot b{display:block;font-size:14px}.slot span{color:var(--muted)}
-.tag{position:fixed;right:6px;top:4px;font-size:10px;color:var(--muted)}
+.tag{position:fixed;right:6px;top:2px;font-size:9px;color:var(--muted);background:var(--bg);padding:0 3px;border-radius:3px}
 </style></head><body>
-<!-- 광고 자리 (시험판)
-     ADS 목록만 고치면 모든 사용자에게 바로 바뀝니다. 직접 계약한 배너는 img(그림 주소)와 url(누를 때 갈 주소)을 넣으세요.
-     이 페이지는 확장 프로그램과 다른 주소에서 열려 처방 화면이나 입력한 약 정보에 접근할 수 없습니다.
-     노출·클릭 신호(광고 id)만 부모 화면에 알려 익명 통계로 셉니다. -->
-<a class="slot" id="slot" target="_blank" rel="noopener sponsored"></a><span class="tag">시험 광고</span>
+<!-- 광고 자리: 어떤 광고를 낼지는 같은 폴더의 ads.json 하나로 정합니다 (확장 프로그램을 다시 배포할 필요 없음).
+     provider: "test"(시험 배너) | "banner"(직접 계약 배너, banners 목록) | "adfit"(카카오 애드핏 광고단위 ID) | "coupang"(쿠팡 파트너스 다이나믹 배너)
+     이 페이지는 확장 프로그램과 다른 주소에서 열려 처방 화면이나 입력한 약 정보에 접근할 수 없습니다. -->
+<div id="box" style="height:100%"></div><span class="tag" id="tag">광고</span>
 <script>
-const ADS=[
-  {id:"test-a",icon:"AD",title:"이 자리에 의원 대상 광고가 들어갑니다",sub:"시험 배너 A · 진료에 방해가 되는지 알려주세요",url:"https://github.com/Jeremiah-84/drug-adr/issues"},
-  {id:"test-b",icon:"공지",title:"메디스캔 프로 시험판을 써 주셔서 감사합니다",sub:"시험 배너 B · 광고 위치·크기에 대한 의견 환영",url:"https://github.com/Jeremiah-84/drug-adr/issues"}
-];
-const ad=ADS[Math.floor(Math.random()*ADS.length)], el=document.getElementById('slot');
-el.href=ad.url;
-el.innerHTML=ad.img?`<img src="${ad.img}" alt="${ad.title}" style="max-height:100%;max-width:100%">`:`<span class="ic">${ad.icon}</span><span><b>${ad.title}</b><span>${ad.sub}</span></span>`;
-const tell=t=>{try{parent.postMessage({adr:t,ad:ad.id},'*')}catch(e){}};
-tell('ad_view'); el.addEventListener('click',()=>tell('ad_click'));
+const box=document.getElementById('box'), tag=document.getElementById('tag');
+const tell=(t,id)=>{try{parent.postMessage({adr:t,ad:id},'*')}catch(e){}};
+function house(list,label){
+  const ad=list[Math.floor(Math.random()*list.length)];
+  const a=document.createElement('a');a.className='slot';a.target='_blank';a.rel='noopener sponsored';a.href=ad.url;
+  a.innerHTML=ad.img?`<img src="${ad.img}" alt="" style="max-height:100%;max-width:100%">`:`<span class="ic"></span><span><b></b><span></span></span>`;
+  if(!ad.img){a.querySelector('.ic').textContent=ad.icon||'AD';a.querySelector('b').textContent=ad.title;a.querySelector('span span').textContent=ad.sub||''}
+  box.appendChild(a);tag.textContent=label;tell('ad_view',ad.id);a.addEventListener('click',()=>tell('ad_click',ad.id));
+}
+function script(src,after){const s=document.createElement('script');s.src=src;s.async=true;if(after)s.onload=after;document.body.appendChild(s)}
+fetch('ads.json',{cache:'no-cache'}).then(r=>r.json()).then(c=>{
+  if(c.provider==='adfit'&&c.adfit&&c.adfit.unit){
+    box.innerHTML=`<ins class="kakao_ad_area" style="display:none" data-ad-unit="${c.adfit.unit}" data-ad-width="${c.adfit.width}" data-ad-height="${c.adfit.height}"></ins>`;
+    box.style.cssText='height:100%;display:flex;justify-content:center;align-items:center';
+    script('https://t1.daumcdn.net/kas/static/ba.min.js');tell('ad_view','adfit');
+  }else if(c.provider==='coupang'&&c.coupang&&c.coupang.id){
+    box.style.cssText='height:100%;display:flex;justify-content:center;align-items:center';
+    script('https://ads-partners.coupang.com/g.js',()=>{new PartnersCoupang.G({id:c.coupang.id,template:c.coupang.template||'carousel',trackingCode:c.coupang.trackingCode,width:String(c.coupang.width),height:String(c.coupang.height),container:'box'})});
+    tag.textContent='쿠팡 파트너스 활동으로 수수료를 받을 수 있음';tell('ad_view','coupang');
+  }else{house(c.banners&&c.banners.length?c.banners:[{id:'none',title:'광고 자리',url:'#'}],c.provider==='banner'?'광고':'시험 광고')}
+}).catch(()=>house([{id:'none',icon:'AD',title:'이 자리에 광고를 실을 수 있습니다',url:'https://github.com/Jeremiah-84/drug-adr/issues'}],'광고'));
 </script>
 </body></html>
