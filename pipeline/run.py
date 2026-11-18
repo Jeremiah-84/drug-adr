@@ -230,6 +230,22 @@ def main():
             if len(e) == 9 and e.isdigit(): bmap.setdefault(e[:8], val)
     json.dump({"m": bmap}, open(os.path.join(a.out, "barcode.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     print("바코드", len(bmap))
+    # 낱알식별(새긴 글자·모양·색): pipeline/pills.py 가 받아 둔 .cache/pills.json 이 있으면 화면용으로 줄여 씀
+    ppath = os.path.join(a.cache, "pills.json")
+    if os.path.exists(ppath):
+        IMG = "https://nedrug.mfds.go.kr/pbp/cmn/itemImageDownload/"
+        rows = []
+        for it in json.load(open(ppath)):
+            bc, hit, _ = seqhit.get(it["ITEM_SEQ"], (None, [], ""))
+            val = bc if bc in prod_idx else sorted(set(hit) & known)
+            img = it.get("ITEM_IMAGE") or ""
+            g = lambda k: (it.get(k) or "").strip()
+            mark = lambda k: "마크" if g(k) else ""
+            rows.append([re.sub(r"\(.*$", "", re.sub(r"^군납명\s*:\s*", "", it["ITEM_NAME"])).strip() or it["ITEM_NAME"], g("PRINT_FRONT") or mark("MARK_CODE_FRONT_ANAL"), g("PRINT_BACK") or mark("MARK_CODE_BACK_ANAL"),
+                         g("DRUG_SHAPE"), g("COLOR_CLASS1"), g("COLOR_CLASS2"), g("FORM_CODE_NAME"),
+                         val or 0, img[len(IMG):] if img.startswith(IMG) else "", g("ENTP_NAME")])
+        json.dump({"img": IMG, "r": rows}, open(os.path.join(a.out, "pills.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+        print("낱알", len(rows), "약 연결", sum(1 for r in rows if r[7]))
     version = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H%M")  # 같은 날 여러 번 올려도 캐시가 새로 받도록 시각 포함
     json.dump({"version": version, "drugs": index, "problems": [{"id": p, "category": c, "name": n} for p, c, n, _ in PROBLEMS],
                "products": prod_idx, "pform": pform}, open(os.path.join(a.out, "index.json"), "w"), ensure_ascii=False, separators=(",", ":"))

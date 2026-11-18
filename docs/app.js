@@ -197,6 +197,38 @@ function takePending(){
     $('drughint').textContent=r.f.length?T('selAdded',r.added.length):T('selNone',o.pending.text.slice(0,30))})}
 if(window.chrome&&chrome.storage)chrome.storage.onChanged.addListener((c,a)=>{if(a==='session'&&c.pending&&c.pending.newValue)takePending()});
 
+/* ---------- 알약 식별: 새긴 글자·모양·색을 골라 찾기 (식약처 낱알식별, 사진 판별 아님) ---------- */
+let PILLS=null, PF2={shape:'',color:'',form:''};
+const CSW={하양:'#fff',노랑:'#f4d03f',주황:'#f39c12',분홍:'#f5b7c5',빨강:'#e74c3c',갈색:'#8e5b3a',연두:'#a9d86e',초록:'#27ae60',청록:'#1abc9c',파랑:'#3498db',남색:'#2c3e8f',자주:'#9b3a7a',보라:'#8e6cc0',회색:'#999',검정:'#222',투명:'linear-gradient(135deg,#fff,#ddd)'};
+const FORMG={정제:f=>/정/.test(f)&&!/캡슐/.test(f),경질캡슐:f=>/경질캡슐/.test(f),연질캡슐:f=>/연질캡슐/.test(f)};
+const pnorm=x=>String(x||'').toUpperCase().replace(/[\s\-\.\/·,]/g,'');
+function pillChips(el,key,vals,lab){el.innerHTML=`<span class="lb">${esc(lab)}</span>`+vals.map(v=>`<button type="button" class="pchip" data-v="${esc(v)}" aria-pressed="${PF2[key]===v}">${CSW[v]&&key==='color'?`<i style="background:${CSW[v]}"></i>`:''}${esc(v)}</button>`).join('');
+  el.onclick=e=>{const b=e.target.closest('.pchip');if(!b)return;PF2[key]=PF2[key]===b.dataset.v?'':b.dataset.v;pillUI();pillSearch();track('pill_filter',{key})}}
+function pillUI(){if(!PILLS)return;const cnt=(i)=>{const c={};for(const r of PILLS.r)if(r[i])c[r[i]]=(c[r[i]]||0)+1;return Object.keys(c).sort((a,b)=>c[b]-c[a])};
+  pillChips($('pillShape'),'shape',cnt(3).slice(0,10),T('pillShape'));
+  pillChips($('pillColor'),'color',Object.keys(CSW),T('pillColor'));
+  pillChips($('pillForm'),'form',Object.keys(FORMG),T('pillForm'))}
+const pillIds=v=>Array.isArray(v)?v:(v?(D.products||{})[v]||[]:[]);
+function pillSearch(){if(!PILLS)return;const q=pnorm($('pillq').value),res=$('pillres'),msg=$('pillmsg');
+  if(!q&&!PF2.shape&&!PF2.color&&!PF2.form){res.innerHTML='';msg.textContent=T('pillPick');return}
+  const out=[];for(const r of PILLS.r){
+    if(PF2.shape&&r[3]!==PF2.shape)continue;if(PF2.color&&r[4]!==PF2.color&&r[5]!==PF2.color)continue;if(PF2.form&&!FORMG[PF2.form](r[6]))continue;
+    if(q){const f=pnorm(r[1]),b=pnorm(r[2]);if(!(f.includes(q)||b.includes(q)||(f+b).includes(q)||(b+f).includes(q)))continue}
+    out.push(r)}
+  // 성분 자료가 있는 약, 글자가 정확히 같은 약을 먼저
+  const exact=r=>q&&(pnorm(r[1])===q||pnorm(r[2])===q)?0:1;
+  out.sort((a,b)=>exact(a)-exact(b)||(pillIds(b[7]).length?1:0)-(pillIds(a[7]).length?1:0));
+  const N=40;msg.textContent=out.length?T('pillN',out.length,out.length>N?N:0):T('pillNone');
+  res.innerHTML=out.slice(0,N).map((r,i)=>{const ids=pillIds(r[7]),have=ids.length&&ids.every(id=>sel.includes(id));
+    const mk=[r[1]&&`${T('front')} ${esc(r[1])}`,r[2]&&`${T('back')} ${esc(r[2])}`].filter(Boolean).join(' / ');
+    return `<div class="pill">${r[8]?`<img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(PILLS.img+r[8])}">`:''}<div class="pi"><b>${esc(r[0])}</b>${mk?mk+' · ':''}${esc([r[3],[r[4],r[5]].filter(Boolean).join('/'),r[6]].filter(Boolean).join(' · '))}<br><small class="hint">${esc(r[9])}${ids.length?' · '+esc(ids.map(id=>byId[id]?dn(byId[id]):id).join('·')):''}</small></div>`+
+      (ids.length?`<button class="btn${have?' ghost':''}" type="button" data-p="${i}" ${have?'disabled':''}>${have?T('pillHave'):T('pillAdd')}</button>`:`<small class="hint">${T('pillNo')}</small>`)+'</div>'}).join('');
+  res.onclick=e=>{const b=e.target.closest('button[data-p]');if(!b)return;const r=out[+b.dataset.p],ids=pillIds(r[7]),added=ids.filter(id=>!sel.includes(id));
+    sel=sel.concat(added);save();render();for(const id of added)track('drug_add',{drug:id,how:'pill'});$('drughint').textContent=T('pillAdded',r[0]);pillSearch()}}
+$('pillbox').addEventListener('toggle',async()=>{if(!$('pillbox').open||PILLS)return;$('pillmsg').textContent=T('pillLoad');
+  try{PILLS=await getJSON('pills.json');track('pill_open')}catch(e){$('pillmsg').textContent=T('failLoad');return}pillUI();pillSearch()});
+let pillT=null;$('pillq').addEventListener('input',()=>{clearTimeout(pillT);pillT=setTimeout(pillSearch,150)});
+
 /* ---------- 휴대폰 카메라: 사진 글자 읽기(OCR)와 약 상자 바코드 (웹 버전, 모두 이 기기 안에서 처리) ---------- */
 const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error(src));document.head.appendChild(s)});
 const here=p=>new URL(p,location.href).href;
@@ -379,6 +411,6 @@ if(adsrc){const f=$('adframe');f.src=adsrc;f.onload=()=>{$('adbox').hidden=false
   addEventListener('message',e=>{if(e.source!==f.contentWindow||!e.data||typeof e.data!=='object')return;
     const id=String(e.data.ad||'').slice(0,40);if(e.data.adr==='ad_view')track('ad_view',{ad:id});else if(e.data.adr==='ad_click')track('ad_click',{ad:id})})}
 $('langBtn').onclick=()=>{LANG=LANG==='en'?'ko':'en';try{localStorage.setItem('adr.lang',LANG)}catch(e){};track('lang',{lang:LANG});
-  applyStatic();renderMeta();renderStats();renderPMatch(pq.value.trim()?matchProblems(pq.value):[]);render()};
+  applyStatic();renderMeta();renderStats();pillUI();pillSearch();renderPMatch(pq.value.trim()?matchProblems(pq.value):[]);render()};
 render();takePending();
 }

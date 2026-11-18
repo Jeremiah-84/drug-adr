@@ -19,6 +19,7 @@ jobs:
           MFDS_KEY: ${{ secrets.MFDS_KEY }}
         run: |
           python3 pipeline/barcodes.py --cache .cache
+          python3 pipeline/pills.py --cache .cache
           python3 pipeline/run.py --out docs/data --cache .cache
           python3 pipeline/history_kr.py --out docs/data --cache .cache
       - name: 바뀐 데이터 올리기

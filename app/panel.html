@@ -99,6 +99,7 @@ mark{background:var(--mid-soft);color:inherit;padding:0 1px;border-radius:3px}
 [hidden]{display:none!important}
 #adbox{margin-top:4px}
 .camrow .btn{flex:1 1 auto}.bcview{position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:8px;overflow:hidden}.bcview video{width:100%;height:100%;object-fit:cover}.bcview .aim{position:absolute;left:12%;right:12%;top:30%;bottom:30%;border:2px solid #fff;border-radius:8px;box-shadow:0 0 0 999px rgba(0,0,0,.25)}
+.pillopt{gap:4px}.pillopt .lb{font-size:.8rem;color:var(--muted,#666);min-width:2.6em}.pchip{font:inherit;font-size:.8rem;padding:3px 9px;border-radius:999px;border:1px solid var(--line,#ccc);background:none;color:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:4px}.pchip[aria-pressed=true]{background:var(--accent);color:var(--paper);border-color:var(--accent)}.pchip i{width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.25);display:inline-block}.pill{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line,#ddd)}.pill img{width:72px;height:40px;object-fit:contain;border-radius:4px;background:#fff;flex:none}.pill .pi{flex:1;min-width:0;font-size:.85rem}.pill .pi b{display:block}.pill .btn{flex:none}
 .formsel{gap:4px 12px;font-size:.85rem}.formsel label{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
 .linkbtn{font:inherit;background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;cursor:pointer}
 footer a{color:var(--accent)}
@@ -127,6 +128,11 @@ footer a{color:var(--accent)}
   <details id="pastebox"><summary data-i18n="pasteSum">처방 목록 붙여넣기</summary>
     <textarea id="paste" data-i18n-ph="pastePh" placeholder="처방창 약 목록을 복사해서 붙여넣으면, 아는 약을 자동으로 찾아 추가합니다."></textarea>
     <div class="row"><button class="btn" id="pasteGo" type="button" data-i18n="pasteGo">약 찾아서 추가</button><span class="hint" id="pasteMsg"></span></div>
+  </details>
+  <details id="pillbox"><summary data-i18n="pillSum">💊 알약 모양으로 찾기 (새긴 글자·모양·색)</summary>
+    <input id="pillq" type="search" data-i18n-ph="pillQ" placeholder="알약에 새긴 글자 (앞·뒤 아무거나, 예: YH)" autocomplete="off" style="margin-top:8px">
+    <div class="row pillopt" id="pillShape"></div><div class="row pillopt" id="pillColor"></div><div class="row pillopt" id="pillForm"></div>
+    <div class="hint" id="pillmsg"></div><div id="pillres"></div>
   </details>
   <div class="row" id="chips"></div>
   <div class="row"><button class="btn ghost" id="clearAll" type="button" data-i18n="clearAll">새 환자 (모두 지우기)</button></div>
