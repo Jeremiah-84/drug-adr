@@ -248,15 +248,31 @@ async function photoCanvas(file,max){
 if(!IS_EXT&&$('camrow')){
   $('camrow').hidden=false;
   $('camText').onclick=()=>{$('photoIn').value='';$('photoIn').click()};
-  $('photoIn').onchange=async()=>{const f=$('photoIn').files[0];if(!f)return;const hint=$('drughint');
-    hint.textContent=T('ocrLoad');track('ocr_start');
+  // 사진·캡처 그림 한 장에서 글자를 읽어 약을 찾음 (how: ocr=휴대폰 사진, cap=처방 창 캡처)
+  async function ocrImage(f,how){if(!f)return;const hint=$('drughint');
+    hint.textContent=T('ocrLoad');track(how+'_start');
     try{const w=await ocrWorker();ocrProg=p=>{hint.textContent=T('ocrRun',p)};
-      const {data}=await w.recognize(await photoCanvas(f,2400));
+      const {data}=await w.recognize(how==='cap'?await capCanvas(f):await photoCanvas(f,2400));
       const text=(data&&data.text)||'';
       $('paste').value=text;$('pastebox').open=true;
-      const r=addFromText(text,'ocr');
-      hint.textContent=r.f.length?T('ocrDone',r.f.length,r.added.length):T('ocrNone');
-    }catch(e){track('ocr_fail');hint.textContent=T('ocrErr')+(e&&e.message||e)}};
+      const r=addFromText(text,how);
+      hint.textContent=r.f.length?T(how==='cap'?'capDone':'ocrDone',r.f.length,r.added.length):T(how==='cap'?'capNone':'ocrNone');
+    }catch(e){track(how+'_fail');hint.textContent=T('ocrErr')+(e&&e.message||e)}}
+  $('photoIn').onchange=()=>ocrImage($('photoIn').files[0],'ocr');
+  // 화면 캡처는 글자가 작으니(12~13px) 2배 키워서 읽음
+  async function capCanvas(file){
+    let bmp;try{bmp=await createImageBitmap(file)}catch(e){bmp=await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=URL.createObjectURL(file)})}
+    const w0=bmp.width,h0=bmp.height,k=Math.max(1,Math.min(2,3600/Math.max(w0,h0))),c=document.createElement('canvas');
+    c.width=Math.round(w0*k);c.height=Math.round(h0*k);const g=c.getContext('2d');g.imageSmoothingQuality='high';g.filter='grayscale(1)';g.drawImage(bmp,0,0,c.width,c.height);return c}
+  const cz=$('capzone'),imgOf=items=>{for(const it of items||[])if(it.kind==='file'&&/^image\//.test(it.type))return it.getAsFile();return null};
+  cz.hidden=false;
+  cz.onclick=()=>{$('capIn').value='';$('capIn').click()};
+  cz.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();cz.click()}};
+  $('capIn').onchange=()=>ocrImage($('capIn').files[0],'cap');
+  document.addEventListener('paste',e=>{const f=imgOf(e.clipboardData&&e.clipboardData.items);if(!f)return;e.preventDefault();cz.scrollIntoView({block:'nearest'});ocrImage(f,'cap')});
+  cz.addEventListener('dragover',e=>{e.preventDefault();cz.classList.add('over')});
+  cz.addEventListener('dragleave',()=>cz.classList.remove('over'));
+  cz.addEventListener('drop',e=>{e.preventDefault();cz.classList.remove('over');const f=[...(e.dataTransfer.files||[])].find(x=>/^image\//.test(x.type));if(f)ocrImage(f,'cap')});
 
   let BC=null, det=null, stream=null, loop=null, seen=new Set(), found=[];
   const bcmsg=$('bcmsg');
