@@ -57,7 +57,26 @@
 .zoom button{width:32px;height:32px;border-radius:10px;border:1px solid var(--s-line);background:rgba(255,255,255,.04);color:var(--s-ink);font:inherit;font-size:1.05rem;cursor:pointer;display:grid;place-items:center}
 .zoom button:hover{background:rgba(255,255,255,.1)}
 .zoom .fit{width:auto;padding:0 10px;font-size:.78rem;font-weight:600}
-.range{position:absolute;left:14px;top:12px;font-size:.78rem;font-weight:700;color:var(--s-ink);font-variant-numeric:tabular-nums;z-index:4;pointer-events:none}
+.range{position:absolute;left:14px;top:14px;font-size:.78rem;font-weight:700;color:var(--s-ink);font-variant-numeric:tabular-nums;z-index:4;pointer-events:none}
+/* 찾기 */
+.find{position:absolute;left:50%;top:9px;transform:translateX(-50%);z-index:6;width:min(320px,calc(100% - 300px))}
+.find svg{position:absolute;left:11px;top:9px;width:16px;height:16px;stroke:var(--s-muted);fill:none;stroke-width:2;pointer-events:none}
+.find input{width:100%;height:34px;border-radius:10px;border:1px solid var(--s-line);background:rgba(255,255,255,.06);color:var(--s-ink);font:inherit;font-size:.88rem;padding:0 12px 0 34px;outline:none;transition:background .2s,border-color .2s}
+.find input::placeholder{color:var(--s-muted)}
+.find input:focus{background:rgba(255,255,255,.1);border-color:rgba(76,201,166,.6)}
+.fsugg{position:absolute;left:0;right:0;top:40px;background:rgba(16,23,21,.97);border:1px solid var(--s-line);border-radius:12px;padding:4px;box-shadow:0 16px 40px rgba(0,0,0,.5);max-height:300px;overflow:auto}
+.fsugg button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;color:var(--s-ink);font:inherit;font-size:.86rem;padding:8px 10px;border-radius:8px;cursor:pointer}
+.fsugg button.on,.fsugg button:hover{background:rgba(255,255,255,.08)}
+.fsugg i{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.fsugg i.sm{width:5px;height:5px;margin:0 2px;background:#cfd8d4}
+.fsugg small{margin-left:auto;color:var(--s-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.fsugg .none{padding:10px;color:var(--s-muted);font-size:.84rem}
+@media (max-width:640px){.find{left:14px;right:14px;top:50px;transform:none;width:auto}.stage .era span{top:96px}}
+.zoom button svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+/* 전체 화면 */
+.stage.fs{position:fixed;inset:0;z-index:30;border-radius:0}
+.stage.fs .plot{height:calc(100vh - 47px);height:calc(100dvh - 47px)}
+body.fsmode{overflow:hidden}
 /* 아래 전체 미리보기 막대: 끌어서 이동, 양 끝을 끌어 확대 */
 .brush{position:relative;height:46px;border-top:1px solid var(--s-line);background:rgba(255,255,255,.02);touch-action:none;cursor:pointer}
 .brush .m{position:absolute;bottom:10px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--c);opacity:.8}
@@ -136,12 +155,13 @@
     </div>
     <div class="stage" id="stage">
       <div class="range" id="range"></div>
-      <div class="zoom"><button type="button" id="zIn" aria-label="확대">+</button><button type="button" id="zOut" aria-label="축소">−</button><button type="button" class="fit" id="zFit">전체</button></div>
+      <div class="find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="fq" type="search" placeholder="약 이름 찾기" autocomplete="off" aria-label="타임라인에서 약 찾기"><div class="fsugg" id="fsugg" hidden></div></div>
+      <div class="zoom"><button type="button" id="zIn" aria-label="확대">+</button><button type="button" id="zOut" aria-label="축소">−</button><button type="button" class="fit" id="zFit">전체</button><button type="button" class="fit" id="zFs" aria-pressed="false" aria-label="전체 화면"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
       <div class="plot" id="plot" aria-label="약의 역사 타임라인"></div>
       <div class="brush" id="brush" aria-hidden="true"></div>
       <div class="tip" id="tip" role="status"></div>
     </div>
-    <p class="tl-hint"><i data-i="info"></i><span id="hint">큰 점은 이야기가 있는 약 38개, 작은 점은 약 사전의 나머지 성분이에요(작은 점은 국내 허가 기록 연도). 마우스를 올리면 이름이, 누르면 자세한 내용이 나와요. 끌어서 옮기고, + 버튼이나 Ctrl+휠(휴대폰은 두 손가락)로 확대해요.</span></p>
+    <p class="tl-hint"><i data-i="info"></i><span id="hint">큰 점은 이야기가 있는 약 38개, 작은 점은 약 사전의 나머지 성분이에요(작은 점은 국내 허가 기록 연도). 마우스를 올리면 이름이, 누르면 자세한 내용이 나와요. 끌어서 휙 밀면 미끄러지듯 움직이고, + 버튼·Ctrl+휠·두 손가락으로 확대해요. 전체 화면에서는 휠만으로 확대돼요.</span></p>
   </div>
 
   <div class="section">
@@ -176,18 +196,24 @@ const yearOf=d=>d.y;
 
 // ── 점 타임라인 ───────────────────────────────────────────
 const D0=1800,D1=2027,MINSPAN=12;           // 전체 범위와 가장 크게 확대했을 때 보이는 햇수
-let view={a:1815,b:2027},goal={a:1815,b:2027},pts=[],evs=[],W=0,PH=0,raf=0,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let view={a:1815,b:2027},goal={a:1815,b:2027},pts=[],evs=[],W=0,PH=0,raf=0,last=0,vel=0,flyQ=[],fly=false,moreA=1,pulse=null,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const plot=$('plot'),brush=$('brush'),tip=$('tip'),stage=$('stage');
 const xOf=y=>(y-view.a)/(view.b-view.a)*W;
 const clampView=v=>{let s=Math.min(Math.max(v.b-v.a,MINSPAN),D1-D0),a=Math.min(Math.max(v.a,D0),D1-s);return{a,b:a+s}};
 function setGoal(v,now){goal=clampView(v);if(now||reduce)view={...goal};kick()}
+const ease=(c,t,k)=>{const d=t-c;if(Math.abs(d)>.25)busy=true;return Math.abs(d)<.05?t:c+d*k};
 function kick(){if(!raf)raf=requestAnimationFrame(step)}
-function step(){
-  raf=0;
-  const k=.22,da=goal.a-view.a,db=goal.b-view.b;
-  view.a+=da*k;view.b+=db*k;if(Math.abs(da)<.01&&Math.abs(db)<.01)view={...goal};
-  layout();
-  if(view.a!==goal.a||view.b!==goal.b||pts.some(p=>Math.abs(p.ty-p.cy)>.3))kick();
+// 화면 갱신: 프레임 간격(dt)에 맞춘 지수 감속이라 기기 성능과 상관없이 같은 속도로 부드럽게 멈춤
+let busy=false;
+function step(ts){
+  raf=0;const dt=Math.min(.05,last?(ts-last)/1000:1/60);last=ts;
+  if(vel&&!drag){const s=vel*dt;goal=clampView({a:goal.a+s,b:goal.b+s});view={...goal};vel*=Math.exp(-dt*4);if(Math.abs(vel)*W/(goal.b-goal.a)<8||goal.a<=D0||goal.b>=D1)vel=0}   // 밀고 놓으면 관성으로 미끄러짐
+  const k=reduce?1:1-Math.exp(-dt*(fly?4.2:11)),da=goal.a-view.a,db=goal.b-view.b;
+  view.a+=da*k;view.b+=db*k;
+  const near=Math.abs(da)+Math.abs(db)<.004*(goal.b-goal.a);
+  if(near){view={...goal};if(flyQ.length){setGoal(flyQ.shift())}else if(fly){fly=false;arrived()}}
+  busy=false;layout(dt);
+  if(!near||vel||busy||flyQ.length)kick();else last=0;
 }
 function build(){
   const items=H.drugs.slice().sort((a,b)=>a.y-b.y||a.cat.localeCompare(b.cat));
@@ -203,25 +229,38 @@ function build(){
 }
 function measure(){W=plot.clientWidth;PH=plot.clientHeight;const c=$('cv');if(c){const r=devicePixelRatio||1;c.width=W*r;c.height=PH*r;c.getContext('2d').setTransform(r,0,0,r,0,0)}kick()}
 // 작은 점: 약 사전의 나머지 성분 (캔버스에 그려 1천 개가 넘어도 부드럽게)
-function drawAll(ppy){
+// 점마다 지금 높이(h)와 칸 중심까지의 어긋남(o)을 기억해 두고 목표로 천천히 옮김 → 확대할 때 점들이 흘러가듯 다시 쌓임
+let hovR=0;
+function drawAll(ppy,dt){
   const c=$('cv');if(!c)return;const g=c.getContext('2d');g.clearRect(0,0,W,PH);hits=[];
-  if(!cats.more||!ALL.length)return;
+  if(!ALL.length)return;
+  const k=reduce?1:1-Math.exp(-dt*9);
+  moreA=ease(moreA*100,cats.more?100:0,k)/100;if(moreA<.01)return;
   const r=Math.max(1.7,Math.min(ppy*.2,3.6)),bw=r*2+1.3,bins=new Map();
-  ALL.forEach((it,i)=>{const x=xOf(it.t);if(x<-6||x>W+6)return;const b=Math.floor(x/bw);(bins.get(b)||bins.set(b,[]).get(b)).push(i)});
+  for(let i=0;i<ALL.length;i++){const it=ALL[i];it.x=xOf(it.t);if(it.x<-40||it.x>W+40){it.vis=false;continue}it.vis=true;const b=Math.floor(it.x/bw);(bins.get(b)||bins.set(b,[]).get(b)).push(i)}
   let max=1;bins.forEach(v=>max=Math.max(max,v.length));
   const dy=Math.min(r*2+1.3,(PH-44-70)/max);
-  g.fillStyle='rgba(233,240,237,.42)';g.beginPath();
-  bins.forEach((v,b)=>{const x=(b+.5)*bw;v.forEach((i,k)=>{const y=PH-44-8-k*dy;hits.push([x,y,i]);if(i!==hovX){g.moveTo(x+r,y);g.arc(x,y,r,0,7)}})});
+  bins.forEach((v,b)=>{const cx=(b+.5)*bw;v.forEach((i,n)=>{const it=ALL[i];it.th=8+n*dy;it.to=cx-it.x})});
+  g.globalAlpha=moreA;g.fillStyle='rgba(233,240,237,.45)';g.beginPath();
+  for(let i=0;i<ALL.length;i++){const it=ALL[i];if(!it.vis)continue;
+    if(it.h==null){it.h=0;it.o=it.to}
+    it.h=ease(it.h,it.th,k*(it.h<1?.6:1));it.o=ease(it.o,it.to,k);
+    const x=it.x+it.o,y=PH-44-it.h;hits.push([x,y,i]);
+    if(i!==hovX&&!(pulse&&pulse.i===i)){g.moveTo(x+r,y);g.arc(x,y,r,0,7)}}
   g.fill();
-  if(hovX>=0){const h=hits.find(q=>q[2]===hovX);if(h){g.fillStyle='#ffffff';g.beginPath();g.arc(h[0],h[1],r+2.5,0,7);g.fill();g.strokeStyle='rgba(76,201,166,.7)';g.lineWidth=3;g.stroke()}}
-  hits.r=r;
+  hovR=ease(hovR*10,hovX>=0?25:0,k)/10;
+  const hi=(i,extra)=>{const h=hits.find(q=>q[2]===i);if(!h)return;g.fillStyle='#ffffff';g.beginPath();g.arc(h[0],h[1],r+extra,0,7);g.fill();g.strokeStyle='rgba(76,201,166,.75)';g.lineWidth=3;g.stroke()};
+  if(hovX>=0)hi(hovX,hovR);
+  if(pulse){const age=(performance.now()-pulse.t)/1000;const h=hits.find(q=>q[2]===pulse.i);
+    if(h){hi(pulse.i,2.5);if(age<2.4){busy=true;g.strokeStyle=`rgba(76,201,166,${1-age/2.4})`;g.lineWidth=2;g.beginPath();g.arc(h[0],h[1],r+4+age*18,0,7);g.stroke()}}}
+  g.globalAlpha=1;hits.r=r;
 }
 plot.addEventListener('scroll',()=>{plot.scrollLeft=0;plot.scrollTop=0});   // 포커스·검색으로 안쪽이 밀리지 않게
-function layout(){
+function layout(dt=1/60){
   const ppy=W/(view.b-view.a),labels=ppy>=22;          // 1년에 22px 넘게 벌어지면 이름을 늘 보여 줌
   plot.classList.toggle('labels',labels);
   // 가까운 점은 위로 쌓기 (이름이 보일 때는 이름 폭만큼 띄움)
-  drawAll(ppy);
+  drawAll(ppy,dt);
   const lv=[],STEP=W<640?18:21,BASE=60;
   for(const p of pts){
     const on=cats[p.d.cat];p.el.classList.toggle('off',!on);
@@ -230,7 +269,7 @@ function layout(){
     const w=labels?p.lw+30:19;let r=0;while(lv[r]!=null&&lv[r]>p.x-9)r++;lv[r]=p.x+w;
     p.ty=BASE+r*STEP;
   }
-  const maxY=PH-56;for(const p of pts){p.ty=Math.min(p.ty,maxY);p.cy+=reduce?p.ty-p.cy:(p.ty-p.cy)*.25;p.el.style.transform=`translate3d(${p.x}px,${-p.cy}px,0)`}
+  const maxY=PH-56;for(const p of pts){p.ty=Math.min(p.ty,maxY);p.cy=ease(p.cy,p.ty,reduce?1:1-Math.exp(-dt*10));p.el.style.transform=`translate3d(${p.x}px,${-p.cy}px,0)`}
   evs.forEach((e,i)=>e.style.left=xOf(H.events[i].y)+'px');
   plot.querySelectorAll('.era').forEach(e=>{const r=H.eras[+e.dataset.era],x0=xOf(r.a),x1=xOf(r.b);e.style.left=x0+'px';e.style.width=Math.max(x1-x0,0)+'px';e.style.display=x1<0||x0>W?'none':'';e.firstChild.style.display=x1-Math.max(x0,0)<120?'none':'';e.firstChild.style.left=Math.max(10,-x0+10)+'px'});
   // 눈금: 화면 폭에 맞춰 1·2·5·10·20·50년 간격
@@ -244,17 +283,63 @@ function layout(){
 // 확대·축소: 기준점(year)을 화면의 같은 자리에 두고 범위만 바꿈
 function zoomAt(f,year){const g=goal,c=year??(g.a+g.b)/2;setGoal({a:c-(c-g.a)*f,b:c+(g.b-c)*f})}
 const yAt=px=>goal.a+px/W*(goal.b-goal.a);
-$('zIn').onclick=()=>zoomAt(.5);$('zOut').onclick=()=>zoomAt(2);$('zFit').onclick=()=>setGoal({a:1815,b:2027});
+$('zIn').onclick=()=>{vel=0;zoomAt(.5)};$('zOut').onclick=()=>{vel=0;zoomAt(2)};$('zFit').onclick=()=>{vel=0;setGoal({a:1815,b:2027})};
+// 전체 화면: 무대를 화면 가득 채우고(상세 창은 그 위에 뜸), 되는 브라우저에서는 브라우저 테두리까지 숨김
+const isFs=()=>stage.classList.contains('fs');
+function setFs(on){
+  if(on===isFs())return;stage.classList.toggle('fs',on);document.body.classList.toggle('fsmode',on);$('zFs').setAttribute('aria-pressed',on);
+  $('zFs').innerHTML=on?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+  $('zFs').setAttribute('aria-label',on?'전체 화면 끝내기':'전체 화면');
+  try{if(on&&!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>{});if(!on&&document.fullscreenElement)document.exitFullscreen?.().catch(()=>{})}catch(e){}
+  requestAnimationFrame(measure);
+}
+$('zFs').onclick=()=>setFs(!isFs());
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&isFs())setFs(false)});
+// 찾기: 이름·영문명·대표 제품으로 찾고, 고르면 멀면 한 번 물러났다가 그 약으로 날아감
+const fq=$('fq'),fs=$('fsugg');let fItems=[],fOn=0,SIDX=null;
+function sIndex(){if(SIDX)return SIDX;const n=Portal.norm;
+  SIDX=H.drugs.map(d=>({big:true,id:d.id,ko:d.ko,y:d.y,c:color(d),k:[d.ko,d.en,d.id].map(n)})).concat(ALL.map((it,i)=>({big:false,i,id:it.id,ko:it.ko,y:+it.d.slice(0,4),k:[it.ko,it.id,it.brand].filter(Boolean).map(n)})));return SIDX}
+function fFind(q){const n=Portal.norm(q);if(!n)return[];const A=[],B=[];
+  for(const s of sIndex()){const i=s.k.findIndex(k=>k.startsWith(n));if(i>=0)A.push([s,i+(s.big?0:.5)]);else if(s.k.some(k=>k.includes(n)))B.push([s,9])}
+  return A.sort((a,b)=>a[1]-b[1]||a[0].ko.length-b[0].ko.length).concat(B).slice(0,8).map(x=>x[0])}
+function fDraw(){fs.hidden=!fq.value.trim();fs.innerHTML=fItems.length?fItems.map((s,j)=>`<button type="button" data-f="${j}" class="${j===fOn?'on':''}"><i class="${s.big?'':'sm'}" style="--c:${s.c||'#cfd8d4'}"></i>${esc(s.ko)}<small>${s.y}${s.big?'':' · 국내 기록'}</small></button>`).join(''):'<div class="none">찾는 약이 없어요</div>'}
+fq.addEventListener('input',()=>{fItems=fFind(fq.value);fOn=0;fDraw()});
+fq.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'){fOn=Math.min(fOn+1,fItems.length-1);fDraw();e.preventDefault()}
+  else if(e.key==='ArrowUp'){fOn=Math.max(fOn-1,0);fDraw();e.preventDefault()}
+  else if(e.key==='Enter'){e.preventDefault();if(fItems[fOn])flyTo(fItems[fOn])}
+  else if(e.key==='Escape'){fq.value='';fs.hidden=true;fq.blur();e.stopPropagation()}});
+fs.addEventListener('pointerdown',e=>e.stopPropagation());
+fs.addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b){e.stopPropagation();flyTo(fItems[+b.dataset.f])}});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.find'))fs.hidden=true});
+let target=null;
+function flyTo(s){
+  fs.hidden=true;fq.blur();hideTip();vel=0;target=s;
+  if(s.big&&!cats[H.drugs.find(d=>d.id===s.id).cat]){Object.keys(cats).forEach(k=>cats[k]=true);cats_();render()}
+  if(!s.big&&!cats.more){cats.more=true;cats_()}
+  const t=s.big?s.y:ALL[s.i].t,span=Math.min(Math.max(goal.b-goal.a,MINSPAN),18),c=(goal.a+goal.b)/2,dist=Math.abs(t-c);
+  const end={a:t-span/2,b:t+span/2};flyQ=[];fly=true;
+  if(dist>(goal.b-goal.a)*.8){const lo=Math.min(goal.a,t-span),hi=Math.max(goal.b,t+span),pad=(hi-lo)*.08;setGoal({a:lo-pad,b:hi+pad});flyQ=[end]}   // 멀면 둘 다 보이게 물러났다가
+  else setGoal(end);
+}
+function arrived(){
+  const s=target;target=null;if(!s)return;
+  if(s.big){const p=pts.find(q=>q.d.id===s.id);if(!p)return;p.el.classList.add('on');setTimeout(()=>{if(sel!==s.id)p.el.classList.remove('on')},2600);
+    const d=p.d;setTimeout(()=>showTip(p.el,`<span class="cat">${esc(H.cats[d.cat])}</span><b>${esc(d.ko)}</b><small>${d.y} · ${esc(d.when)} · 누르면 자세히</small>`,color(d)),120)}
+  else{pulse={i:s.i,t:performance.now()};kick();setTimeout(()=>{const h=hits.find(q=>q[2]===s.i);const it=ALL[s.i];if(h)showTipAt(h[0],h[1],`<span class="cat" style="color:#cfd8d4">그 밖의 성분</span><b>${esc(it.ko)}</b><small>국내 허가 기록 ${it.d.slice(0,4)} · 누르면 자세히</small>`)},450);
+    setTimeout(()=>{if(pulse&&pulse.i===s.i)pulse=null;kick()},6000)}
+}
 plot.addEventListener('wheel',e=>{
   const r=plot.getBoundingClientRect(),y=yAt(e.clientX-r.left);
-  if(e.ctrlKey||e.metaKey){e.preventDefault();zoomAt(Math.exp(e.deltaY*.01),y)}                // 핀치·Ctrl+휠
+  vel=0;
+  if(e.ctrlKey||e.metaKey||(isFs()&&Math.abs(e.deltaY)>=Math.abs(e.deltaX))){e.preventDefault();zoomAt(Math.exp(Math.max(-1,Math.min(1,e.deltaY*(e.deltaMode?.05:.0035)))),y)}   // 핀치·Ctrl+휠, 전체 화면에서는 휠만으로
   else if(Math.abs(e.deltaX)>Math.abs(e.deltaY)){e.preventDefault();const s=(goal.b-goal.a)/W*e.deltaX;setGoal({a:goal.a+s,b:goal.b+s},true)}
 },{passive:false});
 // 끌기(한 손가락·마우스)와 두 손가락 확대
 const ptrs=new Map();let drag=null,moved=false;
 plot.addEventListener('pointerdown',e=>{
-  ptrs.set(e.pointerId,e.clientX);moved=false;
-  if(ptrs.size===1)drag={x:e.clientX,a:goal.a,b:goal.b};
+  ptrs.set(e.pointerId,e.clientX);moved=false;vel=0;fly=false;flyQ=[];
+  if(ptrs.size===1)drag={x:e.clientX,a:goal.a,b:goal.b,hist:[[performance.now(),e.clientX]]};
   else if(ptrs.size===2){const xs=[...ptrs.values()],r=plot.getBoundingClientRect();drag={pinch:Math.abs(xs[0]-xs[1])||1,mid:yAt((xs[0]+xs[1])/2-r.left),a:goal.a,b:goal.b}}
 });
 addEventListener('pointermove',e=>{
@@ -262,8 +347,10 @@ addEventListener('pointermove',e=>{
   if(drag.pinch&&ptrs.size===2){const xs=[...ptrs.values()],f=drag.pinch/(Math.abs(xs[0]-xs[1])||1),c=drag.mid;setGoal({a:c-(c-drag.a)*f,b:c+(drag.b-c)*f},true);moved=true;return}
   const dx=e.clientX-drag.x;if(Math.abs(dx)>4){moved=true;plot.classList.add('drag');hideTip()}
   if(moved){const s=-dx/W*(drag.b-drag.a);setGoal({a:drag.a+s,b:drag.b+s},true)}
+  if(drag.hist){drag.hist.push([performance.now(),e.clientX]);if(drag.hist.length>6)drag.hist.shift()}
 });
-const up=e=>{ptrs.delete(e.pointerId);if(!ptrs.size){drag=null;plot.classList.remove('drag')}else if(ptrs.size===1){const x=[...ptrs.values()][0];drag={x,a:goal.a,b:goal.b}}};
+const up=e=>{if(drag&&drag.hist&&moved&&ptrs.size===1){const h=drag.hist,a=h[0],b=h[h.length-1],t=(b[0]-a[0])/1000;if(t>0&&performance.now()-b[0]<80)vel=-(b[1]-a[1])/t/W*(goal.b-goal.a);kick()}
+  ptrs.delete(e.pointerId);if(!ptrs.size){drag=null;plot.classList.remove('drag')}else if(ptrs.size===1){const x=[...ptrs.values()][0];drag={x,a:goal.a,b:goal.b}}};
 addEventListener('pointerup',up);addEventListener('pointercancel',up);
 plot.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault()}},true);
 // 아래 막대: 창 끌기 / 양 끝 끌기 / 빈 곳 누르면 그리로 이동
@@ -426,7 +513,7 @@ document.addEventListener('click',e=>{
     cats_();render();return}
   if(e.target.id==='sheetBg')close();
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('open'))close()});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(document.body.classList.contains('open'))close();else if(isFs())setFs(false)});
 addEventListener('resize',()=>H&&measure());
 })();
 </script>
