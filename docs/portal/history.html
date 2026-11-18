@@ -38,7 +38,7 @@
 .pt{position:absolute;left:-13px;bottom:-13px;width:26px;height:26px;z-index:2;border:0;padding:0;background:none;cursor:pointer;will-change:transform;border-radius:50%}
 .pt i{position:absolute;left:5px;top:5px;width:16px;height:16px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px var(--s-bg);transition:transform .25s cubic-bezier(.2,.9,.3,1.4),box-shadow .25s,opacity .3s}
 .pt b{position:absolute;left:26px;top:3px;font-size:.76rem;font-weight:600;white-space:nowrap;color:var(--s-ink);opacity:0;transition:opacity .25s;pointer-events:none}
-.labels .pt b{opacity:.88}
+.labels .pt b{opacity:1;background:rgba(10,15,14,.82);padding:0 6px;border-radius:6px;top:2px}
 .pt:hover i,.pt:focus-visible i,.pt.on i{transform:scale(1.5);box-shadow:0 0 0 6px color-mix(in srgb,var(--c) 22%,transparent),0 0 18px var(--c)}
 .pt:focus-visible{outline:none}
 .plot.hov .pt:not(:hover):not(.on) i{opacity:.35}
