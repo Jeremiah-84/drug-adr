@@ -1,5 +1,5 @@
 import { LV, SLOT_KEYS, SLOT_LABEL, type Level, type SlotKey, type Tag } from './data';
-import type { AppState, Med, Member } from './state';
+import { WINDOW_MIN, type AppState, type Med, type Member } from './state';
 import { ingName, probName, type Detail, type Found, type Index } from './real';
 
 export type AdrRow = { pid: string; name: string; lv: Level; freq: string; quote: string; ing: string };
@@ -44,12 +44,42 @@ export function organView(dets: { d: Detail }[], which: 'renal' | 'hepatic'): Or
   return { tag: tag ? TAG_OF[tag] ?? '주의' : null, lines };
 }
 
-export type SlotView = { k: SlotKey; time: string; label: string; meds: Med[]; taken: boolean; remind: boolean };
+/** done = recorded today; open = inside the ±2 h window; early = before it; missed = window passed unrecorded. */
+export type SlotState = 'done' | 'open' | 'early' | 'missed';
+export type SlotView = { k: SlotKey; time: string; label: string; meds: Med[]; taken: boolean; remind: boolean; ss: SlotState; from: string; until: string };
+export const toMin = (t: string) => { const [h, m] = String(t).split(':').map(Number); return (h || 0) * 60 + (m || 0); };
+export const fmtMin = (m: number) => { m = ((m % 1440) + 1440) % 1440; return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
 export const slotViews = (s: AppState, me: Member): SlotView[] => {
   const today = me.taken[todayKey()] || [];
-  return SLOT_KEYS.map(k => ({ k, label: SLOT_LABEL[k], time: s.times[k], meds: me.meds.filter(m => m.slots.includes(k)), taken: today.includes(k), remind: s.remind[k] }))
-    .sort((a, b) => a.time.localeCompare(b.time));
+  return SLOT_KEYS.map(k => {
+    const time = s.times[k], tm = toMin(time), taken = today.includes(k), d = s.now - tm;
+    const ss: SlotState = taken ? 'done' : d < -WINDOW_MIN ? 'early' : d > WINDOW_MIN ? 'missed' : 'open';
+    return { k, label: SLOT_LABEL[k], time, meds: me.meds.filter(m => m.slots.includes(k)), taken, remind: s.remind[k], ss, from: fmtMin(tm - WINDOW_MIN), until: fmtMin(tm + WINDOW_MIN) };
+  }).sort((a, b) => a.time.localeCompare(b.time));
 };
+
+/** Stamp calendar for the current month: a stamp on each day every planned dose was recorded. */
+export type StampDay = { d: number; kind: 'stamp' | 'today' | 'miss' | 'none' | 'future' };
+export function stampMonth(me: Member): { days: StampDay[]; count: number; total: number; first: number; month: number; todayDone: boolean } {
+  const now = new Date(), y = now.getFullYear(), mo = now.getMonth(), today = now.getDate();
+  const total = new Date(y, mo + 1, 0).getDate(), first = new Date(y, mo, 1).getDay();
+  const planned = SLOT_KEYS.filter(k => me.meds.some(m => m.slots.includes(k)));
+  const start = me.since || Object.keys(me.taken).sort()[0] || todayKey();
+  const full = (key: string) => planned.length > 0 && planned.every(k => (me.taken[key] || []).includes(k));
+  let count = 0;
+  const days: StampDay[] = [];
+  for (let d = 1; d <= total; d++) {
+    const key = `${y}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    let kind: StampDay['kind'];
+    if (d > today) kind = 'future';
+    else if (full(key)) kind = 'stamp';
+    else if (d === today) kind = 'today';
+    else kind = key < start || !planned.length ? 'none' : 'miss';
+    if (kind === 'stamp') count++;
+    days.push({ d, kind });
+  }
+  return { days, count, total, first, month: mo + 1, todayDone: full(todayKey()) };
+}
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
 /** Share of planned doses marked as taken over the last `days` days (today included). */

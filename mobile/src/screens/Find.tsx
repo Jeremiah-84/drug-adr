@@ -3,46 +3,44 @@ import { useApp } from '../state';
 import { loadPills, pillSearch, pillToFound, search, type PillRow } from '../real';
 import { Back, Chip, Heading } from '../ui';
 import { MyMedsList } from './MyMeds';
+import { ChevronRight, Search as SearchIcon } from '../icons';
 
 /** "내 약" tab: the saved list, plus type-ahead search over ingredient and product names. */
 export function Search() {
   const { s, me, set, go, openDrug, t, L, F } = useApp();
   const hits = useMemo(() => (s.D ? search(s.query, s.lang) : []), [s.D, s.query, s.lang]);
   return (
-    <div className="screen tab">
-      <div>
-        <div className="eyebrow">MY MEDICINES</div>
-        <div className="title" style={{ fontSize: 24 }}>{L('내 약')}</div>
-        <div className="sub">{L('약 이름, 성분, 제품명으로 찾아 추가하세요.')}</div>
-      </div>
+    <div className="page" style={{ paddingTop: 16 }}>
+      <Heading eyebrow="MY MEDICINES" title={L('내 약')} sub={L('약 이름, 성분, 제품명으로 찾아 추가하세요.')} />
       <div style={{ position: 'relative' }}>
-        <input className="field" type="search" value={s.query} onChange={e => set({ query: e.target.value })}
+        <span style={{ position: 'absolute', left: 14, top: 15, color: 'var(--color-neutral-500)' }}><SearchIcon /></span>
+        <input className="inp" style={{ paddingLeft: 40 }} type="search" value={s.query} onChange={e => set({ query: e.target.value })}
           placeholder={L('예: 타이레놀, 리리카, 메트포르민')} aria-label={L('약 검색')} autoComplete="off" />
       </div>
-      {s.dataErr && <div style={{ fontSize: 13, color: '#eb9a89' }}>{L('정보를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.')}</div>}
+      {s.dataErr && <div style={{ fontSize: 13, color: 'var(--color-accent-800)' }}>{L('정보를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.')}</div>}
       {s.query.trim() !== '' && (
-        <div className="card" style={{ overflow: 'hidden' }}>
-          {!s.D && <div style={{ padding: 16, fontSize: 13, color: 'var(--muted)' }}>{L('불러오는 중…')}</div>}
-          {s.D && !hits.length && <div style={{ padding: 16, fontSize: 13, color: 'var(--muted)' }}>{L('찾는 약이 없어요. 다른 이름으로 찾아 보세요.')}</div>}
+        <div className="col rule-top" style={{ marginTop: -8 }}>
+          {!s.D && <div className="sub" style={{ padding: '14px 0' }}>{L('불러오는 중…')}</div>}
+          {s.D && !hits.length && <div className="sub" style={{ padding: '14px 0' }}>{L('찾는 약이 없어요. 다른 이름으로 찾아 보세요.')}</div>}
           {hits.map(h => (
-            <button key={h.key} className="row suggest" onClick={() => { set({ query: '' }); openDrug({ name: h.label, ids: h.ids }); }}
-              style={{ width: '100%', gap: 12, padding: '13px 16px', borderBottom: '1px solid rgba(241,234,217,.06)', textAlign: 'left' }}>
+            <button key={h.key} className="tap hov row" onClick={() => { set({ query: '' }); openDrug({ name: h.label, ids: h.ids }); }}
+              style={{ width: '100%', gap: 12, padding: '13px 0', borderBottom: '1px solid var(--color-divider)' }}>
               <span className="col" style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                <span style={{ fontSize: 14.5 }}>{h.label}</span>
-                <span style={{ fontSize: 12, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.sub}</span>
+                <span className="serif" style={{ fontSize: 14.5 }}>{h.label}</span>
+                <span className="sub ellip" style={{ fontSize: 12 }}>{h.sub}</span>
               </span>
-              <span style={{ color: 'var(--gold)' }}>›</span>
+              <ChevronRight size={16} />
             </button>
           ))}
         </div>
       )}
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <span className="label">{F('등록한 약 {0}개', me.meds.length)}</span>
-        <button onClick={() => go('scan')} style={{ fontSize: 12.5, color: 'var(--gold)' }}>{L('스캔으로 추가')} ›</button>
+        <button className="tap" onClick={() => go('scan')} style={{ fontSize: 12.5, color: 'var(--color-accent-700)', fontStyle: 'italic' }}>{L('스캔으로 추가')} ›</button>
       </div>
-      {!me.meds.length && <div style={{ border: '1px dashed rgba(201,164,92,.3)', borderRadius: 16, padding: 22, textAlign: 'center', fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>{L('아직 등록한 약이 없어요.')}</div>}
+      {!me.meds.length && <div className="empty">{L('아직 등록한 약이 없어요.')}</div>}
       <MyMedsList />
-      {me.meds.length > 0 && <button className="btn-line" onClick={() => go('symptom')} style={{ fontWeight: 400 }}>{t.compare}</button>}
+      {me.meds.length > 0 && <button className="btn btn-secondary cta" onClick={() => go('symptom')}>{t.compare}</button>}
     </div>
   );
 }
@@ -68,10 +66,10 @@ export function Pill() {
     showFound({ at: Date.now(), kind: 'pill', found: [f] });
   };
   return (
-    <div className="screen">
+    <div className="page">
       <Back />
       <Heading eyebrow="PILL ID" title={L('알약 모양으로 찾기')} sub={L('알약에 새겨진 글자, 모양, 색을 골라 주세요.')} />
-      <input className="field" value={q.imprint} onChange={e => setQ({ ...q, imprint: e.target.value })} placeholder={L('새겨진 글자 (예: YH, 10)')} aria-label={L('새겨진 글자')} autoComplete="off" />
+      <input className="inp" value={q.imprint} onChange={e => setQ({ ...q, imprint: e.target.value })} placeholder={L('새겨진 글자 (예: YH, 10)')} aria-label={L('새겨진 글자')} autoComplete="off" />
       <div className="col" style={{ gap: 8 }}>
         <div className="label">{L('모양')}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -83,23 +81,23 @@ export function Pill() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {COLORS.map(([x, c]) => (
             <Chip key={x} on={q.color === x} onClick={() => setQ({ ...q, color: q.color === x ? '' : x })} style={{ padding: '6px 11px', fontSize: 12.5 }}>
-              <span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: '50%', background: c, marginRight: 5, verticalAlign: 'middle' }} />{L(x)}
+              <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: c, border: '1px solid var(--color-neutral-500)', marginRight: 5, verticalAlign: 'middle' }} />{L(x)}
             </Chip>
           ))}
         </div>
       </div>
-      {rows === null && <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{L('조건을 하나 이상 고르면 후보가 나와요.')}</div>}
+      {rows === null && <div className="sub">{L('조건을 하나 이상 고르면 후보가 나와요.')}</div>}
       {rows && <div className="label">{F('후보 {0}개', rows.length >= 40 ? '40+' : rows.length)}</div>}
-      <div className="col" style={{ gap: 8 }}>
+      <div className={'col' + (rows?.length ? ' rule-top' : '')}>
         {(rows || []).map(r => (
-          <button key={r[8] + r[0]} onClick={() => pick(r)} className="row" style={{ gap: 12, padding: 12, borderRadius: 14, background: 'var(--card)', textAlign: 'left' }}>
-            {img && r[8] ? <img src={img + r[8]} alt="" loading="lazy" referrerPolicy="no-referrer" style={{ width: 56, height: 32, objectFit: 'cover', borderRadius: 6, background: '#0f2b21', flex: 'none' }} />
-              : <span style={{ width: 56, height: 32, borderRadius: 6, background: 'var(--hatch)', flex: 'none' }} />}
+          <button key={r[8] + r[0]} onClick={() => pick(r)} className="tap hov row" style={{ gap: 14, padding: '12px 0', borderBottom: '1px solid var(--color-divider)' }}>
+            {img && r[8] ? <img className="plate" src={img + r[8]} alt="" loading="lazy" referrerPolicy="no-referrer" style={{ width: 60, height: 36, objectFit: 'cover', flex: 'none', borderWidth: 3 }} />
+              : <span className="plate" style={{ width: 60, height: 36, flex: 'none', borderWidth: 3, background: 'repeating-linear-gradient(135deg,var(--color-neutral-200) 0 5px,var(--color-neutral-100) 5px 10px)' }} />}
             <span className="col" style={{ flex: 1, minWidth: 0, gap: 2 }}>
-              <span style={{ fontSize: 14 }}>{r[0]}</span>
-              <span style={{ fontSize: 11.5, color: 'var(--muted)' }}>{[r[1], r[2]].filter(Boolean).join(' / ') || '—'} · {r[3]} · {r[4]}{s.lang === 'ko' ? '' : ''}</span>
+              <span className="serif" style={{ fontSize: 14 }}>{r[0]}</span>
+              <span className="sub" style={{ fontSize: 11.5 }}>{[r[1], r[2]].filter(Boolean).join(' / ') || '—'} · {r[3]} · {r[4]}{s.lang === 'ko' ? '' : ''}</span>
             </span>
-            <span className="chev">›</span>
+            <ChevronRight size={16} />
           </button>
         ))}
       </div>

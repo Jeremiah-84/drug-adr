@@ -1,6 +1,7 @@
 import { adherence } from '../derive';
 import { useApp } from '../state';
-import { Back, Heading } from '../ui';
+import { Back, Heading, SecHead, Stats } from '../ui';
+import { ChevronRight } from '../icons';
 
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -9,52 +10,54 @@ const KIND: Record<string, string> = { rx: '처방전', photo: '사진', barcode
 export function History() {
   const { me, go, showFound, t, L, F } = useApp();
   const wk = adherence(me, 7);
+  const month = adherence(me, new Date().getDate());
   const labels = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return DAYS[d.getDay()]; });
   return (
-    <div className="screen tab">
-      <div>
-        <div className="eyebrow">RECORDS</div>
-        <div className="title" style={{ fontSize: 24 }}>{t.records}</div>
-      </div>
-      <button onClick={() => go('report')} className="col"
-        style={{ borderRadius: 22, padding: 18, background: 'var(--hero)', border: '1px solid rgba(201,164,92,.3)', gap: 14 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', alignSelf: 'stretch' }}>
-          <span style={{ fontSize: 13, color: 'var(--muted)' }}>{t.weekRate}</span>
-          <span style={{ fontSize: 12.5, color: 'var(--gold)' }}>{t.reportLink}</span>
+    <div className="page" style={{ paddingTop: 16, gap: 22 }}>
+      <Heading eyebrow="RECORDS" title={t.records} />
+      <button className="tap hov" onClick={() => go('report')}
+        style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, padding: '20px 0', borderTop: '1px solid var(--color-text)', borderBottom: '1px solid var(--color-divider)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span className="sub">{t.weekRate} · <span className="link-u">{L('건강 리포트')}</span></span>
+          <span className="g tnum" style={{ fontSize: 64, lineHeight: 0.85 }}>{wk.pct === null ? '—' : wk.pct}{wk.pct !== null && <span style={{ fontSize: 26, color: 'var(--color-accent-700)' }}>%</span>}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, alignSelf: 'stretch' }}>
-          <span className="display" style={{ fontSize: 52, lineHeight: 0.9, color: 'var(--gold-light)' }}>{wk.pct === null ? '—' : wk.pct}{wk.pct !== null && <span style={{ fontSize: 24 }}>%</span>}</span>
-          <div style={{ display: 'flex', gap: 7, alignItems: 'flex-end', height: 56 }}>
-            {wk.per.map((p, i) => (
-              <div key={i} className="col" style={{ alignItems: 'center', gap: 4 }}>
-                <div style={{ width: 14, height: Math.max(3, Math.round((p ?? 0) * 0.44)), borderRadius: 4, background: p === null ? 'rgba(201,164,92,.18)' : i === 6 ? 'rgba(201,164,92,.55)' : '#c9a45c' }} />
-                <span style={{ fontSize: 9.5, color: 'var(--muted)' }}>{L(labels[i])}</span>
-              </div>
-            ))}
-          </div>
+        <div style={{ display: 'flex', gap: 9, alignItems: 'flex-end', height: 64 }}>
+          {wk.per.map((p, i) => (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+              <div style={{ width: 10, height: Math.max(2, Math.round((p ?? 0) * 0.46)), border: `1px solid ${p === null ? 'var(--color-divider)' : 'var(--color-accent)'}`, background: i === 6 || p === null ? 'transparent' : 'color-mix(in srgb,var(--color-accent) 35%,transparent)' }} />
+              <span className="muted" style={{ fontSize: 10 }}>{L(labels[i])}</span>
+            </div>
+          ))}
         </div>
-        {wk.pct === null && <span style={{ fontSize: 12, color: 'var(--muted)', alignSelf: 'flex-start' }}>{L('홈에서 "복용 완료"를 누르면 여기에 쌓여요')}</span>}
       </button>
-      <div className="label">{t.scanRec}</div>
-      {!me.scans.length && <div style={{ border: '1px dashed rgba(201,164,92,.3)', borderRadius: 16, padding: 22, textAlign: 'center', fontSize: 13, color: 'var(--muted)' }}>{L('아직 스캔 기록이 없어요')}</div>}
-      <div className="col" style={{ gap: 10 }}>
+      {wk.pct === null && <span className="sub" style={{ marginTop: -12 }}>{L('홈에서 "복용 완료"를 누르면 여기에 쌓여요')}</span>}
+      <Stats items={[{ v: String(month.done), k: L('복용 완료') }, { v: String(month.missed), k: L('누락') }, { v: String(me.scans.length), k: L('스캔') }]} />
+      <div className="col">
+        <SecHead name={t.scanRec} en="SCANS" />
+        {!me.scans.length && <div className="empty" style={{ marginTop: 14 }}>{L('아직 스캔 기록이 없어요')}</div>}
         {me.scans.map(sc => {
           const d = new Date(sc.at);
           return (
-            <button key={sc.at} onClick={() => showFound(sc)} className="row" style={{ gap: 14, padding: 14, borderRadius: 16, background: 'var(--card)' }}>
-              <div style={{ width: 46, flex: 'none', textAlign: 'center' }}>
-                <div className="display" style={{ fontSize: 24, color: 'var(--gold-light)', lineHeight: 1 }}>{String(d.getDate()).padStart(2, '0')}</div>
-                <div style={{ fontSize: 10.5, color: 'var(--muted)' }}>{MON[d.getMonth()]}</div>
+            <button key={sc.at} className="tap hov" onClick={() => showFound(sc)}
+              style={{ display: 'flex', gap: 16, alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--color-divider)' }}>
+              <div style={{ width: 40, flex: 'none', textAlign: 'center' }}>
+                <div className="g tnum" style={{ fontSize: 26, lineHeight: 1 }}>{String(d.getDate()).padStart(2, '0')}</div>
+                <div className="g" style={{ fontSize: 10.5, letterSpacing: '.14em', fontWeight: 700, color: 'var(--color-accent-700)' }}>{MON[d.getMonth()]}</div>
               </div>
-              <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-                <div style={{ fontSize: 14.5, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.found.map(f => f.name).join(', ')}</div>
-                <div style={{ fontSize: 12, color: 'var(--muted)' }}>{F('{0}개 약', sc.found.length)}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="serif ellip" style={{ fontSize: 14.5, fontWeight: 600 }}>{sc.found.map(f => f.name).join(', ')}</div>
+                <div className="muted" style={{ fontSize: 12, fontStyle: 'italic' }}>{F('{0}개 약', sc.found.length)}</div>
               </div>
-              <span className="kind" style={{ flex: 'initial' }}>{L(KIND[sc.kind])}</span>
+              <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 3, border: '1px solid var(--color-accent)', color: 'var(--color-accent-700)', flex: 'none' }}>{L(KIND[sc.kind])}</span>
             </button>
           );
         })}
       </div>
+      <button className="tap hov" onClick={() => go('report')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', borderTop: '1px solid var(--color-text)', borderBottom: '1px solid var(--color-divider)' }}>
+        <span className="serif" style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{L('이번 달 건강 리포트')}</span>
+        <span className="sub">{L('진료 때 보여주기')}</span>
+        <ChevronRight size={16} />
+      </button>
     </div>
   );
 }
@@ -62,42 +65,33 @@ export function History() {
 export function Report() {
   const { me, t, L } = useApp();
   const now = new Date();
-  const days = now.getDate();
-  const m = adherence(me, days);
+  const m = adherence(me, now.getDate());
   const pct = m.pct ?? 0;
-  const stats = [{ v: m.done, k: '복용 완료' }, { v: m.missed, k: '누락' }, { v: me.syms.length, k: '증상 기록' }];
   return (
-    <div className="screen">
+    <div className="page">
       <Back />
       <Heading eyebrow={`HEALTH REPORT · ${MON[now.getMonth()]}`} title={L('이번 달 건강 리포트')} sub={me.meds.map(x => x.name).join(', ') || undefined} />
       <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0' }}>
-        <div style={{ width: 190, height: 190, borderRadius: '50%', background: `conic-gradient(#c9a45c 0 ${pct}%,rgba(201,164,92,.14) ${pct}% 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="col" style={{ width: 170, height: 170, borderRadius: '50%', background: 'var(--bg)', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-            <span className="display" style={{ fontSize: 56, color: 'var(--gold-light)', lineHeight: 1 }}>{m.pct === null ? '—' : m.pct}{m.pct !== null && <span style={{ fontSize: 24 }}>%</span>}</span>
-            <span style={{ fontSize: 12, color: 'var(--muted)' }}>{t.monthRate}</span>
+        <div style={{ width: 190, height: 190, borderRadius: '50%', background: `conic-gradient(var(--color-accent) 0 ${pct}%,var(--color-neutral-200) ${pct}% 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="col" style={{ width: 176, height: 176, borderRadius: '50%', background: 'var(--color-bg)', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+            <span className="g tnum" style={{ fontSize: 58, lineHeight: 1 }}>{m.pct === null ? '—' : m.pct}{m.pct !== null && <span style={{ fontSize: 24, color: 'var(--color-accent-700)' }}>%</span>}</span>
+            <span className="sub">{t.monthRate}</span>
           </div>
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-        {stats.map(r => (
-          <div key={r.k} style={{ borderRadius: 14, padding: 12, background: 'var(--card)', textAlign: 'center' }}>
-            <div className="display" style={{ fontSize: 26, lineHeight: 1.1 }}>{r.v}</div>
-            <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>{L(r.k)}</div>
-          </div>
-        ))}
-      </div>
-      <div className="col" style={{ gap: 8 }}>
-        <div className="label">{t.symLog}</div>
-        {!me.syms.length && <div style={{ fontSize: 13, color: 'var(--muted)' }}>{L('증상 체크에서 "이 증상 기록해 두기"를 누르면 여기에 남아요')}</div>}
+      <Stats items={[{ v: String(m.done), k: L('복용 완료') }, { v: String(m.missed), k: L('누락') }, { v: String(me.syms.length), k: L('증상 기록') }]} />
+      <div className="col">
+        <SecHead name={t.symLog} en="SYMPTOMS" />
+        {!me.syms.length && <div className="sub" style={{ padding: '12px 0' }}>{L('증상 체크에서 "이 증상 기록해 두기"를 누르면 여기에 남아요')}</div>}
         {me.syms.map((x, i) => (
-          <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 14px', borderRadius: 14, background: 'var(--card)', fontSize: 13.5 }}>
-            <span style={{ color: 'var(--gold)', width: 44, flex: 'none' }}>{x.d}</span>
-            <span style={{ flex: 1 }}>{x.text}</span>
-            <span style={{ color: 'var(--muted)', fontSize: 12, maxWidth: 120, textAlign: 'right' }}>{x.drugs}</span>
+          <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--color-divider)', fontSize: 13.5 }}>
+            <span className="g tnum" style={{ color: 'var(--color-accent-700)', width: 44, flex: 'none', fontWeight: 700 }}>{x.d}</span>
+            <span className="serif" style={{ flex: 1 }}>{x.text}</span>
+            <span className="muted" style={{ fontSize: 12, maxWidth: 120, textAlign: 'right', fontStyle: 'italic' }}>{x.drugs}</span>
           </div>
         ))}
       </div>
-      <button className="btn-gold" onClick={() => window.print()}>{L('인쇄하거나 PDF로 저장')}</button>
+      <button className="btn btn-primary cta" onClick={() => window.print()}>{L('인쇄하거나 PDF로 저장')}</button>
     </div>
   );
 }

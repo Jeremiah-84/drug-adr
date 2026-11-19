@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react';
 import { config, type Screen } from './config';
 import { QUOTES } from './data';
 import { Splash } from './Splash';
@@ -11,11 +11,20 @@ import { Pill, Search } from './screens/Find';
 import { History, Report } from './screens/Records';
 import { Schedule, TimeSheet } from './screens/Schedule';
 import { Vitals, VitalsSheet } from './screens/Vitals';
+import { Onboarding } from './screens/Onboarding';
+import { Today } from './screens/Today';
+import { Puzzle } from './screens/Puzzle';
+import { fmtMin } from './derive';
 
 const SCREENS: Partial<Record<Screen, () => ReactNode>> = {
+  onboarding: Onboarding, today: Today, puzzle: Puzzle,
   home: Home, results: Results, detail: Detail, symptom: Symptom, schedule: Schedule, vitals: Vitals,
   history: History, report: Report, search: Search, pill: Pill, my: My, family: Family, pharmacy: Pharmacy,
 };
+
+/** Body serif per language. */
+const SERIF = { ko: "'Noto Serif KR',serif", en: "'Lora','Noto Serif KR',serif", ja: "'Noto Serif JP','Noto Serif KR',serif", zh: "'Noto Serif SC','Noto Serif KR',serif" } as const;
+const SPLASH_FONT = { ko: 'Noto Serif KR', en: 'Lora', ja: 'Noto Serif JP', zh: 'Noto Serif SC' } as const;
 
 /** Quote of the day: one per local calendar day, cycling through the ten philosophers. */
 const quoteOfDay = () => {
@@ -28,7 +37,11 @@ function Shell() {
   const { s, screen, set, L } = useApp();
   const scrollRef = useRef<HTMLDivElement>(null);
   const scanLike = screen === 'scan' || screen === 'scanning';
+  const isOnb = screen === 'onboarding';
 
+  useLayoutEffect(() => {
+    document.documentElement.style.setProperty('--ms-serif', SERIF[s.lang]);
+  }, [s.lang]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [screen]);
 
   // Android back button / browser back walks the in-app stack instead of leaving the app.
@@ -42,7 +55,7 @@ function Shell() {
     const onPop = () => set(st => {
       if (st.timeEdit) return { timeEdit: null };
       if (st.sheet) return { sheet: false };
-      return { stack: st.stack.length > 1 ? st.stack.slice(0, -1).filter(k => k !== 'scanning') : ['home'] };
+      return { stack: st.stack.length > 1 ? st.stack.slice(0, -1).filter(k => k !== 'scanning') : [st.stack[0] === 'onboarding' ? 'onboarding' : 'home'] };
     });
     addEventListener('popstate', onPop);
     return () => removeEventListener('popstate', onPop);
@@ -53,35 +66,30 @@ function Shell() {
   const dateStr = useMemo(() => { const d = new Date(); return `${d.getMonth() + 1}.${d.getDate()}`; }, []);
 
   const View = SCREENS[screen];
-  const bottom = scanLike || screen === 'pharmacy' ? 0 : 88;
+  const showNav = !scanLike && !isOnb && screen !== 'pharmacy';
 
   return (
-    <div className="stage">
-      <div className="device">
-        <div className="viewport">
-          <div className="statusbar" aria-hidden>
-            <span>9:41</span>
-            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#000', boxShadow: '0 0 0 2px #111' }} />
-            <span className="row" style={{ gap: 5 }}>
-              <span style={{ width: 14, height: 9, borderRadius: 2, border: '1.4px solid #f1ead9' }} />
-              <span style={{ fontSize: 11 }}>87%</span>
-            </span>
+    <div className="ms-stage">
+      <div className="ms-device">
+        <div className="ms-phone">
+          <div className="ms-statusbar" style={{ color: scanLike ? 'var(--color-neutral-100)' : 'var(--color-text)' }} aria-hidden="true">
+            <span className="tnum">{fmtMin(s.now)}</span><span className="notch" /><span>87%</span>
           </div>
 
-          <main ref={scrollRef} className="scroll" style={{ bottom }}>
+          <main ref={scrollRef} className="ms-scroll" style={{ bottom: showNav ? 'var(--ms-nav-h)' : 0 }}>
             {View && <View />}
           </main>
 
           {scanLike && <ScanOverlay />}
-          {!scanLike && screen !== 'pharmacy' && <BottomNav />}
+          {showNav && <BottomNav />}
           <TimeSheet />
           <VitalsSheet />
           {s.splash && (
-            <Splash key={`${s.splashKey}-${s.lang}`} quote={quote} dateStr={dateStr} cjk={s.lang === 'zh' || s.lang === 'ja'}
-              skip={L('화면을 누르면 건너뜁니다')} sub={L('메디스캔 프로')} onDone={() => set({ splash: false })} />
+            <Splash key={`${s.splashKey}-${s.lang}`} quote={quote} dateStr={dateStr} font={SPLASH_FONT[s.lang]} cjk={s.lang === 'zh' || s.lang === 'ja'}
+              skip={L('화면을 누르면 건너뜁니다')} sub={L('메디스캔')} onDone={() => set({ splash: false })} />
           )}
           {s.toast && <div className="toast" role="status">{s.toast}</div>}
-          <div className="home-indicator" aria-hidden />
+          <div className="ms-homebar" style={{ background: scanLike ? 'rgba(255,255,255,.5)' : 'var(--color-neutral-800)' }} />
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { useApp, type Med } from '../state';
 import { DrugRow, SlotChips } from './Drugs';
 
 const HOLD_MS = 450;
-const GAP = 10;
+const GAP = 0;
 
 type Drag = { key: string; from: number; y0: number; dy: number; tops: number[]; hs: number[] };
 
@@ -111,11 +111,11 @@ export function MyMedsList() {
     <>
       {me.meds.length > 0 && (
         <div className="row" style={{ justifyContent: 'space-between', marginTop: -4 }}>
-          <span style={{ fontSize: 12, color: 'var(--muted)' }}>{editing ? L('잡고 끌어서 순서를 바꾸세요') : L('길게 누르면 순서를 바꾸거나 지울 수 있어요')}</span>
-          <button onClick={() => { setEditing(v => !v); setAsk(null); }} style={{ fontSize: 13, color: 'var(--gold)', fontWeight: editing ? 600 : 400, padding: '4px 0 4px 12px' }}>{editing ? L('완료') : L('편집')}</button>
+          <span className="sub" style={{ fontSize: 12 }}>{editing ? L('잡고 끌어서 순서를 바꾸세요') : L('길게 누르면 순서를 바꾸거나 지울 수 있어요')}</span>
+          <button onClick={() => { setEditing(v => !v); setAsk(null); }} className="tap" style={{ fontSize: 13, color: 'var(--color-accent-700)', fontWeight: editing ? 600 : 400, padding: '4px 0 4px 12px' }}>{editing ? L('완료') : L('편집')}</button>
         </div>
       )}
-      <div ref={box} className="col" style={{ gap: GAP, userSelect: 'none', WebkitUserSelect: 'none' }}
+      <div ref={box} className={'col' + (me.meds.length ? ' rule-top' : '')} style={{ gap: GAP, userSelect: 'none', WebkitUserSelect: 'none' }}
         onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}
         onContextMenu={e => e.preventDefault()}
         onClickCapture={e => { if (swallowClick.current) { swallowClick.current = false; e.stopPropagation(); e.preventDefault(); } }}>
@@ -127,23 +127,23 @@ export function MyMedsList() {
                 transform: `translateY(${isDrag ? drag!.dy : shift(i)}px)${isDrag ? ' scale(1.02)' : ''}`,
                 transition: isDrag ? 'none' : 'transform .18s ease',
                 position: 'relative', zIndex: isDrag ? 5 : 1,
-                boxShadow: isDrag ? '0 14px 30px rgba(0,0,0,.45)' : 'none', borderRadius: 20,
+                boxShadow: isDrag ? 'var(--shadow-lg)' : 'none', background: 'var(--color-bg)',
                 WebkitTouchCallout: 'none',
               } as React.CSSProperties}>
               <DrugRow f={m} color={m.color} onOpen={() => { if (!editing) openDrug(m); }}
                 right={editing ? (
                   <div className="row" style={{ gap: 6, flex: 'none' }}>
                     <button data-del aria-label={L('지우기')} onClick={() => setAsk(a => a === m.key ? null : m.key)}
-                      style={{ width: 34, height: 34, borderRadius: 10, border: '1px solid rgba(235,154,137,.5)', color: '#eb9a89', fontSize: 15 }}>✕</button>
+                      style={{ width: 34, height: 34, borderRadius: 'var(--radius-md)', border: '1px solid var(--color-accent)', color: 'var(--color-accent-800)', fontSize: 15, background: 'none' }}>✕</button>
                     <span data-grip aria-label={L('잡고 끌어서 순서 바꾸기')} role="button"
-                      style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)', fontSize: 18, cursor: 'grab', touchAction: 'none' }}>≡</span>
+                      style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent-700)', fontSize: 18, cursor: 'grab', touchAction: 'none' }}>≡</span>
                   </div>
                 ) : undefined}
                 foot={ask === m.key ? (
-                  <div className="row" style={{ gap: 8, padding: '10px 12px', borderRadius: 12, background: 'rgba(235,154,137,.1)', border: '1px solid rgba(235,154,137,.3)' }}>
-                    <span style={{ flex: 1, fontSize: 13 }}>{L('이 약을 내 약에서 지울까요?')}</span>
-                    <button onClick={() => setAsk(null)} style={{ fontSize: 13, color: 'var(--muted)', padding: '6px 8px' }}>{L('취소')}</button>
-                    <button onClick={() => remove(m)} style={{ fontSize: 13, fontWeight: 600, color: '#0b1d16', background: '#eb9a89', borderRadius: 8, padding: '6px 12px' }}>{L('지우기')}</button>
+                  <div className="row" style={{ gap: 8, padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-accent)' }}>
+                    <span className="serif" style={{ flex: 1, fontSize: 13 }}>{L('이 약을 내 약에서 지울까요?')}</span>
+                    <button className="btn btn-secondary" onClick={() => setAsk(null)} style={{ height: 32 }}>{L('취소')}</button>
+                    <button className="btn btn-primary" onClick={() => remove(m)} style={{ height: 32 }}>{L('지우기')}</button>
                   </div>
                 ) : editing ? undefined : (
                   <SlotChips compact value={m.slots} onChange={v => edit(x => ({ meds: x.meds.map(y => y.key === m.key ? { ...y, slots: v } : y) }))} />
