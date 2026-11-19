@@ -1,0 +1,1 @@
+{"name":"약 바로알기","short_name":"약 바로알기","description":"식약처 허가정보를 쉬운 말로. 내 약의 이상반응, 같이 먹어도 되는지 찾아보세요.","lang":"ko","start_url":"./index.html","scope":"./","display":"standalone","background_color":"#f3f2f2","theme_color":"#f3f2f2","icons":[{"src":"../icon-192.png","sizes":"192x192","type":"image/png"},{"src":"../icon-512.png","sizes":"512x512","type":"image/png"}]}

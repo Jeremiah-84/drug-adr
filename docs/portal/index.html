@@ -5,92 +5,168 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>약 바로알기</title>
 <meta name="description" content="식약처 허가정보를 쉬운 말로. 내 약의 이상반응, 같이 먹어도 되는지, 상황별 복약 가이드를 찾아보세요.">
-<meta name="theme-color" content="#0e7a63">
+<meta name="theme-color" content="#f3f2f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161514" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="portal.css">
+<link rel="stylesheet" href="home.css">
 </head>
-<body data-page="home" data-base="">
-<section class="hero"><div class="wrap">
-  <span class="pill"><b>공식 자료</b>식품의약품안전처 허가정보 기준</span>
-  <h1>내가 먹는 약,<br><em>바로</em> 알아보세요</h1>
-  <p class="lead">처방약부터 감기약까지. 이상반응, 같이 먹어도 되는지, 조심해야 할 사람을 <br class="br-d">첨부문서 원문 그대로 쉬운 말로 보여드려요.</p>
-  <div class="search">
-    <div class="box"><i data-i="search"></i><input id="q" type="search" placeholder="약 이름이나 성분 (예: 타이레놀)" autocomplete="off" aria-label="약 검색"><button class="btn" type="button"><span>검색</span></button></div>
-    <div class="sugg" id="sugg" hidden></div>
-  </div>
-  <div class="chips" aria-label="자주 찾는 약">
-    <span class="lbl">자주 찾는 약</span>
-    <a href="drug.html?id=acetaminophen">아세트아미노펜</a><a href="drug.html?id=ibuprofen">이부프로펜</a><a href="drug.html?id=amlodipine">암로디핀</a><a href="drug.html?id=metformin">메트포르민</a><a href="drug.html?id=atorvastatin">아토르바스타틴</a>
-  </div>
-  <div class="trust-row">
-    <span><i data-i="shield"></i>식약처 첨부문서만 사용</span>
-    <span><i data-i="refresh"></i>매월 자동 갱신</span>
-    <span><i data-i="user"></i>진료 의사가 운영</span>
-  </div>
-</div></section>
+<body class="home" data-page="home" data-base="" data-chrome="own">
 
-<main style="padding-top:0"><div class="wrap">
-  <div class="section">
-    <div class="sec-head"><div><span class="eyebrow">도구</span><h2>무엇이 궁금하세요?</h2></div></div>
-    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr))">
-      <a class="tile feature" href="../"><span class="ico"><i data-i="symptom"></i></span><i data-i="arrow"></i><b>이 증상, 약 때문일까?</b><span>먹는 약과 새로 생긴 증상을 넣으면 첨부문서에 있는 이상반응인지 찾아드려요.</span></a>
-      <a class="tile feature" href="check.html"><span class="ico"><i data-i="layers"></i></span><i data-i="arrow"></i><b>같이 먹어도 되나요?</b><span>감기약과 진통제를 함께 먹을 때 같은 성분이 겹치는지 확인해요.</span></a>
-      <a class="tile feature" href="drug.html"><span class="ico"><i data-i="book"></i></span><i data-i="arrow"></i><b>약 사전</b><span>흔한 이상반응부터 드문 것까지, 신장·간이 약한 분의 주의 사항까지.</span></a>
-      <a class="tile feature" href="guides.html"><span class="ico"><i data-i="compass"></i></span><i data-i="arrow"></i><b>상황별 가이드</b><span>약 먹는 시간, 깜빡했을 때, 남은 약 버리는 법.</span></a>
-      <a class="tile feature" href="dependence.html"><span class="ico"><i data-i="heart"></i></span><i data-i="arrow"></i><b>의존·중독</b><span>수면제·진통제의 내성과 의존, 자가 점검, 도움받을 곳.</span></a>
-      <a class="tile feature" href="history.html"><span class="ico"><i data-i="clock"></i></span><i data-i="arrow"></i><b>약의 역사</b><span>아스피린부터 비만 치료제까지, 약이 세상에 나온 순서와 그 배경.</span></a>
+<header class="h-nav">
+  <div class="h-in">
+    <a class="h-brand" href="index.html">약 바로알기</a>
+    <nav class="h-links" id="hMenu" aria-label="주 메뉴">
+      <a href="drug.html">약 사전</a><a href="check.html">같이 먹어도 되나요?</a><a href="guides.html">상황별 가이드</a><a href="dependence.html">의존·중독</a><a href="pro.html">의료진 코너</a>
+      <a class="h-mobile-only" href="news.html">안전 소식</a><a class="h-mobile-only" href="history.html">약의 역사</a><a class="h-mobile-only" href="about.html">소개</a>
+    </nav>
+    <div class="h-actions">
+      <button class="h-btn h-btn-primary h-desktop-only" type="button" data-install>앱 설치 · Install</button>
+      <button class="h-burger" type="button" aria-label="메뉴 열기" aria-controls="hMenu" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
     </div>
+  </div>
+</header>
+
+<main class="h-main">
+
+<!-- 첫 화면 -->
+<section class="h-hero h-in">
+  <div class="h-hero-main">
+    <div class="h-badge-row"><span class="h-tag h-tag-accent">공식 자료</span><span class="h-muted"><span class="h-desktop-only">식품의약품안전처 허가정보 기준 · Based on MFDS approval data</span><span class="h-mobile-only">식약처 허가정보 기준</span></span></div>
+    <h1 class="h-title">내가 먹는 약,<br><span class="h-emph"><span class="h-emph-bar" aria-hidden="true"></span>바로</span> 알아보세요</h1>
+    <div class="h-subtitle">Know the medicine you take — right away.</div>
+    <p class="h-lead">처방약부터 감기약까지. 이상반응, 같이 먹어도 되는지, 조심해야 할 사람을 첨부문서 원문 그대로 쉬운 말로 보여드려요.</p>
+    <div class="search h-search">
+      <div class="h-search-box">
+        <span class="h-search-ico h-desktop-only"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+        <input id="q" type="search" placeholder="예: 타이레놀 · 약 이름, 성분, 증상 무엇이든" autocomplete="off" aria-label="약 검색">
+        <button class="btn h-btn h-btn-primary" type="button"><span class="h-desktop-only">검색 · Search</span><span class="h-mobile-only">검색</span></button>
+      </div>
+      <div class="sugg" id="sugg" hidden></div>
+    </div>
+    <div class="h-popular">
+      <span class="h-kicker h-desktop-only">자주 찾는 약 · Popular</span>
+      <a class="h-tag h-tag-outline" href="drug.html?id=acetaminophen">아세트아미노펜</a><a class="h-tag h-tag-outline" href="drug.html?id=ibuprofen">이부프로펜</a><a class="h-tag h-tag-outline" href="drug.html?id=amlodipine">암로디핀</a><a class="h-tag h-tag-outline" href="drug.html?id=metformin">메트포르민</a><a class="h-tag h-tag-outline" href="drug.html?id=atorvastatin">아토르바스타틴</a>
+    </div>
+  </div>
+  <aside class="h-app" data-install-ui>
+    <span class="h-kicker h-accent-text">앱 · App</span>
+    <div class="h-app-title">홈 화면에 설치하고<br>약 봉투 옆에 두세요</div>
+    <div class="h-app-desc">Install to your home screen. Works offline, no account needed.</div>
+    <img class="h-app-shot" src="app-screenshot.png" alt="휴대폰에서 본 약 바로알기 약 사전 화면" width="780" height="975" loading="lazy">
+    <div class="h-app-btns"><button class="h-btn h-btn-primary" type="button" data-install>앱 설치</button><button class="h-btn h-btn-secondary" type="button" data-share>링크 보내기</button></div>
+  </aside>
+</section>
+
+<!-- 모든 것이 여기에 -->
+<div class="h-rule">
+  <div class="h-in h-everything"><b>약에 관한 모든 것이 여기에<span class="h-desktop-only h-dim"> · Everything about medicine, in one place</span></b><span class="h-accent-text h-desktop-only">성분 <span data-v="drugs">1,493</span> · 제품 <span data-v="products">20,340</span> · 매월 갱신</span></div>
+</div>
+<div class="h-rule">
+  <div class="h-in h-trust">
+    <div><b>식약처 첨부문서만 사용</b><span>MFDS package inserts only</span></div>
+    <div><b>매월 자동 갱신</b><span>Updated automatically every month</span></div>
+    <div><b>진료 의사가 운영</b><span>Run by a practicing physician</span></div>
   </div>
 </div>
 
-<div class="band"><div class="wrap">
-  <div class="section">
-    <div class="sec-head"><div><span class="eyebrow">읽을거리</span><h2>알아두면 좋은 약 상식</h2></div><a class="more" href="guides.html">전체 보기 →</a></div>
-    <div class="grid">
-      <a class="tile" href="guide/acetaminophen.html"><span class="tag draft">감수 중</span><b>감기약과 진통제, 같이 먹어도 될까?</b><span>아세트아미노펜이 겹치는 경우와 하루 최대량.</span></a>
-      <a class="tile" href="guide/timing.html"><span class="tag draft">감수 중</span><b>식전·식후·공복은 언제일까?</b><span>약 봉투의 복용 시간 읽는 법.</span></a>
-      <a class="tile" href="guide/missed-dose.html"><span class="tag draft">감수 중</span><b>약 먹는 걸 깜빡했어요</b><span>두 번 몫을 한꺼번에 먹지 마세요.</span></a>
-      <a class="tile" href="guide/disposal.html"><span class="tag draft">감수 중</span><b>남은 약, 어디에 버리나요?</b><span>폐의약품 수거함 이용법.</span></a>
-    </div>
+<!-- 도구 -->
+<section class="h-in h-sec h-tools-sec">
+    <span class="h-kicker h-accent-text h-eyebrow">도구 · Tools</span>
+    <h2 class="h-h2" data-follow data-follow-k="0.3" data-follow-max="32" data-follow-max-m="14">무엇이 궁금하세요? <span class="h-dim h-desktop-only">What do you need?</span></h2>
+  <div class="h-tools">
+    <a href="../"><span class="h-tool-top"><span class="h-num">01</span><span class="h-arrow">→</span></span><b>이 증상, 약 때문일까?</b><span class="h-en">Is this symptom from my medicine?</span><span class="h-desc">먹는 약과 새로 생긴 증상을 넣으면 첨부문서에 있는 이상반응인지 찾아드려요.</span></a>
+    <a href="check.html"><span class="h-tool-top"><span class="h-num">02</span><span class="h-arrow">→</span></span><b>같이 먹어도 되나요?</b><span class="h-en">Can I take these together?</span><span class="h-desc">감기약과 진통제를 함께 먹을 때 같은 성분이 겹치는지 확인해요.</span></a>
+    <a href="drug.html"><span class="h-tool-top"><span class="h-num">03</span><span class="h-arrow">→</span></span><b>약 사전</b><span class="h-en">Drug dictionary</span><span class="h-desc">흔한 이상반응부터 드문 것까지, 신장·간이 약한 분의 주의 사항까지.</span></a>
+    <a href="guides.html"><span class="h-tool-top"><span class="h-num">04</span><span class="h-arrow">→</span></span><b>상황별 가이드</b><span class="h-en">Everyday guides</span><span class="h-desc">약 먹는 시간, 깜빡했을 때, 남은 약 버리는 법.</span></a>
+    <a href="dependence.html"><span class="h-tool-top"><span class="h-num">05</span><span class="h-arrow">→</span></span><b>의존·중독</b><span class="h-en">Dependence &amp; addiction</span><span class="h-desc">수면제·진통제의 내성과 의존, 자가 점검, 도움받을 곳.</span></a>
+    <a href="history.html"><span class="h-tool-top"><span class="h-num">06</span><span class="h-arrow">→</span></span><b>약의 역사</b><span class="h-en">History of medicine</span><span class="h-desc">아스피린부터 비만 치료제까지, 약이 세상에 나온 순서와 그 배경.</span></a>
   </div>
-  <div class="section">
-    <div class="sec-head"><div><span class="eyebrow">대상별</span><h2>이런 분들을 위한 정보</h2></div></div>
-    <div class="chips" style="margin-top:0">
-      <a href="pro.html#organ"><i data-i="shield"></i>신장·간이 약한 분</a><span class="chip soon">임신·수유 중 · 준비 중</span><span class="chip soon">어린이 · 준비 중</span><span class="chip soon">어르신·여러 약 복용 · 준비 중</span>
-    </div>
-  </div>
+</section>
+
+<!-- 숫자 -->
+<div class="h-in"><div class="h-stats">
+  <div><b data-up="drugs">0</b><span>정리한 성분<span class="h-desktop-only"> · Ingredients</span></span></div>
+  <div><b data-up="products">0</b><span>찾을 수 있는 제품명<span class="h-desktop-only"> · Products</span></span></div>
+  <div class="h-desktop-only"><b>4단계</b><span>이상반응 가능성 표시 · Risk levels</span></div>
+  <div class="h-desktop-only"><b>0건</b><span>약 광고 · Drug ads</span></div>
 </div></div>
 
-<div class="wrap">
-  <div class="section">
-    <div class="stats">
-      <div class="stat"><b data-count="drugs">1,534</b><span>정리한 성분</span></div>
-      <div class="stat"><b data-count="products">20,378</b><span>찾을 수 있는 제품명</span></div>
-      <div class="stat"><b>4단계</b><span>이상반응 가능성 표시</span></div>
-      <div class="stat"><b>0건</b><span>약 광고</span></div>
-    </div>
+<!-- 읽을거리 -->
+<section class="h-in h-sec h-reading">
+  <div class="h-reading-head" data-follow data-follow-k="1" data-follow-max="9999" data-follow-max-m="0">
+    <span class="h-kicker h-accent-text">읽을거리 · Reading</span>
+    <h2 class="h-h2">알아두면 좋은<br class="h-desktop-only"> 약 상식</h2>
+    <a class="h-more h-desktop-only" href="guides.html">전체 보기 →</a>
   </div>
+  <div class="h-guides">
+    <a href="guide/acetaminophen.html"><b>감기약과 진통제, 같이 먹어도 될까?</b><span>아세트아미노펜이 겹치는 경우와 하루 최대량.</span><span class="h-tag h-tag-neutral">감수 중</span></a>
+    <a href="guide/timing.html"><b>식전·식후·공복은 언제일까?</b><span>약 봉투의 복용 시간 읽는 법.</span><span class="h-tag h-tag-neutral">감수 중</span></a>
+    <a href="guide/missed-dose.html"><b>약 먹는 걸 깜빡했어요</b><span>두 번 몫을 한꺼번에 먹지 마세요.</span><span class="h-tag h-tag-neutral">감수 중</span></a>
+    <a href="guide/disposal.html"><b>남은 약, 어디에 버리나요?</b><span>폐의약품 수거함 이용법.</span><span class="h-tag h-tag-neutral">감수 중</span></a>
+  </div>
+</section>
 
-  <div class="section">
-    <div class="grid two">
-      <div class="card"><span class="eyebrow"><i data-i="shield"></i>출처</span><p style="margin:8px 0 0;color:var(--muted)">식품의약품안전처 의약품 허가정보의 첨부문서만 씁니다. 모든 항목에 근거 문장과 원문 링크를 붙여요.</p></div>
-      <div class="card"><span class="eyebrow"><i data-i="info"></i>광고 원칙</span><p style="margin:8px 0 0;color:var(--muted)">약·건강기능식품·병의원 광고는 받지 않아요. 정보가 광고에 흔들리지 않도록.</p></div>
-    </div>
-    <p class="alert" style="margin-top:16px"><i data-i="warn"></i><span>약을 먹고 숨이 차거나, 얼굴·입술이 붓거나, 피부가 벗겨지는 발진이 생기면 바로 <b>119</b>나 응급실을 찾으세요. 그 밖의 경우에는 약을 스스로 끊지 말고 먼저 의사·약사와 상의하세요.</span></p>
-  </div>
+<!-- 대상별 -->
+<div class="h-in h-for h-desktop-only">
+  <span class="h-kicker">이런 분들을 위한 정보 · For</span><a class="h-tag h-tag-accent" href="pro.html#organ">신장·간이 약한 분</a><span class="h-tag h-tag-outline h-soon">임신·수유 중 · 준비 중</span><span class="h-tag h-tag-outline h-soon">어린이 · 준비 중</span><span class="h-tag h-tag-outline h-soon">어르신·여러 약 복용 · 준비 중</span>
+</div>
 
-  <div class="section">
-    <div class="promo">
-      <div><b>의료진이신가요?</b><p>Chrome·Edge 확장 프로그램이 EMR 처방 화면의 약 이름을 읽어 이상반응과 신기능·간기능 주의를 바로 보여줘요.</p></div>
-      <a class="btn" href="pro.html">의료진 코너 <i data-i="arrow"></i></a>
+<!-- 원칙 -->
+<div class="h-in h-desktop-only"><div class="h-principles">
+  <div><b>출처 · Source</b><p>식품의약품안전처 의약품 허가정보의 첨부문서만 씁니다. 모든 항목에 근거 문장과 원문 링크를 붙여요.</p></div>
+  <div><b>광고 원칙 · No drug ads</b><p>약·건강기능식품·병의원 광고는 받지 않아요. 정보가 광고에 흔들리지 않도록.</p></div>
+</div></div>
+<div class="h-in"><div class="h-alert" role="note"><span class="h-alert-dot" aria-hidden="true"></span><p>약을 먹고 숨이 차거나, 얼굴·입술이 붓거나, 피부가 벗겨지는 발진이 생기면 바로 <b>119</b>나 응급실을 찾으세요.<span class="h-desktop-only"> 그 밖의 경우에는 약을 스스로 끊지 말고 먼저 의사·약사와 상의하세요.</span></p></div></div>
+
+<!-- 의료진 -->
+<div class="h-in h-desktop-only"><div class="h-pro">
+  <div><span class="h-kicker h-accent-text">For clinicians</span><b>의료진이신가요?</b></div>
+  <p>Chrome·Edge 확장 프로그램이 EMR 처방 화면의 약 이름을 읽어 이상반응과 신기능·간기능 주의를 바로 보여줘요.</p>
+  <a class="h-btn h-btn-secondary h-btn-block" href="pro.html">의료진 코너 →</a>
+</div></div>
+
+<!-- 설치 띠 -->
+<section class="h-cta" data-install-ui>
+  <div class="h-in h-cta-in">
+    <div class="h-cta-text"><h3>약 봉투를 받으면,<br>바로 찾아보세요.</h3><div>Look it up the moment you get your prescription.</div></div>
+    <div class="h-cta-btns">
+      <button class="h-btn h-btn-block h-btn-invert" type="button" data-install><span class="h-desktop-only">앱 설치하기 · Install app →</span><span class="h-mobile-only">앱 설치하기 · Install →</span></button>
+      <a class="h-btn h-btn-block h-btn-outline-invert h-desktop-only" href="drug.html">웹에서 계속 · Continue on web</a>
     </div>
   </div>
-</div></main>
+</section>
+</main>
+
+<footer class="h-foot">
+  <div class="h-in">
+    <p class="h-disclaimer">식품의약품안전처 의약품 허가정보(첨부문서)를 쉬운 말로 정리합니다. AI가 만든 글이 아니며, 진단이나 처방을 대신하지 않습니다. 약을 임의로 끊거나 바꾸지 말고 의사·약사와 상의하세요.</p>
+    <div class="h-foot-row"><span id="dataVer">자료 출처: 식품의약품안전처 의약품 제품 허가정보 (공공데이터포털)</span><nav aria-label="안내"><a href="about.html">소개</a><a href="../privacy.html">개인정보처리방침</a><a href="about.html#report">오류 신고</a></nav></div>
+  </div>
+</footer>
+
+<div class="h-installbar" data-install-ui><span>홈 화면에 앱으로 설치</span><button class="h-btn h-btn-primary" type="button" data-install>설치</button></div>
+
+<dialog class="h-dialog" id="installHelp" aria-labelledby="installHelpTitle">
+  <form method="dialog">
+    <b id="installHelpTitle">홈 화면에 설치하기</b>
+    <ul>
+      <li><b>iPhone·iPad (Safari)</b> — 아래쪽 공유 버튼 <span aria-hidden="true">⬆︎</span>을 누르고 <b>홈 화면에 추가</b>를 고르세요.</li>
+      <li><b>Android (Chrome)</b> — 오른쪽 위 <b>⋮</b> 메뉴에서 <b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 누르세요.</li>
+      <li><b>PC (Chrome·Edge)</b> — 주소창 오른쪽의 설치 아이콘을 누르세요.</li>
+    </ul>
+    <p>계정 없이 쓸 수 있어요. Install to your home screen — no account needed.</p>
+    <button class="h-btn h-btn-primary" value="close">확인</button>
+  </form>
+</dialog>
+<div class="h-toast" id="hToast" role="status" aria-live="polite" hidden></div>
+
 <script src="portal.js"></script>
-<script>
-Portal.attachSearch(document.getElementById('q'),document.getElementById('sugg'),it=>{
-  location.href=it.type==='product'?'drug.html?p='+encodeURIComponent(it.label):'drug.html?id='+encodeURIComponent(it.ids[0]);
-});
-</script>
+<script src="home.js"></script>
 </body>
 </html>
