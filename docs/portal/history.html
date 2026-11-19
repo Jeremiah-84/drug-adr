@@ -50,7 +50,7 @@
 .tip{position:absolute;z-index:5;pointer-events:none;min-width:150px;max-width:240px;padding:10px 12px;border-radius:12px;background:rgba(18,26,24,.94);border:1px solid var(--s-line);box-shadow:0 10px 30px rgba(0,0,0,.4);font-size:.82rem;line-height:1.45;opacity:0;transform:translateY(6px);transition:opacity .15s,transform .15s}
 .tip.show{opacity:1;transform:none}
 .tip b{display:block;font-size:.98rem;color:var(--s-ink)}
-.tip small{color:var(--s-muted)}
+.tip small{color:var(--s-muted)}.tip small.br{display:block;color:inherit;opacity:.9;margin:2px 0}
 .tip .cat{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--c);font-size:.76rem}
 .tip .cat::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
 .zoom{position:absolute;right:12px;top:10px;display:flex;gap:6px;z-index:4}
@@ -98,6 +98,7 @@ body.fsmode{overflow:hidden}
 .media .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
 .media .cap{color:var(--muted);font-size:.8rem;margin-top:6px;line-height:1.5}
 .media .cap a{color:var(--muted)}
+.mini .brief{margin:14px 0 0;display:flex;flex-direction:column;gap:6px;align-items:flex-start}.mini .brief small{color:var(--muted);font-size:.8rem;margin-top:6px}.mini .brief p{margin:0;color:var(--ink2);font-size:.95rem;line-height:1.7;border-left:2px solid var(--line2);padding-left:10px}
 .mini .lead2{color:var(--ink2);font-size:.95rem;margin:14px 0 0}
 /* 세로 목록 */
 .list{display:flex;flex-direction:column;margin-top:8px}
@@ -189,7 +190,7 @@ body.fsmode{overflow:hidden}
 (function(){
 const {esc,icon}=Portal;
 const NO_DICT=new Set(['insulin','penicillin']);   // 약 사전(경구 위주)에 아직 없는 성분
-let H=null,KR={},cats={},sel=null,ALL=[],hovX=-1,hits=[];
+let H=null,KR={},BR={},cats={},sel=null,ALL=[],hovX=-1,hits=[];
 const $=id=>document.getElementById(id);
 const color=d=>`var(--c-${d.cat})`;
 const yearOf=d=>d.y;
@@ -326,7 +327,7 @@ function arrived(){
   const s=target;target=null;if(!s)return;
   if(s.big){const p=pts.find(q=>q.d.id===s.id);if(!p)return;p.el.classList.add('on');setTimeout(()=>{if(sel!==s.id)p.el.classList.remove('on')},2600);
     const d=p.d;setTimeout(()=>showTip(p.el,`<span class="cat">${esc(H.cats[d.cat])}</span><b>${esc(d.ko)}</b><small>${d.y} · ${esc(d.when)} · 누르면 자세히</small>`,color(d)),120)}
-  else{pulse={i:s.i,t:performance.now()};kick();setTimeout(()=>{const h=hits.find(q=>q[2]===s.i);const it=ALL[s.i];if(h)showTipAt(h[0],h[1],`<span class="cat" style="color:#cfd8d4">그 밖의 성분</span><b>${esc(it.ko)}</b><small>국내 허가 기록 ${it.d.slice(0,4)} · 누르면 자세히</small>`)},450);
+  else{pulse={i:s.i,t:performance.now()};kick();setTimeout(()=>{const h=hits.find(q=>q[2]===s.i);const it=ALL[s.i];if(h)showTipAt(h[0],h[1],`<span class="cat" style="color:#cfd8d4">그 밖의 성분</span><b>${esc(it.ko)}</b>${brTip(it)}<small>국내 허가 기록 ${it.d.slice(0,4)} · 누르면 자세히</small>`)},450);
     setTimeout(()=>{if(pulse&&pulse.i===s.i)pulse=null;kick()},6000)}
 }
 plot.addEventListener('wheel',e=>{
@@ -393,7 +394,7 @@ plot.addEventListener('pointermove',e=>{
   const pr=plot.getBoundingClientRect(),mx=e.clientX-pr.left,my=e.clientY-pr.top,lim=(hits.r||2)+5;
   let best=-1,bd=lim*lim;for(const h of hits){const dx=h[0]-mx,dy=h[1]-my,d=dx*dx+dy*dy;if(d<bd){bd=d;best=h[2]}}
   if(best!==hovX){hovX=best;plot.classList.toggle('hit',best>=0);kick();
-    if(best>=0){const it=ALL[best],h=hits.find(q=>q[2]===best);showTipAt(h[0],h[1],`<span class="cat" style="color:#cfd8d4">그 밖의 성분</span><b>${esc(it.ko)}</b><small>국내 허가 기록 ${it.d.slice(0,4)}${it.brand?' · '+esc(it.brand):''}</small>`)}else hideTip()}
+    if(best>=0){const it=ALL[best],h=hits.find(q=>q[2]===best);showTipAt(h[0],h[1],`<span class="cat" style="color:#cfd8d4">그 밖의 성분</span><b>${esc(it.ko)}</b>${brTip(it)}<small>국내 허가 기록 ${it.d.slice(0,4)}${it.brand?' · '+esc(it.brand):''}</small>`)}else hideTip()}
 });
 plot.addEventListener('pointerleave',()=>{if(hovX>=0){hovX=-1;kick()}});
 plot.addEventListener('click',e=>{if(hovX>=0&&!e.target.closest('.pt,.evm'))openMini(ALL[hovX])});
@@ -476,12 +477,16 @@ function videoLinks(d){
     <li><a href="https://www.youtube.com/results?search_query=${qk}" target="_blank" rel="noopener">${icon('ext')}YouTube 검색 · ${esc(d.ko)} 역사</a></li></ul>`;
 }
 // 작은 점을 눌렀을 때: 이름·국내 허가 기록·약 사전 링크만
+// 작은 점의 짧은 소개: 식약처 허가정보의 약효 분류와 효능·효과 첫 부분 (원문 그대로, docs/data/brief.json)
+function brTip(it){const b=BR[it.id];if(!b)return'';const t=b[0]||b[1];return`<small class="br">${esc(t.length>60?t.slice(0,60)+'…':t)}</small>`}
+function brBox(it){const b=BR[it.id];if(!b)return'';return`<div class="brief">${b[0]?`<span class="tag">${esc(b[0])}</span>`:''}${b[1]?`<small>효능·효과 (식약처 허가정보 원문)</small><p>${esc(b[1])}</p>`:''}</div>`}
 function openMini(it){
   sel=it.id;document.querySelectorAll('.pt.on').forEach(c=>c.classList.remove('on'));
   const nd=`https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${encodeURIComponent(it.seq)}`;
   $('sheetIn').innerHTML=`<button class="x" type="button" aria-label="닫기" id="xBtn">×</button><div class="mini">
   <span class="tag">약 사전 성분</span>
   <h2 id="sName">${esc(it.ko)}</h2><div class="en">${esc(it.id)}${it.brand?' · 대표 제품 '+esc(it.brand):''}</div>
+  ${brBox(it)}
   <div class="dates"><div style="grid-column:1/-1"><small>국내 허가 기록 (가장 이른 품목)</small><b>${esc(it.d.replace(/-/g,'.'))}</b><span>${esc(it.item)}</span><a href="${nd}" target="_blank" rel="noopener">의약품안전나라에서 보기</a></div>
   <div class="gapline">식약처 허가 목록에 남은 가장 이른 품목이에요. 품목 양도·재허가로 번호가 바뀐 약은 실제 국내 도입보다 늦게 나올 수 있어요.</div></div>
   <p style="margin-top:22px"><a class="btn" href="drug.html?id=${encodeURIComponent(it.id)}">${icon('book')}약 사전에서 이상반응 보기</a></p></div>`;
@@ -496,6 +501,7 @@ function cats_(){
 }
 function render(){list();kick()}
 
+fetch(Portal.DATA+'brief.json').then(r=>r.ok?r.json():{}).then(b=>{BR=b||{};if(sel&&document.body.classList.contains('open')){const it=ALL.find(x=>x.id===sel);if(it)openMini(it)}}).catch(()=>{});
 Promise.all([fetch('history.json').then(r=>r.json()),fetch(Portal.DATA+'history_kr.json').then(r=>r.ok?r.json():{}).catch(()=>({})),
   fetch(Portal.DATA+'history_all.json').then(r=>r.ok?r.json():{items:[]}).catch(()=>({items:[]}))]).then(([h,kr,all])=>{
   H=h;KR=kr||{};Object.keys(H.cats).forEach(k=>cats[k]=true);cats.more=true;
