@@ -22,6 +22,7 @@ jobs:
           python3 pipeline/pills.py --cache .cache
           python3 pipeline/run.py --out docs/data --cache .cache
           python3 pipeline/history_kr.py --out docs/data --cache .cache
+          python3 pipeline/brief.py --out docs/data --cache .cache
       - name: 바뀐 데이터 올리기
         run: |
           git config user.name "data-bot"
