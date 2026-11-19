@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Noto+Serif+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+JP:wght@500;600&family=Noto+Serif+SC:wght@500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#e9e6df;font-family:"Noto Sans KR","Noto Sans JP","Noto Sans SC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#c9a45c}a:hover{color:#e8d39a}
+*{box-sizing:border-box}
+.ms-scroll::-webkit-scrollbar{display:none}
+@keyframes msBeam{0%{top:14%}50%{top:78%}100%{top:14%}}
+@keyframes msDot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+</style>
+</helmet>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">메디스캔 프로 · Android · Dark Green &amp; Gold</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>인터랙티브 프로토타입 — 탭·스캔·상담 모두 동작</div>
+<div style="width:400px;height:840px;border-radius:46px;background:#060d0a;padding:10px;box-shadow:0 30px 60px rgba(10,30,20,.35),inset 0 0 0 1.5px #2a3a32">
+<div style="position:relative;width:380px;height:820px;border-radius:37px;overflow:hidden;background:#0b1d16;color:#f1ead9">
+
+<div style="position:absolute;top:0;left:0;right:0;height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:12.5px;font-weight:500;z-index:30;color:#f1ead9">
+<span>9:41</span>
+<span style="width:10px;height:10px;border-radius:50%;background:#000;box-shadow:0 0 0 2px #111"></span>
+<span style="display:flex;gap:5px;align-items:center"><span style="width:14px;height:9px;border-radius:2px;border:1.4px solid #f1ead9"></span><span style="font-size:11px">87%</span></span>
+</div>
+
+<div ref="{{ scrollRef }}" class="ms-scroll" style="position:absolute;top:32px;left:0;right:0;bottom:{{ contentBottom }};overflow-y:auto;scrollbar-width:none">
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div style="padding:14px 20px 28px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="font-family:'Cormorant Garamond',serif;font-size:15px;letter-spacing:.32em;color:#c9a45c;font-weight:600">MEDISCAN PRO</div>
+<div style="display:flex;gap:10px;align-items:center">
+<div onClick="{{ cycleLang }}" style="height:36px;padding:0 12px;border-radius:18px;border:1px solid rgba(201,164,92,.3);display:flex;align-items:center;font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:.12em;font-size:13px;color:#e8d39a;cursor:pointer">{{ langCode }}</div>
+<div onClick="{{ goSchedule }}" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(201,164,92,.3);display:flex;align-items:center;justify-content:center;cursor:pointer"><span style="width:8px;height:8px;border-radius:50%;background:#c9a45c"></span></div>
+<div onClick="{{ goMy }}" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(140deg,#e8d39a,#a8843f);color:#0b1d16;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-weight:700;font-size:14px;cursor:pointer">{{ member.initial }}</div>
+</div>
+</div>
+<div>
+<div style="font-size:13px;color:#a3b0a7">{{ t.date }}</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:25px;line-height:1.35;font-weight:600;margin-top:4px">{{ t.greet }}<br>{{ member.name }}{{ t.nim }}</div>
+</div>
+
+<sc-if value="{{ hasNext }}" hint-placeholder-val="{{ true }}">
+<div style="border-radius:22px;padding:20px;background:linear-gradient(155deg,#17392b 0%,#0f2a1f 100%);border:1px solid rgba(201,164,92,.35);display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden">
+<div style="position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;border:1px solid rgba(201,164,92,.18)"></div>
+<div style="position:absolute;right:-12px;top:-12px;width:94px;height:94px;border-radius:50%;border:1px solid rgba(201,164,92,.14)"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<span style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">NEXT DOSE</span>
+<span style="font-size:12px;color:#a3b0a7">{{ next.label }}</span>
+</div>
+<div style="font-family:'Cormorant Garamond',serif;font-size:54px;line-height:1;color:#e8d39a;font-weight:500">{{ next.time }}</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ next.drugs }}" as="dr" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="width:10px;height:10px;border-radius:50%;background:{{ dr.color }};box-shadow:0 0 0 2px rgba(255,255,255,.08)"></span><span style="flex:1">{{ dr.short }}</span><span style="color:#a3b0a7;font-size:12.5px">{{ dr.count }}</span></div>
+</sc-for>
+</div>
+<div onClick="{{ takeNext }}" style="margin-top:4px;height:48px;border-radius:14px;background:linear-gradient(180deg,#dcc07f,#b8924a);color:#0b1d16;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;letter-spacing:.02em" style-active="transform:scale(.98)">{{ t.done }}</div>
+</div>
+</sc-if>
+<sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}">
+<div style="border-radius:22px;padding:22px;border:1px solid rgba(201,164,92,.35);background:#102a20;display:flex;flex-direction:column;gap:6px">
+<span style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">ALL DONE</span>
+<span style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:19px">{{ t.allDone }}</span>
+<span onClick="{{ resetDoses }}" style="font-size:12.5px;color:#a3b0a7;text-decoration:underline;cursor:pointer;align-self:flex-start">{{ t.undo }}</span>
+</div>
+</sc-if>
+
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#a3b0a7">{{ t.today }}</span><span style="color:#e8d39a;font-weight:500">{{ doneCount }} / 3{{ t.times }}</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+<sc-for list="{{ slots }}" as="s" hint-placeholder-count="3">
+<div style="height:4px;border-radius:2px;background:{{ s.bar }}"></div>
+</sc-for>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<sc-for list="{{ quick }}" as="q" hint-placeholder-count="4">
+<div onClick="{{ q.go }}" style="border-radius:18px;padding:16px;background:#102a20;border:1px solid rgba(201,164,92,.12);display:flex;flex-direction:column;gap:14px;cursor:pointer" style-hover="border-color:rgba(201,164,92,.4)">
+<div style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(201,164,92,.45);display:flex;align-items:center;justify-content:center"><span style="width:9px;height:9px;background:#c9a45c;border-radius:{{ q.r }};transform:{{ q.rot }}"></span></div>
+<div><div style="font-size:14.5px;font-weight:500">{{ q.t }}</div><div style="font-size:11.5px;color:#a3b0a7;margin-top:2px;font-family:'Cormorant Garamond',serif;letter-spacing:.08em;font-weight:600">{{ q.en }}</div></div>
+</div>
+</sc-for>
+</div>
+
+<div onClick="{{ goVitals }}" style="border-radius:18px;background:#102a20;border:1px solid rgba(201,164,92,.12);cursor:pointer;overflow:hidden" style-hover="border-color:rgba(201,164,92,.4)">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:14px 16px 0"><span style="font-size:14.5px;font-weight:500">{{ t.notebook }}</span><span style="font-family:'Cormorant Garamond',serif;font-size:11.5px;letter-spacing:.14em;color:#c9a45c;font-weight:600">VITALS ›</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;padding:12px 0 14px">
+<div style="padding:0 16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid rgba(241,234,217,.08)">
+<span style="font-size:11.5px;color:#a3b0a7">{{ t.bp }} · {{ bpLast.time }}</span>
+<span style="font-family:'Cormorant Garamond',serif;font-size:30px;line-height:1;color:#f1ead9">{{ bpLast.s }}<span style="color:#7f8f86">/</span>{{ bpLast.di }}</span>
+<span style="align-self:flex-start;white-space:nowrap;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:{{ bpLast.bg }};color:{{ bpLast.c }}">{{ bpLast.t }}</span>
+</div>
+<div style="padding:0 16px;display:flex;flex-direction:column;gap:4px">
+<span style="font-size:11.5px;color:#a3b0a7">{{ t.glu }} · {{ gluLast.when }}</span>
+<span style="font-family:'Cormorant Garamond',serif;font-size:30px;line-height:1;color:#f1ead9">{{ gluLast.v }}<span style="font-size:13px;color:#7f8f86"> mg/dL</span></span>
+<span style="align-self:flex-start;white-space:nowrap;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:{{ gluLast.bg }};color:{{ gluLast.c }}">{{ gluLast.t }}</span>
+</div>
+</div>
+</div>
+
+<div onClick="{{ goResults }}" style="border-radius:18px;padding:16px;background:#102a20;border:1px solid rgba(201,164,92,.12);display:flex;align-items:center;gap:14px;cursor:pointer">
+<div style="width:46px;height:56px;border-radius:8px;background:repeating-linear-gradient(135deg,#183a2c 0 6px,#143326 6px 12px);border:1px solid rgba(201,164,92,.25);flex:none"></div>
+<div style="flex:1;min-width:0"><div style="font-size:11.5px;color:#c9a45c">{{ t.recentScan }}</div><div style="font-size:14.5px;font-weight:500;margin-top:2px">{{ t.rxTitle }}</div><div style="font-size:12.5px;color:#a3b0a7">{{ t.rxSub }}</div></div>
+<span style="color:#c9a45c;font-size:18px">›</span>
+</div>
+<div style="font-size:11px;line-height:1.6;color:#7f8f86">{{ t.disclaimer }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isResults }}" hint-placeholder-val="{{ false }}">
+<div style="padding:8px 20px 28px;display:flex;flex-direction:column;gap:16px">
+<div onClick="{{ back }}" style="height:40px;display:flex;align-items:center;gap:6px;color:#c9a45c;font-size:14px;cursor:pointer">‹ {{ t.back }}</div>
+<div>
+<div style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">SCAN RESULT</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:24px;font-weight:600;margin-top:6px">{{ t.found }}</div>
+<div style="font-size:12.5px;color:#a3b0a7;margin-top:4px">{{ t.foundSub }}</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ drugList }}" as="d" hint-placeholder-count="4">
+<div onClick="{{ d.open }}" style="border-radius:18px;padding:16px;background:#102a20;border:1px solid rgba(201,164,92,.14);display:flex;gap:14px;align-items:center;cursor:pointer" style-hover="border-color:rgba(201,164,92,.45)">
+<div style="width:44px;height:44px;border-radius:50%;background:#0b1d16;border:1px solid rgba(201,164,92,.3);display:flex;align-items:center;justify-content:center;flex:none"><span style="width:20px;height:11px;border-radius:6px;background:{{ d.color }}"></span></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+<div style="font-size:15px;font-weight:500">{{ d.name }}</div>
+<div style="font-size:12.5px;color:#a3b0a7">{{ d.ing }} · {{ d.cls }}</div>
+<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
+<span style="white-space:nowrap;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:{{ d.topBg }};color:{{ d.topC }}">{{ d.topLabel }}</span>
+<span style="white-space:nowrap;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid rgba(241,234,217,.14);color:#c9d1cb">{{ d.dose }}</span>
+</div>
+</div>
+<span style="color:#c9a45c;font-size:18px">›</span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:10px">
+<div onClick="{{ goSchedule }}" style="flex:1;height:50px;border-radius:14px;background:linear-gradient(180deg,#dcc07f,#b8924a);color:#0b1d16;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;cursor:pointer">{{ t.addSched }}</div>
+<div onClick="{{ goSymptom }}" style="flex:1;height:50px;border-radius:14px;border:1px solid rgba(201,164,92,.5);color:#e8d39a;font-weight:500;font-size:14.5px;display:flex;align-items:center;justify-content:center;cursor:pointer">{{ t.bySym }}</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+<div style="padding:8px 20px 28px;display:flex;flex-direction:column;gap:18px">
+<div onClick="{{ back }}" style="height:40px;display:flex;align-items:center;gap:6px;color:#c9a45c;font-size:14px;cursor:pointer">‹ {{ t.back }}</div>
+<div style="display:flex;gap:16px;align-items:center">
+<div style="width:84px;height:84px;border-radius:20px;background:repeating-linear-gradient(135deg,#183a2c 0 7px,#143326 7px 14px);border:1px solid rgba(201,164,92,.3);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;flex:none"><span style="font-family:ui-monospace,Menlo,monospace;font-size:8.5px;color:#7f8f86">pill photo</span></div>
+<div style="min-width:0">
+<div style="font-family:'Cormorant Garamond',serif;letter-spacing:.2em;font-size:12px;color:#c9a45c;font-weight:600">{{ d.en }}</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:21px;font-weight:600;line-height:1.3;margin-top:4px">{{ d.name }}</div>
+<div style="font-size:12.5px;color:#a3b0a7;margin-top:2px">{{ d.ing }} · {{ d.cls }}</div>
+</div>
+</div>
+<div style="display:flex;border-bottom:1px solid rgba(201,164,92,.18)">
+<sc-for list="{{ detailTabs }}" as="t" hint-placeholder-count="3">
+<div onClick="{{ t.go }}" style="flex:1;text-align:center;padding:10px 0 11px;font-size:14px;cursor:pointer;color:{{ t.c }};font-weight:{{ t.w }};border-bottom:2px solid {{ t.line }};margin-bottom:-1px">{{ t.l }}</div>
+</sc-for>
+</div>
+
+<sc-if value="{{ tabAdr }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ d.adrView }}" as="a" hint-placeholder-count="4">
+<div style="border-radius:14px;padding:13px 14px;background:#102a20;display:flex;align-items:center;gap:10px">
+<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:{{ a.bg }};color:{{ a.c }};white-space:nowrap">{{ a.t }}</span>
+<span style="flex:1;font-size:14px">{{ a.n }}</span>
+<span style="font-size:11.5px;color:#a3b0a7">{{ a.f }}</span>
+</div>
+</sc-for>
+<div style="border-left:2px solid #c9a45c;padding:4px 0 4px 14px;margin-top:6px;display:flex;flex-direction:column;gap:6px">
+<span style="font-size:11.5px;color:#c9a45c;font-weight:500">{{ t.evidence }}</span>
+<span style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:13px;line-height:1.7;color:#d9d3c4">“{{ d.quote }}”</span>
+<span style="font-size:12px;color:#a3b0a7;text-decoration:underline">{{ t.source }}</span>
+</div>
+<div onClick="{{ goSymptom }}" style="height:48px;border-radius:14px;border:1px solid rgba(201,164,92,.5);color:#e8d39a;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:6px">{{ t.compare }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ tabOrgan }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ d.organView }}" as="o" hint-placeholder-count="2">
+<div style="border-radius:16px;padding:16px;background:#102a20;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14.5px;font-weight:500">{{ o.title }}</span><span style="font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:6px;background:{{ o.bg }};color:{{ o.c }}">{{ o.t }}</span></div>
+<div style="font-size:13px;line-height:1.65;color:#c9d1cb">{{ o.x }}</div>
+</div>
+</sc-for>
+<div style="font-size:11.5px;color:#7f8f86;line-height:1.6">{{ t.organNote }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ tabHow }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ d.howView }}" as="h" hint-placeholder-count="4">
+<div style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid rgba(241,234,217,.08)">
+<span style="width:72px;flex:none;font-size:12.5px;color:#c9a45c">{{ h.k }}</span>
+<span style="font-size:13.5px;line-height:1.6">{{ h.v }}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSymptom }}" hint-placeholder-val="{{ false }}">
+<div style="padding:8px 20px 28px;display:flex;flex-direction:column;gap:18px">
+<div onClick="{{ back }}" style="height:40px;display:flex;align-items:center;gap:6px;color:#c9a45c;font-size:14px;cursor:pointer">‹ {{ t.back }}</div>
+<div>
+<div style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">SYMPTOM CHECK</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:23px;font-weight:600;margin-top:6px">{{ t.symQ }}</div>
+<div style="font-size:13px;color:#a3b0a7;margin-top:4px;line-height:1.6">{{ t.symSub }}</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ symptomChips }}" as="c" hint-placeholder-count="7">
+<div onClick="{{ c.toggle }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;cursor:pointer;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.c }}">{{ c.n }}</div>
+</sc-for>
+</div>
+<sc-for list="{{ symptomResults }}" as="g" hint-placeholder-count="1">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:16px;font-weight:600;color:#e8d39a">{{ g.n }}</div>
+<sc-for list="{{ g.items }}" as="it" hint-placeholder-count="2">
+<div onClick="{{ it.open }}" style="border-radius:14px;padding:13px 14px;background:#102a20;display:flex;align-items:center;gap:10px;cursor:pointer">
+<span style="width:10px;height:10px;border-radius:50%;background:{{ it.color }}"></span>
+<span style="flex:1;font-size:14px">{{ it.name }}</span>
+<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:{{ it.bg }};color:{{ it.c }}">{{ it.t }}</span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+<sc-if value="{{ noSymptom }}" hint-placeholder-val="{{ false }}">
+<div style="border:1px dashed rgba(201,164,92,.3);border-radius:16px;padding:22px;text-align:center;font-size:13px;color:#a3b0a7">{{ t.symEmpty }}</div>
+</sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11px;color:#a3b0a7">
+<sc-for list="{{ legend }}" as="l" hint-placeholder-count="4">
+<span style="display:flex;gap:5px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:{{ l.c }}"></span>{{ l.t }} · {{ l.d }}</span>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSchedule }}" hint-placeholder-val="{{ false }}">
+<div style="padding:8px 20px 28px;display:flex;flex-direction:column;gap:18px">
+<div onClick="{{ back }}" style="height:40px;display:flex;align-items:center;gap:6px;color:#c9a45c;font-size:14px;cursor:pointer">‹ {{ t.back }}</div>
+<div>
+<div style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">REMINDERS</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:23px;font-weight:600;margin-top:6px">{{ t.sched }}</div>
+<div style="font-size:12.5px;color:#a3b0a7;margin-top:4px">{{ t.editHint }}</div>
+</div>
+<sc-for list="{{ slots }}" as="s" hint-placeholder-count="3">
+<div style="border-radius:20px;padding:18px;background:#102a20;border:1px solid rgba(201,164,92,.14);display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:12px">
+<span onClick="{{ s.edit }}" style="font-family:'Cormorant Garamond',serif;font-size:34px;color:#e8d39a;line-height:1;cursor:pointer;border-bottom:1px dashed rgba(201,164,92,.5);padding-bottom:2px" style-hover="color:#f6e7bd">{{ s.time }}</span>
+<div style="flex:1"><div style="font-size:14px;font-weight:500">{{ s.label }}</div><div style="font-size:12px;color:#a3b0a7">{{ s.status }}</div></div>
+<div onClick="{{ s.toggle }}" style="width:46px;height:28px;border-radius:14px;background:{{ s.tgBg }};position:relative;cursor:pointer;transition:background .2s"><span style="position:absolute;top:3px;left:{{ s.tgX }};width:22px;height:22px;border-radius:50%;background:#f1ead9;transition:left .2s"></span></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<sc-for list="{{ s.drugs }}" as="dr" hint-placeholder-count="2">
+<span style="display:flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;border-radius:999px;background:#0b1d16"><span style="width:8px;height:8px;border-radius:50%;background:{{ dr.color }}"></span>{{ dr.short }}</span>
+</sc-for>
+</div>
+</div>
+</sc-for>
+<div style="font-size:12px;color:#a3b0a7;line-height:1.6">{{ t.schedNote }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+<div style="padding:14px 20px 28px;display:flex;flex-direction:column;gap:18px">
+<div>
+<div style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">RECORDS</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:24px;font-weight:600;margin-top:6px">{{ t.records }}</div>
+</div>
+<div onClick="{{ goReport }}" style="border-radius:22px;padding:18px;background:linear-gradient(155deg,#17392b,#0f2a1f);border:1px solid rgba(201,164,92,.3);display:flex;flex-direction:column;gap:14px;cursor:pointer">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:#a3b0a7">{{ t.weekRate }}</span><span style="font-size:12.5px;color:#c9a45c">{{ t.reportLink }}</span></div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+<span style="font-family:'Cormorant Garamond',serif;font-size:52px;line-height:.9;color:#e8d39a">92<span style="font-size:24px">%</span></span>
+<div style="display:flex;gap:7px;align-items:flex-end;height:56px">
+<sc-for list="{{ week }}" as="w" hint-placeholder-count="7">
+<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:14px;height:{{ w.h }};border-radius:4px;background:{{ w.bg }}"></div><span style="font-size:9.5px;color:#a3b0a7">{{ w.d }}</span></div>
+</sc-for>
+</div>
+</div>
+</div>
+<div style="font-size:13px;color:#a3b0a7">{{ t.scanRec }}</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ scans }}" as="sc" hint-placeholder-count="4">
+<div onClick="{{ goResults }}" style="display:flex;gap:14px;align-items:center;padding:14px;border-radius:16px;background:#102a20;cursor:pointer">
+<div style="width:46px;flex:none;text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#e8d39a;line-height:1">{{ sc.day }}</div><div style="font-size:10.5px;color:#a3b0a7">{{ sc.mon }}</div></div>
+<div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:500">{{ sc.t }}</div><div style="font-size:12px;color:#a3b0a7">{{ sc.s }}</div></div>
+<span style="font-size:10.5px;padding:3px 8px;border-radius:6px;border:1px solid rgba(201,164,92,.35);color:#c9a45c">{{ sc.kind }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+<div style="padding:8px 20px 28px;display:flex;flex-direction:column;gap:18px">
+<div onClick="{{ back }}" style="height:40px;display:flex;align-items:center;gap:6px;color:#c9a45c;font-size:14px;cursor:pointer">‹ {{ t.back }}</div>
+<div>
+<div style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">HEALTH REPORT · NOV</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:23px;font-weight:600;margin-top:6px">{{ t.reportTitle }}</div>
+</div>
+<div style="display:flex;justify-content:center;padding:6px 0">
+<div style="width:190px;height:190px;border-radius:50%;background:conic-gradient(#c9a45c 0 89%,rgba(201,164,92,.14) 89% 100%);display:flex;align-items:center;justify-content:center">
+<div style="width:170px;height:170px;border-radius:50%;background:#0b1d16;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+<span style="font-family:'Cormorant Garamond',serif;font-size:56px;color:#e8d39a;line-height:1">89<span style="font-size:24px">%</span></span>
+<span style="font-size:12px;color:#a3b0a7">{{ t.monthRate }}</span>
+</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+<sc-for list="{{ reportStats }}" as="r" hint-placeholder-count="3">
+<div style="border-radius:14px;padding:12px;background:#102a20;text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#f1ead9;line-height:1.1">{{ r.v }}</div><div style="font-size:11px;color:#a3b0a7;margin-top:2px">{{ r.k }}</div></div>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:13px;color:#a3b0a7">{{ t.symLog }}</div>
+<sc-for list="{{ symptomLog }}" as="s" hint-placeholder-count="2">
+<div style="display:flex;gap:12px;padding:12px 14px;border-radius:14px;background:#102a20;font-size:13.5px"><span style="color:#c9a45c;width:44px;flex:none">{{ s.d }}</span><span style="flex:1">{{ s.n }}</span><span style="color:#a3b0a7;font-size:12px">{{ s.drug }}</span></div>
+</sc-for>
+</div>
+<div onClick="{{ shareReport }}" style="height:50px;border-radius:14px;background:linear-gradient(180deg,#dcc07f,#b8924a);color:#0b1d16;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;cursor:pointer">{{ t.pdf }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isChat }}" hint-placeholder-val="{{ false }}">
+<div style="padding:14px 18px 16px;display:flex;flex-direction:column;gap:14px;min-height:100%">
+<div style="display:flex;align-items:center;gap:12px">
+<div style="width:40px;height:40px;border-radius:50%;border:1px solid #c9a45c;display:flex;align-items:center;justify-content:center"><span style="width:12px;height:12px;background:#c9a45c;transform:rotate(45deg)"></span></div>
+<div><div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:17px;font-weight:600">{{ t.chatTitle }}</div><div style="font-family:'Cormorant Garamond',serif;font-size:12.5px;letter-spacing:.14em;color:#c9a45c;font-weight:600">MEDISCAN CONCIERGE</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ messages }}" as="m" hint-placeholder-count="2">
+<div style="display:flex;justify-content:{{ m.align }}">
+<div style="max-width:82%;padding:11px 14px;border-radius:{{ m.radius }};background:{{ m.bg }};color:{{ m.c }};font-size:13.5px;line-height:1.65;white-space:pre-wrap">{{ m.text }}</div>
+</div>
+</sc-for>
+<sc-if value="{{ typing }}" hint-placeholder-val="{{ false }}">{{ typingEl }}</sc-if>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:auto">
+<sc-for list="{{ suggestions }}" as="sg" hint-placeholder-count="3">
+<div onClick="{{ sg.send }}" style="padding:7px 12px;border-radius:999px;border:1px solid rgba(201,164,92,.4);color:#e8d39a;font-size:12.5px;cursor:pointer" style-hover="background:rgba(201,164,92,.1)">{{ sg.t }}</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMy }}" hint-placeholder-val="{{ false }}">
+<div style="padding:14px 20px 28px;display:flex;flex-direction:column;gap:18px">
+<div style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">MY PAGE</div>
+<div style="display:flex;gap:14px;align-items:center">
+<div style="width:58px;height:58px;border-radius:50%;background:linear-gradient(140deg,#e8d39a,#a8843f);color:#0b1d16;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-weight:700;font-size:22px">{{ member.initial }}</div>
+<div><div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:20px;font-weight:600">{{ member.name }}</div><div style="font-size:12.5px;color:#a3b0a7">{{ member.meta }}</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:13px;color:#a3b0a7">{{ t.family }}</div>
+<div style="display:flex;gap:10px">
+<sc-for list="{{ members }}" as="mb" hint-placeholder-count="3">
+<div onClick="{{ mb.pick }}" style="flex:1;border-radius:16px;padding:12px 8px;text-align:center;cursor:pointer;border:1px solid {{ mb.bd }};background:{{ mb.bg }}">
+<div style="width:36px;height:36px;margin:0 auto;border-radius:50%;border:1px solid rgba(201,164,92,.5);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-weight:600;color:#e8d39a">{{ mb.initial }}</div>
+<div style="font-size:12.5px;margin-top:6px">{{ mb.rel }}</div>
+</div>
+</sc-for>
+<div onClick="{{ goFamily }}" style="flex:1;border-radius:16px;padding:12px 8px;text-align:center;cursor:pointer;border:1px dashed rgba(201,164,92,.35)"><div style="width:36px;height:36px;margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#c9a45c;font-size:20px">+</div><div style="font-size:12.5px;margin-top:6px;color:#a3b0a7">{{ t.manage }}</div></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:13px;color:#a3b0a7">{{ t.langLabel }}</div>
+<div style="display:flex;gap:6px">
+<sc-for list="{{ langs }}" as="lg" hint-placeholder-count="4">
+<div onClick="{{ lg.pick }}" style="flex:1;text-align:center;white-space:nowrap;padding:9px 0;border-radius:999px;font-size:13px;cursor:pointer;border:1px solid {{ lg.bd }};background:{{ lg.bg }};color:{{ lg.c }}">{{ lg.t }}</div>
+</sc-for>
+</div>
+</div>
+<div style="border-radius:18px;background:#102a20;overflow:hidden">
+<sc-for list="{{ menu }}" as="mn" hint-placeholder-count="5">
+<div onClick="{{ mn.go }}" style="display:flex;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid rgba(241,234,217,.06);cursor:pointer">
+<span style="flex:1;font-size:14.5px">{{ mn.t }}</span><span style="font-size:12.5px;color:#a3b0a7">{{ mn.v }}</span><span style="color:#c9a45c">›</span>
+</div>
+</sc-for>
+</div>
+<div style="font-size:11px;color:#7f8f86;line-height:1.6">{{ t.dataNote }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isFamily }}" hint-placeholder-val="{{ false }}">
+<div style="padding:8px 20px 28px;display:flex;flex-direction:column;gap:16px">
+<div onClick="{{ back }}" style="height:40px;display:flex;align-items:center;gap:6px;color:#c9a45c;font-size:14px;cursor:pointer">‹ {{ t.back }}</div>
+<div>
+<div style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">FAMILY CARE</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:23px;font-weight:600;margin-top:6px">{{ t.familyTitle }}</div>
+</div>
+<sc-for list="{{ members }}" as="mb" hint-placeholder-count="3">
+<div style="border-radius:18px;padding:16px;background:#102a20;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:12px">
+<div style="width:42px;height:42px;border-radius:50%;border:1px solid rgba(201,164,92,.5);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-weight:600;color:#e8d39a">{{ mb.initial }}</div>
+<div style="flex:1"><div style="font-size:15px;font-weight:500">{{ mb.name }} <span style="font-size:12px;color:#a3b0a7">· {{ mb.rel }}</span></div><div style="font-size:12px;color:#a3b0a7">{{ mb.meds }}</div></div>
+<span style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#e8d39a">{{ mb.rate }}</span>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#c9d1cb;padding-top:10px;border-top:1px solid rgba(241,234,217,.07)">
+<span>{{ t.missAlert }}</span>
+<div onClick="{{ mb.toggle }}" style="width:42px;height:26px;border-radius:13px;background:{{ mb.tgBg }};position:relative;cursor:pointer;transition:background .2s"><span style="position:absolute;top:3px;left:{{ mb.tgX }};width:20px;height:20px;border-radius:50%;background:#f1ead9;transition:left .2s"></span></div>
+</div>
+</div>
+</sc-for>
+<div style="height:50px;border-radius:14px;border:1px solid rgba(201,164,92,.5);color:#e8d39a;font-size:14.5px;display:flex;align-items:center;justify-content:center">{{ t.invite }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isVitals }}" hint-placeholder-val="{{ false }}">
+<div style="padding:8px 20px 28px;display:flex;flex-direction:column;gap:18px">
+<div onClick="{{ back }}" style="height:40px;display:flex;align-items:center;gap:6px;color:#c9a45c;font-size:14px;cursor:pointer">‹ {{ t.back }}</div>
+<div>
+<div style="font-family:'Cormorant Garamond',serif;letter-spacing:.24em;font-size:12px;color:#c9a45c;font-weight:600">VITALS NOTEBOOK</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:23px;font-weight:600;margin-top:6px">{{ t.vitalsTitle }}</div>
+</div>
+<div style="display:flex;padding:4px;border-radius:999px;background:#102a20;border:1px solid rgba(201,164,92,.18)">
+<sc-for list="{{ vtTabs }}" as="v" hint-placeholder-count="2">
+<div onClick="{{ v.pick }}" style="flex:1;text-align:center;white-space:nowrap;padding:9px 0;border-radius:999px;font-size:13.5px;cursor:pointer;background:{{ v.bg }};color:{{ v.c }};font-weight:{{ v.w }}">{{ v.t }}</div>
+</sc-for>
+</div>
+
+<div style="border-radius:22px;padding:20px;background:linear-gradient(155deg,#17392b 0%,#0f2a1f 100%);border:1px solid rgba(201,164,92,.3);display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font-size:12px;color:#a3b0a7">{{ t.recent }} · {{ vt.last.d }} {{ vt.last.time }}</span>
+<span style="font-family:'Cormorant Garamond',serif;font-size:52px;line-height:.95;color:#e8d39a">{{ vt.last.big }}<span style="font-size:15px;color:#a3b0a7"> {{ vt.unit }}</span></span>
+<span style="font-size:12.5px;color:#c9d1cb">{{ vt.last.sub }}</span>
+</div>
+<span style="white-space:nowrap;font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:999px;background:{{ vt.last.bg }};color:{{ vt.last.c }}">{{ vt.last.t }}</span>
+</div>
+<div style="position:relative;height:140px;margin-top:4px">
+<sc-for list="{{ vt.refs }}" as="rf" hint-placeholder-count="2">
+<div style="position:absolute;left:0;right:0;bottom:{{ rf.b }};border-top:1px dashed rgba(201,164,92,.3)"><span style="position:absolute;right:0;top:-15px;font-size:9.5px;color:#7f8f86">{{ rf.l }}</span></div>
+</sc-for>
+<div style="position:absolute;inset:0;display:flex">
+<sc-for list="{{ vt.cols }}" as="c" hint-placeholder-count="7">
+<div style="flex:1;position:relative">
+<div style="position:absolute;left:50%;margin-left:-4px;width:8px;bottom:{{ c.b }};height:{{ c.h }};border-radius:4px;background:{{ c.bg }}"></div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;margin-top:-8px">
+<sc-for list="{{ vt.cols }}" as="c" hint-placeholder-count="7">
+<span style="flex:1;text-align:center;font-size:10px;color:#7f8f86">{{ c.d }}</span>
+</sc-for>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+<sc-for list="{{ vt.stats }}" as="r" hint-placeholder-count="3">
+<div style="border-radius:14px;padding:12px 6px;background:#102a20;text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#f1ead9;line-height:1.1">{{ r.v }}</div><div style="font-size:11px;color:#a3b0a7;margin-top:2px">{{ r.k }}</div></div>
+</sc-for>
+</div>
+
+<div style="border-left:2px solid #c9a45c;padding:2px 0 2px 14px;font-size:12.5px;line-height:1.7;color:#c9d1cb">{{ vt.note }}</div>
+
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:13px;color:#a3b0a7">{{ t.records }}</div>
+<sc-for list="{{ vt.rows }}" as="r" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:#102a20">
+<div style="width:46px;flex:none"><div style="font-size:12.5px;color:#e8d39a">{{ r.d }}</div><div style="font-size:10.5px;color:#7f8f86">{{ r.time }}</div></div>
+<div style="flex:1;min-width:0"><span style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#f1ead9">{{ r.big }}</span> <span style="font-size:11.5px;color:#a3b0a7">{{ r.sub }}</span></div>
+<span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:{{ r.bg }};color:{{ r.c }}">{{ r.t }}</span>
+</div>
+</sc-for>
+</div>
+<div onClick="{{ openSheet }}" style="height:50px;border-radius:14px;background:linear-gradient(180deg,#dcc07f,#b8924a);color:#0b1d16;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;cursor:pointer">+ {{ vt.addLabel }}</div>
+<div style="font-size:11px;color:#7f8f86;line-height:1.6">{{ t.criteria }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPharmacy }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px;padding-bottom:28px">
+<div style="position:relative;height:280px;background:repeating-linear-gradient(135deg,#123126 0 10px,#0f2b21 10px 20px)">
+<div onClick="{{ back }}" style="position:absolute;top:10px;left:14px;height:36px;padding:0 14px;border-radius:18px;background:rgba(11,29,22,.85);display:flex;align-items:center;color:#c9a45c;font-size:13.5px;cursor:pointer">‹ {{ t.back }}</div>
+<span style="position:absolute;bottom:10px;right:14px;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:#7f8f86">map view</span>
+<sc-for list="{{ pins }}" as="p" hint-placeholder-count="4">
+<span style="position:absolute;left:{{ p.x }};top:{{ p.y }};width:{{ p.s }};height:{{ p.s }};border-radius:50%;background:{{ p.bg }};border:2px solid #0b1d16;box-shadow:0 0 0 4px rgba(201,164,92,.18)"></span>
+</sc-for>
+</div>
+<div style="padding:0 20px;display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:21px;font-weight:600">{{ t.nearby }}</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{ phFilters }}" as="f" hint-placeholder-count="4">
+<div onClick="{{ f.pick }}" style="padding:6px 12px;border-radius:999px;font-size:12.5px;cursor:pointer;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.c }}">{{ f.t }}</div>
+</sc-for>
+</div>
+<sc-for list="{{ pharmacies }}" as="ph" hint-placeholder-count="3">
+<div style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#102a20">
+<span style="flex:none;white-space:nowrap;font-size:10.5px;padding:3px 8px;border-radius:6px;border:1px solid rgba(201,164,92,.35);color:#c9a45c">{{ ph.kindL }}</span>
+<div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:500">{{ ph.n }}</div><div style="font-size:12px;color:#a3b0a7">{{ ph.d }} · {{ ph.h }}</div></div>
+<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:{{ ph.bg }};color:{{ ph.c }}">{{ ph.st }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{ isChat }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;bottom:88px;padding:10px 14px;background:#0b1d16;border-top:1px solid rgba(201,164,92,.12);display:flex;gap:8px;align-items:center">
+<input value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" placeholder="{{ t.askPh }}" style="flex:1;height:44px;border-radius:22px;border:1px solid rgba(201,164,92,.3);background:#102a20;color:#f1ead9;padding:0 16px;font:inherit;font-size:13.5px;outline:none">
+<div onClick="{{ sendInput }}" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(180deg,#dcc07f,#b8924a);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#0b1d16;font-weight:700">↑</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isScanLike }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:#040807;z-index:20;display:flex;flex-direction:column">
+<div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#0a1410 0 12px,#0c1813 12px 24px)"></div>
+<span style="position:absolute;top:46%;left:0;right:0;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#4d5e55">camera preview</span>
+<div style="position:relative;display:flex;justify-content:space-between;align-items:center;padding:44px 18px 0">
+<div onClick="{{ back }}" style="width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#f1ead9;font-size:18px;cursor:pointer">×</div>
+<span style="font-family:'Cormorant Garamond',serif;letter-spacing:.3em;font-size:13px;color:#c9a45c;font-weight:600">SCAN</span>
+<div style="width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#e8d39a;font-size:11px">AUTO</div>
+</div>
+<div style="position:absolute;left:{{ frame.l }};right:{{ frame.l }};top:{{ frame.t }};height:{{ frame.h }};transition:all .35s ease">
+<span style="position:absolute;left:0;top:0;width:28px;height:28px;border-left:2px solid #c9a45c;border-top:2px solid #c9a45c;border-top-left-radius:10px"></span>
+<span style="position:absolute;right:0;top:0;width:28px;height:28px;border-right:2px solid #c9a45c;border-top:2px solid #c9a45c;border-top-right-radius:10px"></span>
+<span style="position:absolute;left:0;bottom:0;width:28px;height:28px;border-left:2px solid #c9a45c;border-bottom:2px solid #c9a45c;border-bottom-left-radius:10px"></span>
+<span style="position:absolute;right:0;bottom:0;width:28px;height:28px;border-right:2px solid #c9a45c;border-bottom:2px solid #c9a45c;border-bottom-right-radius:10px"></span>
+<sc-if value="{{ isScanning }}" hint-placeholder-val="{{ false }}">{{ beamEl }}</sc-if>
+</div>
+<div style="margin-top:auto;position:relative;padding:0 20px 34px;display:flex;flex-direction:column;align-items:center;gap:18px">
+<div style="font-size:13.5px;color:#f1ead9;text-align:center;line-height:1.6;min-height:44px">{{ scanHint }}</div>
+<div style="display:flex;padding:4px;border-radius:999px;background:rgba(16,42,32,.9);border:1px solid rgba(201,164,92,.2)">
+<sc-for list="{{ modes }}" as="md" hint-placeholder-count="3">
+<div onClick="{{ md.pick }}" style="white-space:nowrap;flex:none;padding:8px 12px;border-radius:999px;font-size:12.5px;cursor:pointer;background:{{ md.bg }};color:{{ md.c }};font-weight:{{ md.w }}">{{ md.t }}</div>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+<div style="width:48px;height:48px;border-radius:12px;background:repeating-linear-gradient(135deg,#183a2c 0 5px,#143326 5px 10px);border:1px solid rgba(201,164,92,.3)"></div>
+<div onClick="{{ shutter }}" style="width:78px;height:78px;border-radius:50%;border:2px solid #c9a45c;display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="width:62px;height:62px;border-radius:50%;background:linear-gradient(180deg,#e8d39a,#b8924a)" style-active="transform:scale(.92)"></div></div>
+<div style="width:48px;height:48px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#e8d39a;font-size:11px">⚡</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:0;right:0;bottom:0;height:88px;background:#08170f;border-top:1px solid rgba(201,164,92,.16);display:flex;align-items:flex-start;padding:8px 6px 0;z-index:10">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+<div onClick="{{ n.go }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding-top:6px">
+<sc-if value="{{ n.center }}" hint-placeholder-val="{{ false }}">
+<div style="width:54px;height:54px;margin-top:-22px;border-radius:50%;background:linear-gradient(180deg,#e8d39a,#b8924a);box-shadow:0 8px 20px rgba(0,0,0,.4),0 0 0 4px #08170f;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:16px;border:2px solid #0b1d16;border-radius:4px"></span></div>
+</sc-if>
+<sc-if value="{{ n.plain }}" hint-placeholder-val="{{ true }}">
+<span style="width:20px;height:20px;display:flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:{{ n.r }};transform:{{ n.rot }};background:{{ n.c }}"></span></span>
+</sc-if>
+<span style="font-size:11px;color:{{ n.c }};font-weight:{{ n.w }}">{{ n.l }}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ timeOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:35;display:flex;flex-direction:column;justify-content:flex-end">
+<div onClick="{{ closeTime }}" style="position:absolute;inset:0;background:rgba(2,8,5,.6)"></div>
+<div style="position:relative;background:#0f251c;border-top:1px solid rgba(201,164,92,.35);border-radius:26px 26px 0 0;padding:12px 20px 34px;display:flex;flex-direction:column;gap:18px">
+<div style="width:40px;height:4px;border-radius:2px;background:rgba(241,234,217,.25);align-self:center"></div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<span style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:19px;font-weight:600">{{ t.timeTitle }}</span>
+<span style="font-size:12.5px;color:#a3b0a7">{{ timeSlot.label }} · {{ timeSlot.names }}</span>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;gap:14px">
+<sc-for list="{{ timeCols }}" as="tc" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+<div onClick="{{ tc.inc }}" style="width:64px;height:44px;border-radius:14px;border:1px solid rgba(201,164,92,.35);color:#e8d39a;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-size:14px">▲</div>
+<span style="font-family:'Cormorant Garamond',serif;font-size:64px;line-height:1;color:#e8d39a;width:96px;text-align:center">{{ tc.v }}</span>
+<div onClick="{{ tc.dec }}" style="width:64px;height:44px;border-radius:14px;border:1px solid rgba(201,164,92,.35);color:#e8d39a;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-size:14px">▼</div>
+<span style="font-size:11px;color:#7f8f86">{{ tc.l }}</span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+<sc-for list="{{ timePresets }}" as="tp" hint-placeholder-count="4">
+<div onClick="{{ tp.pick }}" style="padding:7px 12px;border-radius:999px;font-size:12.5px;cursor:pointer;border:1px solid {{ tp.bd }};background:{{ tp.bg }};color:{{ tp.c }}">{{ tp.t }}</div>
+</sc-for>
+</div>
+<div onClick="{{ saveTime }}" style="height:52px;border-radius:14px;background:linear-gradient(180deg,#dcc07f,#b8924a);color:#0b1d16;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer">{{ t.save }}</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:35;display:flex;flex-direction:column;justify-content:flex-end">
+<div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(2,8,5,.6)"></div>
+<div style="position:relative;background:#0f251c;border-top:1px solid rgba(201,164,92,.35);border-radius:26px 26px 0 0;padding:12px 20px 34px;display:flex;flex-direction:column;gap:16px">
+<div style="width:40px;height:4px;border-radius:2px;background:rgba(241,234,217,.25);align-self:center"></div>
+<div style="display:flex;justify-content:space-between;align-items:center">
+<span style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:19px;font-weight:600">{{ vt.addLabel }}</span>
+<span style="white-space:nowrap;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:{{ formStatus.bg }};color:{{ formStatus.c }}">{{ formStatus.t }}</span>
+</div>
+<sc-if value="{{ isGlu }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;gap:6px">
+<sc-for list="{{ whenChips }}" as="w" hint-placeholder-count="3">
+<div onClick="{{ w.pick }}" style="flex:1;text-align:center;white-space:nowrap;padding:8px 0;border-radius:999px;font-size:12.5px;cursor:pointer;border:1px solid {{ w.bd }};background:{{ w.bg }};color:{{ w.c }}">{{ w.t }}</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-for list="{{ formFields }}" as="f" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(241,234,217,.07)">
+<div style="flex:1"><div style="font-size:14px">{{ f.l }}</div><div style="font-size:11px;color:#7f8f86">{{ f.u }}</div></div>
+<div onClick="{{ f.dec }}" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(201,164,92,.4);color:#e8d39a;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;user-select:none">−</div>
+<input value="{{ f.v }}" onChange="{{ f.set }}" inputMode="numeric" style="width:76px;height:44px;text-align:center;background:transparent;border:0;color:#e8d39a;font-family:'Cormorant Garamond',serif;font-size:34px;outline:none">
+<div onClick="{{ f.inc }}" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(201,164,92,.4);color:#e8d39a;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;user-select:none">+</div>
+</div>
+</sc-for>
+<div onClick="{{ saveEntry }}" style="height:52px;border-radius:14px;background:linear-gradient(180deg,#dcc07f,#b8924a);color:#0b1d16;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer">{{ t.save }}</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ splash }}" hint-placeholder-val="{{ false }}">{{ splashEl }}</sc-if>
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:24px;right:24px;bottom:104px;z-index:40;padding:13px 16px;border-radius:14px;background:#f1ead9;color:#0b1d16;font-size:13.5px;font-weight:500;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4)">{{ toast }}</div>
+</sc-if>
+<div style="position:absolute;bottom:7px;left:50%;margin-left:-54px;width:108px;height:4px;border-radius:2px;background:rgba(241,234,217,.55);z-index:50"></div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>홈 시안 — 에디토리얼 레저(장부) 스타일</div>
+<div style="width:400px;height:840px;border-radius:46px;background:#060d0a;padding:10px;box-shadow:0 30px 60px rgba(10,30,20,.35),inset 0 0 0 1.5px #2a3a32">
+<div style="position:relative;width:380px;height:820px;border-radius:37px;overflow:hidden;background:#0a1a13;color:#f1ead9;padding:44px 26px 0;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(201,164,92,.4);padding-bottom:14px">
+<span style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#e8d39a;font-weight:600;letter-spacing:.04em">MediScan</span>
+<span style="font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:.2em;color:#a3b0a7;font-weight:600">NO. 1118</span>
+</div>
+<div>
+<div style="font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:.3em;color:#c9a45c;font-weight:600">WEDNESDAY · 18 NOV</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:30px;line-height:1.35;font-weight:500;margin-top:10px">다음 복용은<br><span style="color:#e8d39a">저녁 7시</span>입니다.</div>
+</div>
+<div style="display:flex;flex-direction:column">
+<div style="display:flex;padding:14px 0;border-top:1px solid rgba(241,234,217,.12);gap:16px;align-items:baseline;opacity:.5"><span style="font-family:'Cormorant Garamond',serif;font-size:28px;width:72px">08:00</span><span style="flex:1;font-size:14px">아모잘탄 · 리리카 · 다이아벡스</span><span style="font-size:12px;color:#c9a45c">완료</span></div>
+<div style="display:flex;padding:14px 0;border-top:1px solid rgba(241,234,217,.12);gap:16px;align-items:baseline"><span style="font-family:'Cormorant Garamond',serif;font-size:28px;width:72px;color:#e8d39a">19:00</span><span style="flex:1;font-size:14px">리리카 · 다이아벡스</span><span style="font-size:12px;color:#e8d39a">다음</span></div>
+<div style="display:flex;padding:14px 0;border-top:1px solid rgba(241,234,217,.12);border-bottom:1px solid rgba(241,234,217,.12);gap:16px;align-items:baseline"><span style="font-family:'Cormorant Garamond',serif;font-size:28px;width:72px">22:00</span><span style="flex:1;font-size:14px">크레스토</span><span style="font-size:12px;color:#a3b0a7">예정</span></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(201,164,92,.25);border:1px solid rgba(201,164,92,.25)">
+<div style="background:#0a1a13;padding:16px"><div style="font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.2em;color:#c9a45c;font-weight:600">I. SCAN</div><div style="font-size:14.5px;margin-top:6px">처방약 스캔</div></div>
+<div style="background:#0a1a13;padding:16px"><div style="font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.2em;color:#c9a45c;font-weight:600">II. SYMPTOM</div><div style="font-size:14.5px;margin-top:6px">증상 체크</div></div>
+<div style="background:#0a1a13;padding:16px"><div style="font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.2em;color:#c9a45c;font-weight:600">III. ASK</div><div style="font-size:14.5px;margin-top:6px">AI 상담</div></div>
+<div style="background:#0a1a13;padding:16px"><div style="font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.2em;color:#c9a45c;font-weight:600">IV. NEARBY</div><div style="font-size:14.5px;margin-top:6px">약국 찾기</div></div>
+</div>
+<div style="font-family:'Noto Serif KR','Noto Serif JP','Noto Serif SC',serif;font-size:13px;line-height:1.7;color:#a3b0a7;border-left:1px solid #c9a45c;padding-left:14px">리리카는 복용 초기 졸림·어지러움이 흔해요. 저녁 운전은 피하세요.</div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:72px;border-top:1px solid rgba(201,164,92,.3);display:flex;align-items:center;justify-content:space-around;font-size:12px;color:#a3b0a7;padding-bottom:12px"><span style="color:#e8d39a">홈</span><span>기록</span><span style="width:46px;height:46px;border-radius:50%;border:1.5px solid #c9a45c;display:flex;align-items:center;justify-content:center;color:#e8d39a;font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:.1em">SCAN</span><span>상담</span><span>마이</span></div>
+<div style="position:absolute;bottom:7px;left:50%;margin-left:-54px;width:108px;height:4px;border-radius:2px;background:rgba(241,234,217,.55)"></div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>홈 시안 — 메달리온(복약 링 중심)</div>
+<div style="width:400px;height:840px;border-radius:46px;background:#060d0a;padding:10px;box-shadow:0 30px 60px rgba(10,30,20,.35),inset 0 0 0 1.5px #2a3a32">
+<div style="position:relative;width:380px;height:820px;border-radius:37px;overflow:hidden;background:radial-gradient(120% 60% at 50% 18%,#173a2b 0%,#0b1d16 60%);color:#f1ead9;padding:46px 22px 0;display:flex;flex-direction:column;align-items:center;gap:20px">
+<div style="font-family:'Cormorant Garamond',serif;font-size:14px;letter-spacing:.4em;color:#c9a45c;font-weight:600">MEDISCAN PRO</div>
+<div style="width:236px;height:236px;border-radius:50%;padding:2px;background:conic-gradient(#e8d39a 0 33%,rgba(201,164,92,.16) 33% 100%);display:flex;align-items:center;justify-content:center;margin-top:6px">
+<div style="width:222px;height:222px;border-radius:50%;background:#0d2219;border:1px solid rgba(201,164,92,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+<span style="font-size:12px;color:#a3b0a7">다음 복용까지</span>
+<span style="font-family:'Cormorant Garamond',serif;font-size:58px;line-height:1;color:#e8d39a">2:14</span>
+<span style="font-size:12.5px;color:#c9d1cb">저녁 19:00 · 2정</span>
+</div>
+</div>
+<div style="display:flex;gap:26px">
+<div style="text-align:center"><div style="width:12px;height:12px;border-radius:50%;background:#c9a45c;margin:0 auto"></div><div style="font-size:11.5px;margin-top:6px;color:#e8d39a">아침</div></div>
+<div style="text-align:center"><div style="width:12px;height:12px;border-radius:50%;border:1.5px solid #c9a45c;margin:0 auto"></div><div style="font-size:11.5px;margin-top:6px;color:#a3b0a7">저녁</div></div>
+<div style="text-align:center"><div style="width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(201,164,92,.4);margin:0 auto"></div><div style="font-size:11.5px;margin-top:6px;color:#a3b0a7">취침 전</div></div>
+</div>
+<div style="width:100%;border-radius:20px;padding:16px;background:rgba(16,42,32,.8);border:1px solid rgba(201,164,92,.2);display:flex;align-items:center;gap:12px">
+<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(235,154,137,.14);color:#eb9a89">높음</span>
+<div style="flex:1;font-size:13px;line-height:1.5">다리 부음을 기록하셨어요. <span style="color:#e8d39a">아모잘탄</span>이 원인일 수 있어요.</div>
+<span style="color:#c9a45c">›</span>
+</div>
+<div style="width:100%;display:flex;gap:10px">
+<div style="flex:1;height:52px;border-radius:16px;background:linear-gradient(180deg,#dcc07f,#b8924a);color:#0b1d16;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14.5px">처방약 스캔</div>
+<div style="flex:1;height:52px;border-radius:16px;border:1px solid rgba(201,164,92,.5);color:#e8d39a;display:flex;align-items:center;justify-content:center;font-size:14.5px">AI 상담</div>
+</div>
+<div style="position:absolute;left:14px;right:14px;bottom:22px;height:60px;border-radius:30px;background:rgba(8,23,15,.92);border:1px solid rgba(201,164,92,.25);display:flex;align-items:center;justify-content:space-around;font-size:12px;color:#a3b0a7"><span style="color:#e8d39a;font-weight:700">홈</span><span>기록</span><span>스캔</span><span>상담</span><span>마이</span></div>
+<div style="position:absolute;bottom:7px;left:50%;margin-left:-54px;width:108px;height:4px;border-radius:2px;background:rgba(241,234,217,.55)"></div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" style="width:300px">
+<div class="dv-olabel">디자인 메모</div>
+<div style="font:13px/1.7 'Noto Sans KR',system-ui,sans-serif;color:#2b2f2c;display:flex;flex-direction:column;gap:12px">
+<p style="margin:0">저장소(drug-adr)의 실제 기능을 기준으로 구성했습니다: 처방전 글자·바코드·알약 모양 스캔, 첨부문서 기반 이상반응 등급(높음 / 가능성 있음 / 낮음 / 매우 드묾), 신·간기능 태그(금기 / 용량 / 주의 / 불필요), 근거 문장과 식약처 원문 링크.</p>
+<p style="margin:0">요청하신 복약 알림, 가족 관리, AI 상담, 리포트, 약국 찾기는 앱용으로 새로 설계했습니다. 약 정보는 예시 데이터입니다.</p>
+<p style="margin:0">톤: 짙은 녹색 바탕 + 샴페인 골드, 한글 제목은 명조(Noto Serif KR), 영문·숫자는 Cormorant Garamond로 명품 브랜드 느낌을 냈습니다.</p>
+</div>
+</div>
+
+</div>
+<p class="dv-next">다음 제안: "<a class="dv-oid" href="#1a">1a</a>에 <a class="dv-oid" href="#1b">1b</a>의 장부형 일정 리스트 적용" · "약 상세 화면 시안 2~3개 더" · "라이트(아이보리) 버전도"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;lang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ko&quot;,&quot;en&quot;,&quot;zh&quot;,&quot;ja&quot;],&quot;default&quot;:&quot;ko&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;splashOnLoad&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;quoteIndex&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;min&quot;:-1,&quot;max&quot;:9,&quot;default&quot;:-1,&quot;tsType&quot;:&quot;number&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;scan&quot;,&quot;results&quot;,&quot;detail&quot;,&quot;symptom&quot;,&quot;schedule&quot;,&quot;vitals&quot;,&quot;history&quot;,&quot;report&quot;,&quot;chat&quot;,&quot;my&quot;,&quot;family&quot;,&quot;pharmacy&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;scanSeconds&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:0.5,&quot;max&quot;:4,&quot;step&quot;:0.1,&quot;unit&quot;:&quot;s&quot;,&quot;default&quot;:1.8,&quot;tsType&quot;:&quot;number&quot;}}">
+const LV = {
+  4: { t: '높음', c: '#eb9a89', bg: 'rgba(235,154,137,.14)', d: '1% 이상' },
+  3: { t: '가능성 있음', c: '#e2c071', bg: 'rgba(226,192,113,.14)', d: '때때로·빈도 미기재' },
+  2: { t: '낮음', c: '#9ccbb6', bg: 'rgba(156,203,182,.13)', d: '드물게' },
+  1: { t: '매우 드묾', c: '#a9b5ad', bg: 'rgba(169,181,173,.12)', d: '매우 드물게' }
+};
+const TAG = { '금기': LV[4], '용량': LV[3], '주의': LV[2], '불필요': LV[1] };
+const DRUGS = {
+  amo: { name: '아모잘탄정 5/50mg', short: '아모잘탄', en: 'AMOSARTAN', ing: '암로디핀·로살탄', cls: '고혈압', dose: '1일 1회 아침', count: '1정', color: '#efe9da',
+    adr: [['말초부종(발목 부음)', 4, '1% 이상'], ['어지러움', 3, '빈도 미기재'], ['두통', 3, '빈도 미기재'], ['고칼륨혈증', 2, '0.1~1%'], ['혈관부종', 1, '0.01% 미만']],
+    renal: ['주의', '중증 신장애 환자는 신중투여. 칼륨과 크레아티닌 수치를 정기적으로 확인합니다.'], hepatic: ['용량', '간장애 환자는 혈중농도가 높아질 수 있어 저용량부터 시작합니다.'],
+    how: [['복용', '1일 1회 1정, 매일 같은 시간'], ['식사', '식사와 관계없이 복용 가능'], ['잊었을 때', '생각난 즉시 복용, 다음 복용이 가까우면 건너뛰기'], ['보관', '실온, 습기를 피해 보관']],
+    quote: '말초부종은 암로디핀 투여 시 용량 의존적으로 나타나는 가장 흔한 이상반응이다.' },
+  lyr: { name: '리리카캡슐 75mg', short: '리리카', en: 'LYRICA', ing: '프레가발린', cls: '신경병증 통증', dose: '1일 2회', count: '1캡슐', color: '#e3b37a',
+    adr: [['어지러움', 4, '1% 이상'], ['졸림', 4, '1% 이상'], ['말초부종', 3, '1% 이상'], ['체중 증가', 3, '1% 이상'], ['시야 흐림', 2, '0.1~1%']],
+    renal: ['용량', '크레아티닌 청소율 60mL/min 미만이면 감량. 30 미만은 1일 1~2회로 줄입니다.'], hepatic: ['불필요', '간에서 거의 대사되지 않아 용량 조절이 필요하지 않습니다.'],
+    how: [['복용', '1일 2회, 아침·저녁'], ['식사', '식사와 관계없이 복용 가능'], ['주의', '운전·기계 조작 주의, 갑자기 끊지 않기'], ['보관', '실온 보관']],
+    quote: '어지러움 및 졸음이 흔하게 나타나며, 자동차 운전 등 위험을 수반하는 기계 조작에 주의하도록 한다.' },
+  met: { name: '다이아벡스정 500mg', short: '다이아벡스', en: 'DIABEX', ing: '메트포르민', cls: '당뇨', dose: '1일 2회 식후', count: '1정', color: '#f6f3ec',
+    adr: [['설사·구역', 4, '1% 이상'], ['복부 불편감', 4, '1% 이상'], ['금속성 맛', 3, '1% 이상'], ['비타민 B12 감소', 2, '장기 복용'], ['젖산산증', 1, '매우 드묾']],
+    renal: ['금기', 'eGFR 30 미만은 투여 금기. 30~45는 새로 시작하지 않고 용량을 줄입니다.'], hepatic: ['주의', '간기능 장애는 젖산산증 위험을 높일 수 있어 신중히 투여합니다.'],
+    how: [['복용', '1일 2회, 아침·저녁 식후'], ['식사', '식사 직후 복용하면 위장 증상이 줄어요'], ['주의', '조영제 검사 전후 일시 중단'], ['보관', '실온 보관']],
+    quote: '설사, 구역, 구토, 복통 등 위장관계 증상이 투여 초기에 흔히 나타나며 대부분 자연 소실된다.' },
+  cre: { name: '크레스토정 10mg', short: '크레스토', en: 'CRESTOR', ing: '로수바스타틴', cls: '고지혈증', dose: '1일 1회 취침 전', count: '1정', color: '#e9b6b0',
+    adr: [['근육통', 3, '1% 이상'], ['두통', 3, '1% 이상'], ['간수치(ALT) 상승', 2, '0.1~1%'], ['횡문근융해증', 1, '매우 드묾']],
+    renal: ['용량', '중증 신장애(CrCl 30 미만)는 1일 5mg부터 시작하며 40mg은 금기입니다.'], hepatic: ['금기', '활동성 간질환 또는 원인 불명의 지속적 간수치 상승 시 투여 금기.'],
+    how: [['복용', '1일 1회, 매일 같은 시간'], ['식사', '식사와 관계없이 복용 가능'], ['주의', '설명되지 않는 근육통 시 바로 상담'], ['보관', '실온 보관']],
+    quote: '원인을 알 수 없는 근육통, 근육 압통 또는 근무력이 나타나면 즉시 의사에게 알리도록 한다.' }
+};
+const ORDER = ['amo', 'lyr', 'met', 'cre'];
+const SLOTS = [
+  { k: 'm', time: '08:00', label: '아침 식후', drugs: ['amo', 'lyr', 'met'] },
+  { k: 'e', time: '19:00', label: '저녁 식후', drugs: ['lyr', 'met'] },
+  { k: 'n', time: '22:00', label: '취침 전', drugs: ['cre'] }
+];
+const SYMPTOMS = {
+  '어지러움': [['lyr', 4], ['amo', 3]], '졸림': [['lyr', 4]], '다리 부음': [['amo', 4], ['lyr', 3]],
+  '설사·구역': [['met', 4]], '근육통': [['cre', 3]], '간수치 상승': [['cre', 2]], 'eGFR 감소': [['met', 2], ['amo', 2]], '체중 증가': [['lyr', 3]]
+};
+const MEMBERS = [
+  { name: '김지현', initial: '김', rel: '나', meta: '1978년생 · 복용 중 4개', meds: '복용 중 4개', rate: '92%' },
+  { name: '이순자', initial: '이', rel: '어머니', meta: '1951년생 · 복용 중 6개', meds: '복용 중 6개 · 오늘 저녁 누락', rate: '78%' },
+  { name: '박준우', initial: '준', rel: '아들', meta: '2012년생 · 복용 중 1개', meds: '복용 중 1개', rate: '100%' }
+];
+const REPLIES = {
+  '리리카 먹고 졸려요': '리리카(프레가발린)는 첨부문서에서 졸림과 어지러움이 1% 이상 흔하게 보고된 약이에요.\n\n복용 초기나 용량을 올린 직후에 특히 흔하니 운전과 기계 조작은 피하세요. 계속되면 처방의와 용량 조정을 상의해 보세요.',
+  '술 마셔도 되나요?': '지금 드시는 약 중 두 가지가 술과 겹쳐요.\n\n· 다이아벡스(메트포르민): 과음 시 젖산산증 위험이 커집니다.\n· 리리카: 졸림과 어지러움이 심해질 수 있어요.\n\n가능하면 피하시는 걸 권해요.',
+  '다이아벡스 언제 먹어요?': '식사 직후 드세요. 식사와 함께 먹으면 설사·구역 같은 위장 증상이 줄어요. 지금 일정은 아침 08:00, 저녁 19:00입니다.'
+};
+const PHARM = [
+  { n: '온누리 정문약국', d: '180m', h: '22:00까지', st: '영업 중', open: true, night: true, kind: 'ph' },
+  { n: '서울내과의원', d: '240m', h: '18:30까지', st: '진료 중', open: true, kind: 'hos' },
+  { n: '맑은눈 안과의원', d: '350m', h: '19:00까지', st: '진료 중', open: true, kind: 'hos' },
+  { n: '푸른숲약국', d: '410m', h: '20:00까지', st: '영업 중', open: true, kind: 'ph' },
+  { n: '한강 24시약국', d: '1.2km', h: '24시간', st: '야간', open: true, night: true, kind: 'ph' },
+  { n: '서울중앙병원 응급실', d: '2.4km', h: '24시간', st: '야간', open: true, night: true, kind: 'hos' }
+];
+
+const QUOTES = [
+  { t: '성찰하지 않는 삶은 살 가치가 없다.', a: '소크라테스', en: 'Socrates' },
+  { t: '오늘 하루를 생의 마지막 날처럼 살되, 서두르지도 게으르지도 말라.', a: '마르쿠스 아우렐리우스', en: 'Marcus Aurelius' },
+  { t: '우리를 괴롭히는 것은 일 자체가 아니라 그 일에 대한 우리의 생각이다.', a: '에픽테토스', en: 'Epictetus' },
+  { t: '삶은 짧은 것이 아니라, 우리가 그것을 짧게 만드는 것이다.', a: '세네카', en: 'Seneca' },
+  { t: '천 리 길도 한 걸음에서 시작된다.', a: '노자', en: 'Laozi' },
+  { t: '아는 것을 안다 하고 모르는 것을 모른다 하는 것, 그것이 앎이다.', a: '공자', en: 'Confucius' },
+  { t: '같은 강물에 두 번 발을 담글 수는 없다.', a: '헤라클레이토스', en: 'Heraclitus' },
+  { t: '삶은 뒤돌아볼 때 이해되지만, 앞을 향해 살아야 한다.', a: '키르케고르', en: 'Kierkegaard' },
+  { t: '살아야 할 이유를 아는 사람은 어떤 상황도 견딜 수 있다.', a: '니체', en: 'Nietzsche' },
+  { t: '행복은 스스로 만족하는 사람의 것이다.', a: '아리스토텔레스', en: 'Aristotle' }
+];
+function Splash({ quote, dateStr, onDone, cjk, skip, sub }) {
+  const ref = React.useRef(null);
+  const [closing, setClosing] = React.useState(false);
+  const doneRef = React.useRef(false);
+  const finish = () => { if (doneRef.current) return; doneRef.current = true; setClosing(true); setTimeout(onDone, 450); };
+  React.useEffect(() => {
+    let raf, dead = false;
+    const cv = ref.current, W = 380, H = 820, dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = W * dpr; cv.height = H * dpr;
+    const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+    const off = document.createElement('canvas'); off.width = W * dpr; off.height = H * dpr;
+    const o = off.getContext('2d'); o.scale(dpr, dpr);
+    const dust = Array.from({ length: 34 }, () => ({ x: Math.random() * W, y: Math.random() * H, v: .08 + Math.random() * .2, s: .6 + Math.random() * 1.2, a: .08 + Math.random() * .2 }));
+    const spacing = (c, v) => { if ('letterSpacing' in c) c.letterSpacing = v; };
+    const run = () => {
+      o.textAlign = 'center'; o.textBaseline = 'alphabetic';
+      o.font = '500 22px "Noto Serif KR", "Noto Serif JP", "Noto Serif SC", serif';
+      const words = cjk ? Array.from(quote.t) : quote.t.split(' '), sep = cjk ? '' : ' ', lines = []; let cur = '';
+      words.forEach(w => { const t = cur ? cur + sep + w : w; if (o.measureText(t).width > 290 && cur) { lines.push(cur); cur = w; } else cur = t; });
+      lines.push(cur);
+      const lh = 42, bh = lines.length * lh, top = 395 - bh / 2;
+      spacing(o, '4px'); o.font = '600 12px "Cormorant Garamond", serif'; o.fillStyle = '#c9a45c';
+      o.fillText("TODAY'S LINE · " + dateStr, 192, top - 50);
+      spacing(o, '0px'); o.fillRect(178, top - 30, 24, 1);
+      o.font = '500 22px "Noto Serif KR", "Noto Serif JP", "Noto Serif SC", serif'; o.fillStyle = '#f1ead9';
+      lines.forEach((l, i) => o.fillText(l, 190, top + (i + 1) * lh - 12));
+      o.font = '400 14px "Noto Sans KR", "Noto Sans JP", "Noto Sans SC", sans-serif'; o.fillStyle = '#c9a45c';
+      o.fillText('— ' + quote.a, 190, top + bh + 30);
+      spacing(o, '3px'); o.font = '600 12px "Cormorant Garamond", serif'; o.fillStyle = '#7f8f86';
+      o.fillText(quote.en.toUpperCase(), 192, top + bh + 54);
+      const y0 = Math.max(0, Math.floor(top - 72)), y1 = Math.min(H, Math.ceil(top + bh + 70));
+      const img = o.getImageData(0, 0, off.width, off.height).data, ps = [];
+      let minX = W, maxX = 0;
+      const STEP = .75;
+      for (let y = y0; y < y1; y += STEP) for (let x = 0; x < W; x += STEP) {
+        const i = ((Math.round((y + STEP / 2) * dpr)) * off.width + Math.round((x + STEP / 2) * dpr)) * 4;
+        if (img[i + 3] > 40) { ps.push({ hx: x, hy: y, x, y, vx: 0, vy: 0, r: img[i], g: img[i + 1], b: img[i + 2], a: img[i + 3] / 255, life: 1, dec: .004 + Math.random() * .009, on: false, s: .5 + Math.random() * .9, ph: Math.random() * 6.28, tw: .5 + Math.random() * 1.5 }); minX = Math.min(minX, x); maxX = Math.max(maxX, x); }
+      }
+      const jit = y => Math.sin(y * .09) * 16 + Math.sin(y * .023 + 1) * 28;
+      const T_IN = 1400, T_WIND = 3600, T_SWEEP = 2100, T_BRAND = 6600, T_END = 8400;
+      const t0 = performance.now();
+      const frame = now => {
+        if (dead) return;
+        const t = now - t0;
+        ctx.clearRect(0, 0, W, H);
+        dust.forEach(d => { d.x += d.v; d.y -= d.v * .3; if (d.x > W) { d.x = -4; d.y = Math.random() * H; } ctx.fillStyle = `rgba(201,164,92,${d.a})`; ctx.fillRect(d.x, d.y, d.s, d.s); });
+        if (t > T_WIND) {
+          const front = minX - 60 + (maxX - minX + 120) * Math.min(1, (t - T_WIND) / T_SWEEP);
+          for (let y = y0; y < y1; y += 1) { const w = front + jit(y); if (w > 0) o.clearRect(0, y, w, 1); }
+          ps.forEach(p => {
+            if (!p.on && p.hx < front + jit(p.hy)) { p.on = true; p.vx = .3 + Math.random() * 1.9; p.vy = (Math.random() - .65) * 1.6; }
+          });
+        }
+        const e = Math.min(1, t / T_IN), ease = 1 - Math.pow(1 - e, 3);
+        ctx.globalAlpha = ease; ctx.drawImage(off, 0, (1 - ease) * 10, W, H); ctx.globalAlpha = 1;
+        ps.forEach(p => {
+          if (!p.on || p.life <= 0) return;
+          const sw = Math.sin(p.y * .035 + t * .002 + p.ph), cw = Math.cos(p.x * .028 - t * .0016 + p.ph);
+          p.vx += .025 + Math.random() * .06 + cw * .03; p.vy += -.014 + sw * .07 * p.tw;
+          p.vx *= .982; p.vy *= .975; p.x += p.vx; p.y += p.vy; p.life -= p.dec;
+          const k = 1 - p.life, r = p.r + (232 - p.r) * k, g = p.g + (211 - p.g) * k, b = p.b + (154 - p.b) * k;
+          const flick = .75 + .25 * Math.sin(t * .02 + p.ph * 3);
+          ctx.fillStyle = `rgba(${r | 0},${g | 0},${b | 0},${Math.max(0, p.a * p.life * flick)})`;
+          const s = p.s * (.35 + .65 * p.life); ctx.fillRect(p.x, p.y, s, s);
+        });
+        if (t > T_BRAND) {
+          const a = Math.min(1, (t - T_BRAND) / 900);
+          ctx.globalAlpha = a; ctx.textAlign = 'center';
+          spacing(ctx, '8px'); ctx.font = '600 17px "Cormorant Garamond", serif'; ctx.fillStyle = '#e8d39a';
+          ctx.fillText('MEDISCAN PRO', 194, 400 + (1 - a) * 6);
+          spacing(ctx, '2px'); ctx.font = '400 12px "Noto Sans KR", "Noto Sans JP", "Noto Sans SC", sans-serif'; ctx.fillStyle = '#a3b0a7';
+          ctx.fillText(sub, 191, 428 + (1 - a) * 6);
+          ctx.globalAlpha = 1;
+        }
+        if (t > T_END) { finish(); return; }
+        raf = requestAnimationFrame(frame);
+      };
+      raf = requestAnimationFrame(frame);
+    };
+    Promise.race([
+      Promise.all([document.fonts.load('500 22px "Noto Serif KR"', quote.t), document.fonts.load('400 14px "Noto Sans KR"', quote.a), document.fonts.load('600 12px "Cormorant Garamond"', 'A')]),
+      new Promise(r => setTimeout(r, 1500))
+    ]).catch(() => {}).then(() => { if (!dead) run(); });
+    return () => { dead = true; cancelAnimationFrame(raf); };
+  }, []);
+  return React.createElement('div', { onClick: finish, style: { position: 'absolute', inset: 0, zIndex: 25, cursor: 'pointer', background: 'radial-gradient(110% 70% at 50% 45%,#143628 0%,#0a1912 70%)', opacity: closing ? 0 : 1, transition: 'opacity .45s ease' } },
+    React.createElement('canvas', { ref, style: { width: '100%', height: '100%', display: 'block' } }),
+    React.createElement('div', { style: { position: 'absolute', bottom: 34, left: 0, right: 0, textAlign: 'center', fontSize: 11.5, color: '#7f8f86', letterSpacing: '.04em' } }, skip));
+}
+
+const BP0 = [['11.12', '07:40', 138, 88, 74], ['11.13', '07:35', 134, 86, 72], ['11.14', '07:50', 141, 91, 78], ['11.15', '08:05', 132, 84, 70], ['11.16', '07:30', 129, 83, 71], ['11.17', '07:45', 126, 81, 69], ['11.18', '07:40', 128, 82, 72]]
+  .map(([d, time, s, di, p]) => ({ d, time, s, di, p })).reverse();
+const GLU0 = [['11.12', '07:20', 131, '공복'], ['11.13', '13:10', 178, '식후 2시간'], ['11.14', '07:25', 122, '공복'], ['11.15', '07:30', 118, '공복'], ['11.16', '19:40', 156, '식후 2시간'], ['11.17', '07:15', 109, '공복'], ['11.18', '07:20', 112, '공복']]
+  .map(([d, time, v, when]) => ({ d, time, v, when })).reverse();
+const stOf = (n, t) => ({ c: LV[n].c, bg: LV[n].bg, t });
+const bpSt = (s, di) => s >= 140 || di >= 90 ? stOf(4, '높음') : s >= 120 || di >= 80 ? stOf(3, '주의') : stOf(2, '정상');
+const gluSt = (v, w) => { const [a, b] = w === '공복' ? [100, 126] : [140, 200]; return v >= b ? stOf(4, '높음') : v >= a ? stOf(3, '주의') : stOf(2, '정상'); };
+const nowHM = () => { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+
+const LANGS = ['ko', 'en', 'zh', 'ja'];
+let LANG = 'ko';
+const UI = {
+ date: ["11월 18일 수요일", "Wednesday, November 18", "11月18日 星期三", "11月18日（水）"],
+ greet: ["좋은 아침이에요,", "Good morning,", "早上好，", "おはようございます、"],
+ nim: [" 님", "", "", " さん"],
+ done: ["복용 완료", "Mark as taken", "已服用", "服用完了"],
+ allDone: ["오늘 복용을 모두 마쳤어요", "All doses taken today", "今天的药已全部服用", "今日の服薬はすべて完了しました"],
+ undo: ["기록 되돌리기", "Undo", "撤销记录", "記録を取り消す"],
+ today: ["오늘의 복약", "Today's doses", "今日服药", "今日の服薬"],
+ times: ["회", " doses", "次", "回"],
+ notebook: ["건강 수첩", "Health notebook", "健康手册", "健康手帳"],
+ bp: ["혈압", "Blood pressure", "血压", "血圧"],
+ glu: ["혈당", "Glucose", "血糖", "血糖"],
+ recentScan: ["최근 스캔 · 오늘 08:12", "Last scan · Today 08:12", "最近扫描 · 今天 08:12", "最近のスキャン · 今日 08:12"],
+ rxTitle: ["서울내과의원 처방전", "Seoul Internal Medicine prescription", "首尔内科医院处方", "ソウル内科医院の処方箋"],
+ rxSub: ["4개 약 · 주의할 이상반응 3건", "4 drugs · 3 side effects to watch", "4种药 · 3项需注意的不良反应", "4種類の薬 · 注意すべき副作用 3件"],
+ disclaimer: ["식품의약품안전처 의약품 허가정보(첨부문서) 기준 · 진단이나 처방 변경은 의사·약사와 상의하세요.", "Based on MFDS drug approval information (package inserts). Talk to your doctor or pharmacist before changing any treatment.", "依据韩国食品药品安全处药品许可信息（说明书）。诊断或更改处方请咨询医生或药师。", "韓国食品医薬品安全処の医薬品許可情報（添付文書）に基づきます。診断や処方の変更は医師・薬剤師にご相談ください。"],
+ back: ["뒤로", "Back", "返回", "戻る"],
+ found: ["4개의 약을 찾았어요", "Found 4 medicines", "找到了4种药", "4種類の薬が見つかりました"],
+ foundSub: ["서울내과의원 · 2026.11.18 · 처방전 글자 인식", "Seoul Internal Medicine · 2026.11.18 · Prescription text", "首尔内科医院 · 2026.11.18 · 处方文字识别", "ソウル内科医院 · 2026.11.18 · 処方箋の文字認識"],
+ addSched: ["복약 일정에 추가", "Add to schedule", "加入服药计划", "スケジュールに追加"],
+ bySym: ["증상으로 확인", "Check by symptom", "按症状查看", "症状から確認"],
+ evidence: ["첨부문서 근거", "From the package insert", "说明书依据", "添付文書の根拠"],
+ source: ["식약처 원문 보기 ↗", "View MFDS original ↗", "查看原文 ↗", "原文を見る ↗"],
+ compare: ["새로 생긴 증상과 비교하기", "Compare with new symptoms", "与新出现的症状对比", "新しい症状と比較する"],
+ organNote: ["첨부문서 용법용량과 금기·신중투여 항목에서 찾은 내용입니다.", "Taken from the dosage, contraindication and precaution sections of the package insert.", "摘自说明书的用法用量及禁忌、慎用项目。", "添付文書の用法・用量および禁忌・慎重投与の項目から抽出した内容です。"],
+ symQ: ["새로 생긴 증상이 있나요?", "Any new symptoms?", "有新出现的症状吗？", "新しい症状はありますか？"],
+ symSub: ["복용 중인 약 중 원인일 수 있는 약을 찾아드려요.", "We'll find which of your medicines could be the cause.", "帮您找出可能导致症状的药物。", "服用中の薬から原因となりうる薬を探します。"],
+ symEmpty: ["위에서 증상을 하나 이상 골라주세요", "Pick at least one symptom above", "请在上方选择至少一个症状", "上から症状を1つ以上選んでください"],
+ sched: ["복약 일정", "Dose schedule", "服药计划", "服薬スケジュール"],
+ schedNote: ["알림을 켜두면 복용 시간 10분 전, 그리고 30분이 지나도 기록이 없으면 다시 알려드려요.", "With reminders on, we'll notify you 10 minutes before each dose, and again if nothing is logged 30 minutes after.", "开启提醒后，会在服药前10分钟提醒您；若30分钟后仍未记录，会再次提醒。", "通知をオンにすると服用10分前にお知らせし、30分過ぎても記録がなければ再度お知らせします。"],
+ records: ["기록", "Records", "记录", "記録"],
+ weekRate: ["이번 주 복약률", "Adherence this week", "本周服药率", "今週の服薬率"],
+ reportLink: ["건강 리포트 ›", "Health report ›", "健康报告 ›", "健康レポート ›"],
+ scanRec: ["스캔 기록", "Scan history", "扫描记录", "スキャン履歴"],
+ reportTitle: ["11월 건강 리포트", "November health report", "11月健康报告", "11月の健康レポート"],
+ monthRate: ["이번 달 복약률", "Adherence this month", "本月服药率", "今月の服薬率"],
+ symLog: ["기록한 증상", "Logged symptoms", "记录的症状", "記録した症状"],
+ pdf: ["진료 때 보여줄 PDF 만들기", "Create a PDF for your doctor", "生成就诊用PDF", "診察用PDFを作成"],
+ chatTitle: ["AI 복약 상담", "AI medication chat", "AI用药咨询", "AI服薬相談"],
+ family: ["가족 · 보호자", "Family · Caregivers", "家人 · 监护人", "家族 · 介護者"],
+ manage: ["관리", "Manage", "管理", "管理"],
+ dataNote: ["데이터 2026.11.02 갱신 · 사진과 처방 내용은 이 기기 안에서만 처리합니다.", "Data updated 2026.11.02 · Photos and prescriptions are processed only on this device.", "数据更新于2026.11.02 · 照片和处方仅在本设备上处理。", "データ更新 2026.11.02 · 写真と処方内容はこの端末内でのみ処理します。"],
+ familyTitle: ["가족 · 보호자 관리", "Family & caregivers", "家人 · 监护人管理", "家族・介護者の管理"],
+ missAlert: ["복용 누락 시 나에게 알림", "Notify me if a dose is missed", "漏服时通知我", "飲み忘れたら私に通知"],
+ invite: ["초대 링크로 가족 추가", "Add family by invite link", "通过邀请链接添加家人", "招待リンクで家族を追加"],
+ vitalsTitle: ["혈압 · 당뇨 수첩", "BP & diabetes notebook", "血压 · 血糖手册", "血圧・血糖手帳"],
+ recent: ["최근 기록", "Latest", "最近记录", "最新の記録"],
+ criteria: ["판정 기준: 대한고혈압학회·대한당뇨병학회 진료지침의 일반 성인 기준. 목표 수치는 담당 의사와 상의하세요.", "Ranges follow general adult guidelines from the Korean hypertension and diabetes societies. Ask your doctor about your own targets.", "判定标准参照韩国高血压学会·糖尿病学会诊疗指南中的一般成人标准。目标值请咨询主治医生。", "判定基準：大韓高血圧学会・大韓糖尿病学会の診療ガイドラインにおける一般成人の基準。目標値は主治医にご相談ください。"],
+ nearby: ["가까운 약국 · 병원", "Nearby pharmacies & clinics", "附近的药店 · 医院", "近くの薬局・病院"],
+ askPh: ["약에 대해 물어보세요", "Ask about your medicines", "询问关于药物的问题", "お薬について質問する"],
+ save: ["저장", "Save", "保存", "保存"],
+ editHint: ["시간을 누르면 바꿀 수 있어요", "Tap a time to change it", "点击时间即可修改", "時間をタップすると変更できます"],
+ timeTitle: ["복용 시간 변경", "Change dose time", "修改服药时间", "服用時間を変更"],
+ hour: ["시", "Hour", "时", "時"], minute: ["분", "Minute", "分", "分"],
+ langLabel: ["언어 · Language", "Language", "语言 · Language", "言語 · Language"]
+};
+const D = {
+ "높음": ["High", "高", "高"], "가능성 있음": ["Possible", "可能", "可能性あり"], "낮음": ["Low", "低", "低"], "매우 드묾": ["Very rare", "非常罕见", "非常にまれ"],
+ "1% 이상": ["≥1%", "≥1%", "1%以上"], "때때로·빈도 미기재": ["Sometimes / not stated", "偶尔·未注明频率", "時々・頻度記載なし"], "드물게": ["Uncommon", "少见", "まれ"], "매우 드물게": ["Very rarely", "极少", "非常にまれ"],
+ "금기": ["Contraindicated", "禁忌", "禁忌"], "용량": ["Adjust dose", "调整剂量", "用量調整"], "주의": ["Caution", "注意", "注意"], "불필요": ["No change", "无需调整", "調整不要"], "정상": ["Normal", "正常", "正常"],
+ "아모잘탄정 5/50mg": ["Amosartan 5/50mg tablet", "Amosartan 5/50mg 片", "アモザルタン錠 5/50mg"], "아모잘탄": ["Amosartan", "Amosartan", "アモザルタン"], "암로디핀·로살탄": ["Amlodipine · Losartan", "氨氯地平·氯沙坦", "アムロジピン・ロサルタン"],
+ "고혈압": ["Hypertension", "高血压", "高血圧"], "1일 1회 아침": ["Once daily, morning", "每日1次 早上", "1日1回 朝"], "1정": ["1 tablet", "1片", "1錠"],
+ "말초부종(발목 부음)": ["Peripheral edema (ankle swelling)", "外周水肿（脚踝肿胀）", "末梢浮腫（足首のむくみ）"], "어지러움": ["Dizziness", "头晕", "めまい"], "빈도 미기재": ["Not stated", "未注明频率", "頻度記載なし"],
+ "두통": ["Headache", "头痛", "頭痛"], "고칼륨혈증": ["Hyperkalemia", "高钾血症", "高カリウム血症"], "혈관부종": ["Angioedema", "血管性水肿", "血管浮腫"], "0.01% 미만": ["<0.01%", "<0.01%", "0.01%未満"],
+ "중증 신장애 환자는 신중투여. 칼륨과 크레아티닌 수치를 정기적으로 확인합니다.": ["Use with care in severe renal impairment. Check potassium and creatinine regularly.", "重度肾功能损害患者慎用。定期检查血钾和肌酐。", "重度の腎障害患者には慎重投与。カリウムとクレアチニン値を定期的に確認します。"],
+ "간장애 환자는 혈중농도가 높아질 수 있어 저용량부터 시작합니다.": ["Blood levels can rise in hepatic impairment, so start at a low dose.", "肝功能损害患者血药浓度可能升高，应从低剂量开始。", "肝障害患者では血中濃度が上がることがあるため、低用量から開始します。"],
+ "복용": ["Dosing", "服用", "服用"], "1일 1회 1정, 매일 같은 시간": ["1 tablet once daily, same time each day", "每日1次，每次1片，每天同一时间", "1日1回1錠、毎日同じ時間に"], "식사": ["Food", "饮食", "食事"],
+ "식사와 관계없이 복용 가능": ["Can be taken with or without food", "饭前饭后均可服用", "食事に関係なく服用可能"], "잊었을 때": ["If missed", "漏服时", "飲み忘れたとき"],
+ "생각난 즉시 복용, 다음 복용이 가까우면 건너뛰기": ["Take it as soon as you remember; skip it if the next dose is near.", "想起时立即服用；如接近下次服药时间则跳过。", "気づいたらすぐ服用。次の服用が近ければ飛ばします。"],
+ "보관": ["Storage", "保存", "保管"], "실온, 습기를 피해 보관": ["Room temperature, away from moisture", "室温保存，避免潮湿", "室温で湿気を避けて保管"],
+ "말초부종은 암로디핀 투여 시 용량 의존적으로 나타나는 가장 흔한 이상반응이다.": ["Peripheral edema is the most common adverse reaction to amlodipine and is dose-dependent.", "外周水肿是氨氯地平最常见的不良反应，呈剂量依赖性。", "末梢浮腫はアムロジピン投与時に用量依存的に現れる最も一般的な副作用である。"],
+ "리리카캡슐 75mg": ["Lyrica 75mg capsule", "Lyrica 75mg 胶囊", "リリカカプセル 75mg"], "리리카": ["Lyrica", "Lyrica", "リリカ"], "프레가발린": ["Pregabalin", "普瑞巴林", "プレガバリン"],
+ "신경병증 통증": ["Neuropathic pain", "神经病理性疼痛", "神経障害性疼痛"], "1일 2회": ["Twice daily", "每日2次", "1日2回"], "1캡슐": ["1 capsule", "1粒", "1カプセル"],
+ "졸림": ["Drowsiness", "嗜睡", "眠気"], "말초부종": ["Peripheral edema", "外周水肿", "末梢浮腫"], "체중 증가": ["Weight gain", "体重增加", "体重増加"], "시야 흐림": ["Blurred vision", "视物模糊", "かすみ目"],
+ "크레아티닌 청소율 60mL/min 미만이면 감량. 30 미만은 1일 1~2회로 줄입니다.": ["Reduce the dose if creatinine clearance is below 60 mL/min. Below 30, reduce to once or twice daily.", "肌酐清除率低于60 mL/min时减量；低于30时减为每日1～2次。", "クレアチニンクリアランス60 mL/min未満で減量。30未満では1日1〜2回に減らします。"],
+ "간에서 거의 대사되지 않아 용량 조절이 필요하지 않습니다.": ["Barely metabolized by the liver, so no dose change is needed.", "几乎不经肝脏代谢，无需调整剂量。", "肝臓でほとんど代謝されないため用量調整は不要です。"],
+ "1일 2회, 아침·저녁": ["Twice daily, morning and evening", "每日2次，早晚各一次", "1日2回、朝・夕"], "운전·기계 조작 주의, 갑자기 끊지 않기": ["Be careful driving or using machinery; don't stop suddenly.", "驾驶及操作机械时注意，不可突然停药。", "運転・機械操作に注意、急に中止しない"],
+ "실온 보관": ["Room temperature", "室温保存", "室温保管"],
+ "어지러움 및 졸음이 흔하게 나타나며, 자동차 운전 등 위험을 수반하는 기계 조작에 주의하도록 한다.": ["Dizziness and somnolence are common; patients should be cautious when driving or operating hazardous machinery.", "常见头晕和嗜睡，驾驶汽车等危险机械操作时应注意。", "めまい及び傾眠がよくみられるため、自動車の運転など危険を伴う機械の操作に注意させること。"],
+ "다이아벡스정 500mg": ["Diabex 500mg tablet", "Diabex 500mg 片", "ダイアベックス錠 500mg"], "다이아벡스": ["Diabex", "Diabex", "ダイアベックス"], "메트포르민": ["Metformin", "二甲双胍", "メトホルミン"],
+ "당뇨": ["Diabetes", "糖尿病", "糖尿病"], "1일 2회 식후": ["Twice daily after meals", "每日2次 饭后", "1日2回 食後"], "설사·구역": ["Diarrhea · Nausea", "腹泻·恶心", "下痢・吐き気"],
+ "복부 불편감": ["Abdominal discomfort", "腹部不适", "腹部不快感"], "금속성 맛": ["Metallic taste", "金属味", "金属味"], "비타민 B12 감소": ["Low vitamin B12", "维生素B12减少", "ビタミンB12低下"],
+ "장기 복용": ["Long-term use", "长期服用", "長期服用"], "젖산산증": ["Lactic acidosis", "乳酸酸中毒", "乳酸アシドーシス"],
+ "eGFR 30 미만은 투여 금기. 30~45는 새로 시작하지 않고 용량을 줄입니다.": ["Contraindicated if eGFR is below 30. At 30–45, don't start it and reduce the dose.", "eGFR低于30时禁用；30～45时不宜新开始用药并应减量。", "eGFR 30未満は投与禁忌。30〜45では新規に開始せず減量します。"],
+ "간기능 장애는 젖산산증 위험을 높일 수 있어 신중히 투여합니다.": ["Hepatic impairment can raise the risk of lactic acidosis, so use with care.", "肝功能障碍可能增加乳酸酸中毒风险，应慎用。", "肝機能障害は乳酸アシドーシスのリスクを高めるため慎重に投与します。"],
+ "1일 2회, 아침·저녁 식후": ["Twice daily, after breakfast and dinner", "每日2次，早晚饭后", "1日2回、朝・夕食後"], "식사 직후 복용하면 위장 증상이 줄어요": ["Taking it right after a meal reduces stomach upset", "饭后立即服用可减轻胃肠道症状", "食直後に服用すると胃腸症状が減ります"],
+ "조영제 검사 전후 일시 중단": ["Pause before and after contrast imaging", "造影检查前后暂停服用", "造影剤検査の前後は一時中止"],
+ "설사, 구역, 구토, 복통 등 위장관계 증상이 투여 초기에 흔히 나타나며 대부분 자연 소실된다.": ["Gastrointestinal symptoms such as diarrhea, nausea, vomiting and abdominal pain are common early in treatment and usually resolve on their own.", "腹泻、恶心、呕吐、腹痛等胃肠道症状在用药初期常见，大多可自行消失。", "下痢、悪心、嘔吐、腹痛などの消化器症状は投与初期によくみられ、多くは自然に消失する。"],
+ "크레스토정 10mg": ["Crestor 10mg tablet", "Crestor 10mg 片", "クレストール錠 10mg"], "크레스토": ["Crestor", "Crestor", "クレストール"], "로수바스타틴": ["Rosuvastatin", "瑞舒伐他汀", "ロスバスタチン"],
+ "고지혈증": ["High cholesterol", "高脂血症", "脂質異常症"], "1일 1회 취침 전": ["Once daily at bedtime", "每日1次 睡前", "1日1回 就寝前"], "근육통": ["Muscle pain", "肌肉痛", "筋肉痛"],
+ "간수치(ALT) 상승": ["Raised liver enzymes (ALT)", "肝酶（ALT）升高", "肝酵素（ALT）上昇"], "횡문근융해증": ["Rhabdomyolysis", "横纹肌溶解症", "横紋筋融解症"],
+ "중증 신장애(CrCl 30 미만)는 1일 5mg부터 시작하며 40mg은 금기입니다.": ["In severe renal impairment (CrCl below 30), start at 5 mg daily; 40 mg is contraindicated.", "重度肾功能损害（CrCl低于30）从每日5 mg开始，禁用40 mg。", "重度腎障害（CrCl 30未満）は1日5 mgから開始し、40 mgは禁忌です。"],
+ "활동성 간질환 또는 원인 불명의 지속적 간수치 상승 시 투여 금기.": ["Contraindicated in active liver disease or unexplained persistent rises in liver enzymes.", "活动性肝病或不明原因的持续肝酶升高时禁用。", "活動性肝疾患または原因不明の持続的な肝酵素上昇がある場合は投与禁忌。"],
+ "1일 1회, 매일 같은 시간": ["Once daily, same time each day", "每日1次，每天同一时间", "1日1回、毎日同じ時間に"], "설명되지 않는 근육통 시 바로 상담": ["Get advice right away for unexplained muscle pain", "出现原因不明的肌肉痛时立即咨询", "原因不明の筋肉痛があればすぐ相談"],
+ "원인을 알 수 없는 근육통, 근육 압통 또는 근무력이 나타나면 즉시 의사에게 알리도록 한다.": ["Patients should report unexplained muscle pain, tenderness or weakness to their doctor promptly.", "如出现不明原因的肌肉痛、肌肉压痛或无力，应立即告知医生。", "原因不明の筋肉痛、筋肉の圧痛または脱力感が現れた場合は直ちに医師に知らせるよう指導すること。"],
+ "아침 식후": ["After breakfast", "早饭后", "朝食後"], "저녁 식후": ["After dinner", "晚饭后", "夕食後"], "취침 전": ["Bedtime", "睡前", "就寝前"],
+ "다리 부음": ["Leg swelling", "腿部肿胀", "脚のむくみ"], "간수치 상승": ["Raised liver enzymes", "肝酶升高", "肝酵素上昇"], "eGFR 감소": ["Lower eGFR", "eGFR下降", "eGFR低下"],
+ "김지현": ["Jihyun Kim", "金智贤", "キム・ジヒョン"], "이순자": ["Soonja Lee", "李顺子", "イ・スンジャ"], "박준우": ["Junwoo Park", "朴俊宇", "パク・ジュヌ"],
+ "김": ["J", "金", "キ"], "이": ["S", "李", "イ"], "준": ["J", "俊", "ジ"], "나": ["Me", "我", "自分"], "어머니": ["Mother", "母亲", "母"], "아들": ["Son", "儿子", "息子"],
+ "1978년생 · 복용 중 4개": ["Born 1978 · 4 medicines", "1978年生 · 正在服用4种药", "1978年生まれ · 服用中 4種類"], "1951년생 · 복용 중 6개": ["Born 1951 · 6 medicines", "1951年生 · 正在服用6种药", "1951年生まれ · 服用中 6種類"],
+ "2012년생 · 복용 중 1개": ["Born 2012 · 1 medicine", "2012年生 · 正在服用1种药", "2012年生まれ · 服用中 1種類"], "복용 중 4개": ["4 medicines", "正在服用4种药", "服用中 4種類"],
+ "복용 중 6개 · 오늘 저녁 누락": ["6 medicines · Missed tonight", "正在服用6种药 · 今晚漏服", "服用中 6種類 · 今夜飲み忘れ"], "복용 중 1개": ["1 medicine", "正在服用1种药", "服用中 1種類"],
+ "리리카 먹고 졸려요": ["Lyrica makes me sleepy", "吃了Lyrica后犯困", "リリカを飲むと眠いです"],
+ "리리카(프레가발린)는 첨부문서에서 졸림과 어지러움이 1% 이상 흔하게 보고된 약이에요.\n\n복용 초기나 용량을 올린 직후에 특히 흔하니 운전과 기계 조작은 피하세요. 계속되면 처방의와 용량 조정을 상의해 보세요.": ["Lyrica (pregabalin) lists drowsiness and dizziness as common (1% or more) in its package insert.\n\nThey're most common when you first start or right after a dose increase, so avoid driving and operating machinery. If it continues, ask your prescriber about adjusting the dose.", "根据说明书，Lyrica（普瑞巴林）常见（1%以上）嗜睡和头晕。\n\n刚开始服用或刚加量时尤其常见，请避免驾驶和操作机械。如持续存在，请与处方医生商量调整剂量。", "リリカ（プレガバリン）は添付文書で眠気とめまいが1%以上と多く報告されている薬です。\n\n飲み始めや増量直後に特に多いので、運転や機械の操作は避けてください。続く場合は処方医と用量調整をご相談ください。"],
+ "술 마셔도 되나요?": ["Can I drink alcohol?", "可以喝酒吗？", "お酒を飲んでもいいですか？"],
+ "지금 드시는 약 중 두 가지가 술과 겹쳐요.\n\n· 다이아벡스(메트포르민): 과음 시 젖산산증 위험이 커집니다.\n· 리리카: 졸림과 어지러움이 심해질 수 있어요.\n\n가능하면 피하시는 걸 권해요.": ["Two of your current medicines interact with alcohol.\n\n· Diabex (metformin): heavy drinking raises the risk of lactic acidosis.\n· Lyrica: drowsiness and dizziness can get worse.\n\nIt's best to avoid it if you can.", "您目前服用的药中有两种与酒精相互作用。\n\n· Diabex（二甲双胍）：过量饮酒会增加乳酸酸中毒风险。\n· Lyrica：嗜睡和头晕可能加重。\n\n建议尽量避免饮酒。", "今飲んでいる薬のうち2つがお酒と影響し合います。\n\n· ダイアベックス（メトホルミン）：多量の飲酒で乳酸アシドーシスのリスクが高まります。\n· リリカ：眠気やめまいが強くなることがあります。\n\nできれば控えることをおすすめします。"],
+ "다이아벡스 언제 먹어요?": ["When do I take Diabex?", "Diabex什么时候吃？", "ダイアベックスはいつ飲みますか？"],
+ "식사 직후 드세요. 식사와 함께 먹으면 설사·구역 같은 위장 증상이 줄어요. 지금 일정은 아침 08:00, 저녁 19:00입니다.": ["Take it right after a meal. Taking it with food reduces stomach upset like diarrhea and nausea. Your schedule is 08:00 in the morning and 19:00 in the evening.", "请在饭后立即服用。随餐服用可减轻腹泻、恶心等胃肠道症状。您目前的计划是早上08:00和晚上19:00。", "食直後に飲んでください。食事と一緒に飲むと下痢や吐き気などの胃腸症状が減ります。現在のスケジュールは朝08:00、夕方19:00です。"],
+ "안녕하세요, 김지현 님. 복용 중인 4개 약의 허가정보를 바탕으로 답해드릴게요. 무엇이 궁금하세요?": ["Hello, Jihyun. I'll answer based on the approval information for your 4 medicines. What would you like to know?", "您好，金智贤。我会根据您正在服用的4种药的许可信息来回答。想了解什么呢？", "こんにちは、キム・ジヒョンさん。服用中の4種類の薬の許可情報をもとにお答えします。何が知りたいですか？"],
+ "복용 중인 4개 약의 허가정보에서 관련 내용을 찾아봤어요. 해당 내용과 직접 연결되는 기재 사항은 없었습니다. 증상이 계속되면 의사·약사와 상의해 주세요.": ["I searched the approval information for your 4 medicines and found nothing directly related. If symptoms continue, please talk to your doctor or pharmacist.", "我查阅了您4种药的许可信息，没有找到直接相关的记载。如症状持续，请咨询医生或药师。", "服用中の4種類の薬の許可情報を確認しましたが、直接関係する記載はありませんでした。症状が続く場合は医師・薬剤師にご相談ください。"],
+ "온누리 정문약국": ["Onnuri Main Gate Pharmacy", "Onnuri正门药店", "オンヌリ正門薬局"], "서울내과의원": ["Seoul Internal Medicine", "首尔内科医院", "ソウル内科医院"], "푸른숲약국": ["Green Forest Pharmacy", "绿林药店", "緑の森薬局"],
+ "한강 24시약국": ["Hangang 24h Pharmacy", "汉江24小时药店", "漢江24時薬局"], "22:00까지": ["Until 22:00", "营业至22:00", "22:00まで"], "18:30까지": ["Until 18:30", "营业至18:30", "18:30まで"], "20:00까지": ["Until 20:00", "营业至20:00", "20:00まで"],
+ "24시간": ["24 hours", "24小时", "24時間"], "영업 중": ["Open", "营业中", "営業中"], "진료 중": ["Open", "门诊中", "診療中"], "야간": ["Late night", "夜间", "夜間"], "전체": ["All", "全部", "すべて"],
+ "성찰하지 않는 삶은 살 가치가 없다.": ["The unexamined life is not worth living.", "未经审视的人生不值得过。", "吟味されない生に、生きる価値はない。"], "소크라테스": ["Socrates", "苏格拉底", "ソクラテス"],
+ "오늘 하루를 생의 마지막 날처럼 살되, 서두르지도 게으르지도 말라.": ["Live each day as if it were your last, without haste and without idleness.", "把每一天都当作生命的最后一天来过，既不慌张，也不懈怠。", "毎日を人生最後の日のように生きよ。ただし急がず、怠けずに。"], "마르쿠스 아우렐리우스": ["Marcus Aurelius", "马可·奥勒留", "マルクス・アウレリウス"],
+ "우리를 괴롭히는 것은 일 자체가 아니라 그 일에 대한 우리의 생각이다.": ["It is not things that disturb us, but our judgments about them.", "困扰我们的不是事情本身，而是我们对事情的看法。", "人を悩ませるのは物事そのものではなく、物事についての考えである。"], "에픽테토스": ["Epictetus", "爱比克泰德", "エピクテトス"],
+ "삶은 짧은 것이 아니라, 우리가 그것을 짧게 만드는 것이다.": ["Life is not short; we make it short.", "生命并不短暂，是我们让它变短了。", "人生は短いのではない。我々が短くしているのだ。"], "세네카": ["Seneca", "塞涅卡", "セネカ"],
+ "천 리 길도 한 걸음에서 시작된다.": ["A journey of a thousand miles begins with a single step.", "千里之行，始于足下。", "千里の道も一歩から。"], "노자": ["Laozi", "老子", "老子"],
+ "아는 것을 안다 하고 모르는 것을 모른다 하는 것, 그것이 앎이다.": ["To know what you know and to know what you do not know, that is true knowledge.", "知之为知之，不知为不知，是知也。", "知るを知るとなし、知らざるを知らずとなす。これ知るなり。"], "공자": ["Confucius", "孔子", "孔子"],
+ "같은 강물에 두 번 발을 담글 수는 없다.": ["No one steps in the same river twice.", "人不能两次踏进同一条河流。", "同じ川に二度入ることはできない。"], "헤라클레이토스": ["Heraclitus", "赫拉克利特", "ヘラクレイトス"],
+ "삶은 뒤돌아볼 때 이해되지만, 앞을 향해 살아야 한다.": ["Life can only be understood backwards, but it must be lived forwards.", "人生只能向后理解，却必须向前生活。", "人生は後ろ向きにしか理解できないが、前向きにしか生きられない。"], "키르케고르": ["Kierkegaard", "克尔凯郭尔", "キルケゴール"],
+ "살아야 할 이유를 아는 사람은 어떤 상황도 견딜 수 있다.": ["He who has a why to live can bear almost any how.", "知道为什么而活的人，几乎能忍受任何境遇。", "生きる理由を持つ者は、ほとんどどんな状況にも耐えられる。"], "니체": ["Nietzsche", "尼采", "ニーチェ"],
+ "행복은 스스로 만족하는 사람의 것이다.": ["Happiness belongs to the self-sufficient.", "幸福属于自足的人。", "幸福は自ら満ち足りる者のものである。"], "아리스토텔레스": ["Aristotle", "亚里士多德", "アリストテレス"],
+ "화면을 누르면 건너뜁니다": ["Tap to skip", "轻触屏幕跳过", "タップしてスキップ"], "메디스캔 프로": ["MediScan Pro", "医扫 Pro", "メディスキャン プロ"],
+ "공복": ["Fasting", "空腹", "空腹時"], "식후 2시간": ["2h after meal", "餐后2小时", "食後2時間"], "혈압": ["Blood pressure", "血压", "血圧"], "혈당": ["Glucose", "血糖", "血糖"],
+ "맥박 {0}": ["Pulse {0}", "脉搏 {0}", "脈拍 {0}"], "맥박 {0} bpm": ["Pulse {0} bpm", "脉搏 {0} bpm", "脈拍 {0} bpm"],
+ "혈압 기록하기": ["Log blood pressure", "记录血压", "血圧を記録"], "혈당 기록하기": ["Log glucose", "记录血糖", "血糖を記録"],
+ "7일 평균": ["7-day avg", "7日平均", "7日平均"], "최고 수축기": ["Peak systolic", "最高收缩压", "最高収縮期"], "평균 맥박": ["Avg pulse", "平均脉搏", "平均脈拍"],
+ "혈압약 아모잘탄(1일 1회 아침)을 복용 중이에요. 약 먹기 전, 아침에 같은 시간에 재면 변화를 비교하기 좋아요.": ["You take Amosartan (once daily, morning) for blood pressure. Measuring at the same time each morning, before your dose, makes changes easier to compare.", "您正在服用降压药Amosartan（每日1次，早上）。每天早上服药前在同一时间测量，更便于比较变化。", "血圧の薬アモザルタン（1日1回朝）を服用中です。服用前、毎朝同じ時間に測ると変化を比べやすくなります。"],
+ "공복 평균": ["Fasting avg", "空腹平均", "空腹時平均"], "7일 최고": ["7-day high", "7日最高", "7日最高"], "측정 횟수": ["Readings", "测量次数", "測定回数"],
+ "당뇨약 다이아벡스(1일 2회 식후)를 복용 중이에요. 금색은 공복, 녹색은 식후 2시간 측정값이에요.": ["You take Diabex (twice daily after meals) for diabetes. Gold bars are fasting readings; green bars are 2 hours after a meal.", "您正在服用降糖药Diabex（每日2次，饭后）。金色为空腹值，绿色为餐后2小时值。", "糖尿病の薬ダイアベックス（1日2回食後）を服用中です。金色は空腹時、緑色は食後2時間の測定値です。"],
+ "수축기": ["Systolic", "收缩压", "収縮期"], "이완기": ["Diastolic", "舒张压", "拡張期"], "맥박": ["Pulse", "脉搏", "脈拍"],
+ "혈압 {0}/{1}을 기록했어요": ["Logged blood pressure {0}/{1}", "已记录血压 {0}/{1}", "血圧 {0}/{1} を記録しました"], "혈당 {0} mg/dL을 기록했어요": ["Logged glucose {0} mg/dL", "已记录血糖 {0} mg/dL", "血糖 {0} mg/dL を記録しました"],
+ "오늘 복용 완료": ["Taken today", "今日已服用", "本日服用済み"], "복용 전": ["Not yet taken", "未服用", "服用前"],
+ "신기능 저하": ["Reduced kidney function", "肾功能下降", "腎機能低下"], "간기능 저하": ["Reduced liver function", "肝功能下降", "肝機能低下"],
+ "주의할 이상반응 {0}": ["{0} to watch", "需注意的不良反应 {0}", "注意すべき副作用 {0}"],
+ "홈": ["Home", "首页", "ホーム"], "기록": ["Records", "记录", "記録"], "스캔": ["Scan", "扫描", "スキャン"], "상담": ["Chat", "咨询", "相談"], "마이": ["Me", "我的", "マイ"],
+ "처방전·약봉투": ["Rx / pill bag", "处方·药袋", "処方箋・薬袋"], "처방전이나 약봉투의 글자가 네모 안에 들어오게 비춰주세요": ["Fit the text of the prescription or pill bag inside the frame", "请将处方或药袋上的文字对准方框", "処方箋や薬袋の文字が枠内に入るように写してください"],
+ "바코드": ["Barcode", "条形码", "バーコード"], "약 상자의 바코드를 가로로 맞춰주세요": ["Line up the barcode on the box horizontally", "请将药盒上的条形码横向对准", "薬箱のバーコードを横向きに合わせてください"],
+ "알약 모양": ["Pill shape", "药片外观", "錠剤の形"], "알약 하나를 어두운 바탕 위에 올려 가까이 비춰주세요": ["Place one pill on a dark surface and hold the camera close", "请将一粒药片放在深色背景上近距离拍摄", "錠剤を1つ暗い背景の上に置き、近づけて写してください"],
+ "{0} {1} 복용을 기록했어요": ["Logged {0} · {1}", "已记录 {0} {1} 服药", "{0} {1} の服用を記録しました"],
+ "처방약 스캔": ["Scan Rx", "扫描处方药", "処方薬スキャン"], "증상 체크": ["Symptoms", "症状检查", "症状チェック"], "복약 일정": ["Schedule", "服药计划", "服薬予定"], "약국 찾기": ["Pharmacies", "查找药店", "薬局を探す"],
+ "이상반응": ["Side effects", "不良反应", "副作用"], "신·간기능": ["Kidney · Liver", "肾·肝功能", "腎・肝機能"], "복용법": ["How to take", "服用方法", "飲み方"],
+ "월": ["M", "一", "月"], "화": ["T", "二", "火"], "수": ["W", "三", "水"], "목": ["T", "四", "木"], "금": ["F", "五", "金"], "토": ["S", "六", "土"], "일": ["S", "日", "日"],
+ "서울내과의원 처방전": ["Seoul Internal Medicine Rx", "首尔内科医院处方", "ソウル内科医院の処方箋"], "4개 약 · 주의 3건": ["4 drugs · 3 alerts", "4种药 · 3项注意", "4種類 · 注意3件"], "처방전": ["Rx", "处方", "処方箋"],
+ "타이레놀 8시간 ER": ["Tylenol 8HR ER", "泰诺 8小时 ER", "タイレノール 8時間 ER"], "1개 약 · 주의 없음": ["1 drug · No alerts", "1种药 · 无需注意", "1種類 · 注意なし"],
+ "흰색 원형 알약 \"YH\"": ["White round pill \"YH\"", "白色圆形药片 \"YH\"", "白い円形錠剤「YH」"], "후보 2개": ["2 matches", "2个候选", "候補2件"], "알약": ["Pill", "药片", "錠剤"],
+ "푸른숲약국 약봉투": ["Green Forest Pharmacy bag", "绿林药店药袋", "緑の森薬局の薬袋"], "3개 약 · 주의 1건": ["3 drugs · 1 alert", "3种药 · 1项注意", "3種類 · 注意1件"], "약봉투": ["Pill bag", "药袋", "薬袋"],
+ "복용 완료": ["Taken", "已服用", "服用済み"], "누락": ["Missed", "漏服", "飲み忘れ"], "증상 기록": ["Symptoms", "症状记录", "症状記録"],
+ "리리카 의심": ["Possibly Lyrica", "疑似Lyrica", "リリカの疑い"], "발목 부음": ["Ankle swelling", "脚踝肿胀", "足首のむくみ"], "아모잘탄 의심": ["Possibly Amosartan", "疑似Amosartan", "アモザルタンの疑い"],
+ "PDF를 만들었어요 · 다운로드 폴더": ["PDF saved · Downloads", "已生成PDF · 下载文件夹", "PDFを作成しました · ダウンロード"], "{0} 님 화면으로 전환했어요": ["Switched to {0}", "已切换到{0}", "{0}さんの画面に切り替えました"],
+ "복약 알림 설정": ["Reminder settings", "服药提醒设置", "服薬通知の設定"], "2개 켜짐": ["2 on", "已开启2个", "2件オン"], "혈압·당뇨 수첩": ["BP & diabetes notebook", "血压·血糖手册", "血圧・血糖手帳"],
+ "가족·보호자 관리": ["Family & caregivers", "家人·监护人管理", "家族・介護者の管理"], "3명": ["3 people", "3人", "3人"], "병원·약국 찾기": ["Find clinics & pharmacies", "查找医院·药店", "病院・薬局を探す"],
+ "건강 리포트": ["Health report", "健康报告", "健康レポート"], "11월": ["Nov", "11月", "11月"], "오늘의 문장 다시 보기": ["Replay today's line", "重看今日一句", "今日の言葉をもう一度"], "개인정보 처리방침": ["Privacy policy", "隐私政策", "プライバシーポリシー"],
+ "{0} 복용 시간을 {1}(으)로 바꿨어요": ["{0} dose moved to {1}", "{0}服药时间已改为{1}", "{0}の服用時間を{1}に変更しました"],
+ "병원": ["Clinics", "医院", "病院"], "약국": ["Pharmacy", "药店", "薬局"], "맑은눈 안과의원": ["Clear Eye Clinic", "明眸眼科诊所", "クリアアイ眼科医院"], "서울중앙병원 응급실": ["Seoul Central Hospital ER", "首尔中央医院急诊", "ソウル中央病院 救急外来"], "19:00까지": ["Until 19:00", "营业至19:00", "19:00まで"],
+ "읽는 중… 사진은 이 기기 안에서만 처리합니다": ["Reading… Photos are processed only on this device", "识别中… 照片仅在本设备上处理", "読み取り中… 写真はこの端末内でのみ処理します"]
+};
+const L = s => { if (LANG === 'ko' || typeof s !== 'string') return s; const r = D[s]; return r ? r[LANGS.indexOf(LANG) - 1] : s; };
+const F = (k, ...a) => L(k).replace(/\{(\d)\}/g, (m, i) => a[i]);
+const TR_SKIP = { scrollRef: 1, splashEl: 1, typingEl: 1, beamEl: 1 };
+function tr(v, k) {
+  if (k && TR_SKIP[k]) return v;
+  if (typeof v === 'string') return L(v);
+  if (Array.isArray(v)) return v.map(x => tr(x));
+  if (v && typeof v === 'object' && !v.$$typeof && Object.getPrototypeOf(v) === Object.prototype && !('current' in v)) { const o = {}; for (const key in v) o[key] = tr(v[key], key); return o; }
+  return v;
+}
+
+class Component extends DCLogic {
+  state = { times: { m: '08:00', e: '19:00', n: '22:00' }, timeEdit: null, draft: { h: 8, mi: 0 }, lang: this.props.lang || 'ko', splash: this.props.splashOnLoad !== false && (!this.props.startScreen || this.props.startScreen === 'home'), splashKey: 0, stack: ['home'], vt: 'bp', bp: BP0, glu: GLU0, sheet: false, form: { s: 128, di: 82, p: 72, v: 110, when: '공복' }, mode: 'rx', drug: 'lyr', dtab: 'adr', taken: { m: true, e: false, n: false }, remind: { m: true, e: true, n: false },
+    sym: ['어지러움'], member: 0, guard: { 0: false, 1: true, 2: false }, phf: '전체', input: '', typing: false, toast: '',
+    messages: [{ me: false, text: '안녕하세요, 김지현 님. 복용 중인 4개 약의 허가정보를 바탕으로 답해드릴게요. 무엇이 궁금하세요?' }] };
+  scrollRef = React.createRef();
+  componentDidMount() { const s = this.props.startScreen; if (s && s !== 'home') this.setState({ stack: ['home', s] }); }
+  componentDidUpdate(pp, ps) {
+    const a = ps.stack[ps.stack.length - 1], b = this.state.stack[this.state.stack.length - 1];
+    if (a !== b && this.scrollRef.current) this.scrollRef.current.scrollTop = 0;
+    if (pp.lang !== this.props.lang && this.props.lang) this.setState({ lang: this.props.lang });
+    if (pp.startScreen !== this.props.startScreen && this.props.startScreen) this.setState({ stack: this.props.startScreen === 'home' ? ['home'] : ['home', this.props.startScreen] });
+  }
+  componentWillUnmount() { clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); }
+  go = s => this.setState(st => ({ stack: [...st.stack, s] }));
+  tab = s => this.setState({ stack: [s] });
+  back = () => this.setState(st => ({ stack: st.stack.length > 1 ? st.stack.slice(0, -1) : ['home'] }));
+  flash = msg => { clearTimeout(this.t3); this.setState({ toast: msg }); this.t3 = setTimeout(() => this.setState({ toast: '' }), 1800); };
+  open = id => this.setState(st => ({ drug: id, dtab: 'adr', stack: [...st.stack, 'detail'] }));
+  send = text => {
+    if (!text.trim() || this.state.typing) return;
+    this.setState(st => ({ messages: [...st.messages, { me: true, text }], input: '', typing: true }));
+    clearTimeout(this.t2);
+    this.t2 = setTimeout(() => this.setState(st => ({ typing: false, messages: [...st.messages, { me: false, text: REPLIES[text] || '복용 중인 4개 약의 허가정보에서 관련 내용을 찾아봤어요. 해당 내용과 직접 연결되는 기재 사항은 없었습니다. 증상이 계속되면 의사·약사와 상의해 주세요.' }] })), 1300);
+  };
+  shutter = () => {
+    if (this.state.stack[this.state.stack.length - 1] !== 'scan') return;
+    this.go('scanning');
+    clearTimeout(this.t1);
+    this.t1 = setTimeout(() => this.setState(st => ({ stack: [...st.stack.filter(x => x !== 'scan' && x !== 'scanning'), 'results'] })), (this.props.scanSeconds ?? 1.8) * 1000);
+  };
+  timeVals(slots) {
+    const st = this.state, dr = st.draft, p2 = n => String(n).padStart(2, '0');
+    const ui = k => UI[k][LANGS.indexOf(LANG)];
+    const slot = slots.find(s => s.k === st.timeEdit) || slots[0];
+    const set = (dh, dm) => () => this.setState(x => { let m = (x.draft.h * 60 + x.draft.mi + dh * 60 + dm + 1440) % 1440; return { draft: { h: Math.floor(m / 60), mi: m % 60 } }; });
+    const cur = p2(dr.h) + ':' + p2(dr.mi);
+    const presets = { m: ['07:00', '07:30', '08:00', '09:00'], e: ['18:00', '18:30', '19:00', '20:00'], n: ['21:30', '22:00', '22:30', '23:00'] }[slot.k];
+    return {
+      timeOpen: !!st.timeEdit, closeTime: () => this.setState({ timeEdit: null }),
+      timeSlot: { label: slot.label, names: slot.drugs.map(d => L(d.short)).join(' · ') },
+      timeCols: [{ v: p2(dr.h), l: ui('hour'), inc: set(1, 0), dec: set(-1, 0) }, { v: p2(dr.mi), l: ui('minute'), inc: set(0, 5), dec: set(0, -5) }],
+      timePresets: presets.map(t => { const on = t === cur; const [hh, mm] = t.split(':').map(Number); return { t, bd: on ? '#c9a45c' : 'rgba(241,234,217,.18)', bg: on ? 'rgba(201,164,92,.16)' : 'transparent', c: on ? '#e8d39a' : '#d9d3c4', pick: () => this.setState({ draft: { h: hh, mi: mm } }) }; }),
+      saveTime: () => { const k = st.timeEdit; this.setState(x => ({ timeEdit: null, times: { ...x.times, [k]: cur } })); this.flash(F('{0} 복용 시간을 {1}(으)로 바꿨어요', L(slot.label), cur)); }
+    };
+  }
+  vitalsVals() {
+    const st = this.state, isBp = st.vt === 'bp', f = st.form;
+    const bpRow = e => ({ ...e, ...bpSt(e.s, e.di), big: `${e.s}/${e.di}`, sub: F('맥박 {0}', e.p) });
+    const gluRow = e => ({ ...e, ...gluSt(e.v, e.when), big: `${e.v}`, sub: e.when });
+    const H = 140, px = (v, lo, hi) => Math.max(0, Math.min(H, (v - lo) / (hi - lo) * H));
+    const avg = (a, k) => Math.round(a.reduce((x, e) => x + e[k], 0) / a.length);
+    let vt;
+    if (isBp) {
+      const rows = st.bp.map(bpRow), last7 = st.bp.slice(0, 7).reverse();
+      vt = { unit: 'mmHg', addLabel: '혈압 기록하기', rows, last: { ...rows[0], big: `${rows[0].s}/${rows[0].di}`, sub: F('맥박 {0} bpm', rows[0].p) },
+        refs: [{ b: px(140, 50, 180) + 'px', l: '140' }, { b: px(90, 50, 180) + 'px', l: '90' }],
+        cols: last7.map(e => ({ d: e.d.slice(3), b: px(e.di, 50, 180) + 'px', h: Math.max(6, px(e.s, 50, 180) - px(e.di, 50, 180)) + 'px', bg: bpSt(e.s, e.di).t === '높음' ? 'linear-gradient(180deg,#eb9a89,#c9a45c)' : 'linear-gradient(180deg,#e8d39a,#a8843f)' })),
+        stats: [{ v: `${avg(last7, 's')}/${avg(last7, 'di')}`, k: '7일 평균' }, { v: `${Math.max(...last7.map(e => e.s))}`, k: '최고 수축기' }, { v: `${avg(last7, 'p')}`, k: '평균 맥박' }],
+        note: '혈압약 아모잘탄(1일 1회 아침)을 복용 중이에요. 약 먹기 전, 아침에 같은 시간에 재면 변화를 비교하기 좋아요.' };
+    } else {
+      const rows = st.glu.map(gluRow), last7 = st.glu.slice(0, 7).reverse(), fast = st.glu.filter(e => e.when === '공복').slice(0, 7);
+      vt = { unit: 'mg/dL', addLabel: '혈당 기록하기', rows, last: { ...rows[0], sub: rows[0].when },
+        refs: [{ b: px(126, 60, 220) + 'px', l: '126' }, { b: px(200, 60, 220) + 'px', l: '200' }],
+        cols: last7.map(e => ({ d: e.d.slice(3), b: '0px', h: px(e.v, 60, 220) + 'px', bg: e.when === '공복' ? 'linear-gradient(180deg,#e8d39a,#a8843f)' : 'linear-gradient(180deg,#9ccbb6,#3f7a63)' })),
+        stats: [{ v: `${fast.length ? avg(fast, 'v') : '-'}`, k: '공복 평균' }, { v: `${Math.max(...last7.map(e => e.v))}`, k: '7일 최고' }, { v: `${last7.length}`, k: '측정 횟수' }],
+        note: '당뇨약 다이아벡스(1일 2회 식후)를 복용 중이에요. 금색은 공복, 녹색은 식후 2시간 측정값이에요.' };
+    }
+    const num = (k, d) => () => this.setState(x => ({ form: { ...x.form, [k]: Math.max(0, (Number(x.form[k]) || 0) + d) } }));
+    const fields = isBp ? [['s', '수축기', 'mmHg'], ['di', '이완기', 'mmHg'], ['p', '맥박', 'bpm']] : [['v', '혈당', 'mg/dL']];
+    return {
+      isVitals: st.stack[st.stack.length - 1] === 'vitals', isGlu: !isBp, vt,
+      bpLast: bpRow(st.bp[0]), gluLast: gluRow(st.glu[0]),
+      goVitals: () => this.go('vitals'),
+      vtTabs: [['bp', '혈압'], ['glu', '혈당']].map(([k, t]) => ({ t, bg: st.vt === k ? 'linear-gradient(180deg,#dcc07f,#b8924a)' : 'transparent', c: st.vt === k ? '#0b1d16' : '#d9d3c4', w: st.vt === k ? 700 : 400, pick: () => this.setState({ vt: k }) })),
+      sheetOpen: st.sheet, openSheet: () => this.setState({ sheet: true }), closeSheet: () => this.setState({ sheet: false }),
+      formStatus: isBp ? bpSt(+f.s, +f.di) : gluSt(+f.v, f.when),
+      whenChips: ['공복', '식후 2시간', '취침 전'].map(t => ({ t, bd: f.when === t ? '#c9a45c' : 'rgba(241,234,217,.18)', bg: f.when === t ? 'rgba(201,164,92,.16)' : 'transparent', c: f.when === t ? '#e8d39a' : '#d9d3c4', pick: () => this.setState(x => ({ form: { ...x.form, when: t } })) })),
+      formFields: fields.map(([k, l, u]) => ({ l, u, v: f[k], inc: num(k, 1), dec: num(k, -1), set: e => { const v = e.target.value.replace(/\D/g, '').slice(0, 3); this.setState(x => ({ form: { ...x.form, [k]: v } })); } })),
+      saveEntry: () => {
+        const time = nowHM();
+        if (isBp) this.setState(x => ({ sheet: false, bp: [{ d: '11.18', time, s: +x.form.s || 0, di: +x.form.di || 0, p: +x.form.p || 0 }, ...x.bp] }));
+        else this.setState(x => ({ sheet: false, glu: [{ d: '11.18', time, v: +x.form.v || 0, when: x.form.when }, ...x.glu] }));
+        this.flash(isBp ? F('혈압 {0}/{1}을 기록했어요', f.s, f.di) : F('혈당 {0} mg/dL을 기록했어요', f.v));
+      }
+    };
+  }
+  renderVals() {
+    LANG = this.state.lang;
+    const ui = {}; const li = LANGS.indexOf(LANG); for (const k in UI) ui[k] = UI[k][li];
+    const codes = { ko: 'KO', en: 'EN', zh: '中', ja: '日' };
+    return { ...tr(this.renderValsKo()), t: ui, langCode: codes[LANG],
+      cycleLang: () => this.setState(x => ({ lang: LANGS[(LANGS.indexOf(x.lang) + 1) % 4] })),
+      langs: [['ko', '한국어'], ['en', 'English'], ['zh', '中文'], ['ja', '日本語']].map(([k, t]) => ({ t, bd: LANG === k ? '#c9a45c' : 'rgba(241,234,217,.18)', bg: LANG === k ? 'rgba(201,164,92,.16)' : 'transparent', c: LANG === k ? '#e8d39a' : '#d9d3c4', pick: () => this.setState({ lang: k }) })) };
+  }
+  renderValsKo() {
+    const st = this.state, scr = st.stack[st.stack.length - 1];
+    const gold = '#e8d39a', muted = '#a3b0a7';
+    const dv = id => ({ ...DRUGS[id], id });
+    const slots = SLOTS.map(s => ({ ...s, time: st.times[s.k], edit: () => { const [hh, mm] = st.times[s.k].split(':').map(Number); this.setState({ timeEdit: s.k, draft: { h: hh, mi: mm } }); }, drugs: s.drugs.map(dv), bar: st.taken[s.k] ? '#c9a45c' : 'rgba(201,164,92,.18)',
+      status: st.taken[s.k] ? '오늘 복용 완료' : '복용 전', tgBg: st.remind[s.k] ? '#b8924a' : 'rgba(241,234,217,.18)', tgX: st.remind[s.k] ? '21px' : '3px',
+      toggle: () => this.setState(x => ({ remind: { ...x.remind, [s.k]: !x.remind[s.k] } })) }));
+    const nextSlot = slots.find(s => !st.taken[s.k]);
+    const d = dv(st.drug);
+    d.adrView = d.adr.map(([n, lv, f]) => ({ n, f, ...LV[lv] }));
+    d.organView = [{ title: '신기능 저하', t: d.renal[0], x: d.renal[1], ...TAG[d.renal[0]] }, { title: '간기능 저하', t: d.hepatic[0], x: d.hepatic[1], ...TAG[d.hepatic[0]] }];
+    d.howView = d.how.map(([k, v]) => ({ k, v }));
+    const drugList = ORDER.map(id => { const x = dv(id); const top = Math.max(...x.adr.map(a => a[1])); const n = x.adr.filter(a => a[1] >= 3).length;
+      return { ...x, topBg: LV[top].bg, topC: LV[top].c, topLabel: F('주의할 이상반응 {0}', n), open: () => this.open(id) }; });
+    const navDefs = [['home', '홈', '50%', 'none'], ['history', '기록', '2px', 'none'], ['scan', '스캔'], ['chat', '상담', '2px', 'rotate(45deg)'], ['my', '마이', '50%', 'none']];
+    const tabOf = { home: 'home', results: 'home', detail: 'home', symptom: 'home', schedule: 'home', vitals: 'home', pharmacy: 'my', history: 'history', report: 'history', chat: 'chat', my: 'my', family: 'my' };
+    const curTab = tabOf[scr];
+    const scanLike = scr === 'scan' || scr === 'scanning';
+    const modeDefs = { rx: ['처방전·약봉투', '처방전이나 약봉투의 글자가 네모 안에 들어오게 비춰주세요', { l: '30px', t: '170px', h: '380px' }],
+      barcode: ['바코드', '약 상자의 바코드를 가로로 맞춰주세요', { l: '40px', t: '280px', h: '150px' }],
+      pill: ['알약 모양', '알약 하나를 어두운 바탕 위에 올려 가까이 비춰주세요', { l: '90px', t: '240px', h: '200px' }] };
+    return {
+      scrollRef: this.scrollRef, back: this.back,
+      isHome: scr === 'home', isResults: scr === 'results', isDetail: scr === 'detail', isSymptom: scr === 'symptom', isSchedule: scr === 'schedule',
+      isHistory: scr === 'history', isReport: scr === 'report', isChat: scr === 'chat', isMy: scr === 'my', isFamily: scr === 'family', isPharmacy: scr === 'pharmacy',
+      isScanLike: scanLike, isScanning: scr === 'scanning', showNav: !scanLike && scr !== 'pharmacy',
+      contentBottom: scr === 'chat' ? '154px' : (scanLike || scr === 'pharmacy' ? '0px' : '88px'),
+      member: MEMBERS[st.member],
+      hasNext: !!nextSlot, allDone: !nextSlot, next: nextSlot || { drugs: [] }, slots,
+      doneCount: Object.values(st.taken).filter(Boolean).length,
+      takeNext: () => { if (!nextSlot) return; this.setState(x => ({ taken: { ...x.taken, [nextSlot.k]: true } })); this.flash(F('{0} {1} 복용을 기록했어요', nextSlot.time, L(nextSlot.label))); },
+      resetDoses: () => this.setState({ taken: { m: false, e: false, n: false } }),
+      quick: [
+        { t: '처방약 스캔', en: 'SCAN', r: '2px', rot: 'none', go: () => this.go('scan') },
+        { t: '증상 체크', en: 'SYMPTOM', r: '50%', rot: 'none', go: () => this.go('symptom') },
+        { t: '복약 일정', en: 'REMINDERS', r: '0', rot: 'rotate(45deg)', go: () => this.go('schedule') },
+        { t: '병원·약국 찾기', en: 'NEARBY', r: '50% 50% 50% 0', rot: 'rotate(-45deg)', go: () => this.go('pharmacy') }
+      ],
+      goResults: () => this.go('results'), goSchedule: () => this.go('schedule'), goSymptom: () => this.go('symptom'),
+      goReport: () => this.go('report'), goFamily: () => this.go('family'), goMy: () => this.tab('my'),
+      drugList, d,
+      detailTabs: [['adr', '이상반응'], ['organ', '신·간기능'], ['how', '복용법']].map(([k, l]) => ({ l, c: st.dtab === k ? gold : muted, w: st.dtab === k ? 700 : 400, line: st.dtab === k ? '#c9a45c' : 'transparent', go: () => this.setState({ dtab: k }) })),
+      tabAdr: st.dtab === 'adr', tabOrgan: st.dtab === 'organ', tabHow: st.dtab === 'how',
+      symptomChips: Object.keys(SYMPTOMS).map(n => { const on = st.sym.includes(n); return { n, bd: on ? '#c9a45c' : 'rgba(241,234,217,.18)', bg: on ? 'rgba(201,164,92,.16)' : 'transparent', c: on ? gold : '#d9d3c4',
+        toggle: () => this.setState(x => ({ sym: on ? x.sym.filter(y => y !== n) : [...x.sym, n] })) }; }),
+      symptomResults: st.sym.map(n => ({ n, items: SYMPTOMS[n].map(([id, lv]) => ({ ...DRUGS[id], ...LV[lv], open: () => this.open(id) })) })),
+      noSymptom: st.sym.length === 0,
+      legend: [4, 3, 2, 1].map(k => LV[k]),
+      week: [['월', 100], ['화', 100], ['수', 67], ['목', 100], ['금', 100], ['토', 67], ['일', 33]].map(([dd, p], i) => ({ d: dd, h: Math.round(p * .44) + 'px', bg: i === 6 ? 'rgba(201,164,92,.35)' : '#c9a45c' })),
+      scans: [{ day: '18', mon: 'NOV', t: '서울내과의원 처방전', s: '4개 약 · 주의 3건', kind: '처방전' }, { day: '09', mon: 'NOV', t: '타이레놀 8시간 ER', s: '1개 약 · 주의 없음', kind: '바코드' },
+        { day: '27', mon: 'OCT', t: '흰색 원형 알약 "YH"', s: '후보 2개', kind: '알약' }, { day: '14', mon: 'OCT', t: '푸른숲약국 약봉투', s: '3개 약 · 주의 1건', kind: '약봉투' }],
+      reportStats: [{ v: '83', k: '복용 완료' }, { v: '10', k: '누락' }, { v: '2', k: '증상 기록' }],
+      symptomLog: [{ d: '11.12', n: '어지러움', drug: '리리카 의심' }, { d: '11.05', n: '발목 부음', drug: '아모잘탄 의심' }],
+      shareReport: () => this.flash('PDF를 만들었어요 · 다운로드 폴더'),
+      messages: st.messages.map(m => ({ ...m, align: m.me ? 'flex-end' : 'flex-start', bg: m.me ? 'linear-gradient(180deg,#dcc07f,#c4a058)' : '#102a20', c: m.me ? '#0b1d16' : '#f1ead9', radius: m.me ? '18px 18px 4px 18px' : '18px 18px 18px 4px' })),
+      typing: st.typing,
+      typingEl: React.createElement('div', { style: { display: 'flex', gap: 5, padding: '14px 16px', background: '#102a20', borderRadius: '18px 18px 18px 4px', alignSelf: 'flex-start', width: 'fit-content' } },
+        [0, 1, 2].map(i => React.createElement('span', { key: i, style: { width: 6, height: 6, borderRadius: '50%', background: '#c9a45c', animation: `msDot 1.2s ${i * .18}s infinite` } }))),
+      suggestions: Object.keys(REPLIES).map(t => ({ t, send: () => this.send(t) })),
+      input: st.input, onInput: e => this.setState({ input: e.target.value }), onKey: e => { if (e.key === 'Enter') this.send(st.input); }, sendInput: () => this.send(st.input),
+      members: MEMBERS.map((m, i) => ({ ...m, bd: st.member === i ? '#c9a45c' : 'rgba(241,234,217,.1)', bg: st.member === i ? 'rgba(201,164,92,.1)' : '#102a20',
+        pick: () => { this.setState({ member: i }); this.flash(F('{0} 님 화면으로 전환했어요', L(m.name))); },
+        tgBg: st.guard[i] ? '#b8924a' : 'rgba(241,234,217,.18)', tgX: st.guard[i] ? '19px' : '3px', toggle: () => this.setState(x => ({ guard: { ...x.guard, [i]: !x.guard[i] } })) })),
+      menu: [{ t: '복약 알림 설정', v: '2개 켜짐', go: () => this.go('schedule') }, { t: '혈압·당뇨 수첩', v: '', go: () => this.go('vitals') }, { t: '가족·보호자 관리', v: '3명', go: () => this.go('family') }, { t: '병원·약국 찾기', v: '', go: () => this.go('pharmacy') },
+        { t: '건강 리포트', v: '11월', go: () => this.go('report') }, { t: '오늘의 문장 다시 보기', v: '', go: () => this.setState(x => ({ splash: true, splashKey: x.splashKey + 1 })) }, { t: '개인정보 처리방침', v: '', go: () => this.flash('개인정보 처리방침') }],
+      pins: [{ x: '46%', y: '44%', s: '18px', bg: '#e8d39a' }, { x: '30%', y: '30%', s: '12px', bg: '#c9a45c' }, { x: '66%', y: '58%', s: '12px', bg: '#c9a45c' }, { x: '20%', y: '68%', s: '12px', bg: '#9ccbb6' }],
+      phFilters: ['전체', '병원', '약국', '야간'].map(t => ({ t, bd: st.phf === t ? '#c9a45c' : 'rgba(241,234,217,.18)', bg: st.phf === t ? 'rgba(201,164,92,.16)' : 'transparent', c: st.phf === t ? gold : '#d9d3c4', pick: () => this.setState({ phf: t }) })),
+      pharmacies: PHARM.filter(p => st.phf === '전체' || (st.phf === '야간' ? p.night : st.phf === '병원' ? p.kind === 'hos' : p.kind === 'ph')).map(p => ({ ...p, kindL: p.kind === 'hos' ? '병원' : '약국', bg: p.st === '야간' ? 'rgba(156,203,182,.13)' : 'rgba(226,192,113,.14)', c: p.st === '야간' ? '#9ccbb6' : '#e2c071' })),
+      frame: modeDefs[st.mode][2],
+      scanHint: scr === 'scanning' ? '읽는 중… 사진은 이 기기 안에서만 처리합니다' : modeDefs[st.mode][1],
+      modes: Object.keys(modeDefs).map(k => ({ t: modeDefs[k][0], bg: st.mode === k ? 'linear-gradient(180deg,#dcc07f,#b8924a)' : 'transparent', c: st.mode === k ? '#0b1d16' : '#d9d3c4', w: st.mode === k ? 700 : 400, pick: () => this.setState({ mode: k }) })),
+      shutter: this.shutter,
+      beamEl: React.createElement('div', { style: { position: 'absolute', left: 8, right: 8, height: 2, background: 'linear-gradient(90deg,transparent,#e8d39a,transparent)', boxShadow: '0 0 16px 4px rgba(232,211,154,.45)', animation: 'msBeam 1.6s ease-in-out infinite' } }),
+      nav: navDefs.map(([k, l, r, rot]) => ({ l, r, rot, center: k === 'scan', plain: k !== 'scan', c: curTab === k ? gold : '#7f8f86', w: curTab === k ? 700 : 400, go: () => k === 'scan' ? this.go('scan') : this.tab(k) })),
+      ...this.timeVals(slots),
+      hasToast: !!st.toast, toast: st.toast,
+      ...this.vitalsVals(),
+      splash: st.splash,
+      splashEl: (() => { const day = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000); const q = QUOTES[(this.props.quoteIndex ?? -1) >= 0 ? this.props.quoteIndex % QUOTES.length : day % QUOTES.length];
+        const dt = new Date(); return React.createElement(Splash, { key: st.splashKey + LANG, quote: { t: L(q.t), a: L(q.a), en: q.en }, cjk: LANG === 'zh' || LANG === 'ja', skip: L('화면을 누르면 건너뜁니다'), sub: L('메디스캔 프로'), dateStr: `${dt.getMonth() + 1}.${dt.getDate()}`, onDone: () => this.setState({ splash: false }) }); })()
+    };
+  }
+}
+</script>
+</body>
+</html>
