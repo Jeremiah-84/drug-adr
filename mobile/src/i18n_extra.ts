@@ -149,4 +149,13 @@ export const EXTRA: Record<string, [string, string, string]> = {
   '하루에 한 번은 골라 주세요': ['Pick at least one time', '请至少选择一个时间', '少なくとも1つ選んでください'],
   '언제 드세요? 눌러서 여러 개 고를 수 있어요': ['When do you take it? Tap to pick one or more', '什么时候服用？可点选多个', 'いつ飲みますか？タップで複数選べます'],
   '먹는 시간 · 눌러서 바꾸세요': ['When I take it · tap to change', '服用时间 · 点击更改', '飲む時間・タップで変更'],
+  '잡고 끌어서 순서를 바꾸세요': ['Hold and drag to reorder', '按住拖动可调整顺序', '押したままドラッグで並べ替え'],
+  '길게 누르면 순서를 바꾸거나 지울 수 있어요': ['Long-press to reorder or delete', '长按可调整顺序或删除', '長押しで並べ替え・削除できます'],
+  '취소': ['Cancel', '取消', 'キャンセル'],
+  '편집': ['Edit', '编辑', '編集'],
+  '완료': ['Done', '完成', '完了'],
+  '지우기': ['Delete', '删除', '削除'],
+  '잡고 끌어서 순서 바꾸기': ['Drag to reorder', '拖动调整顺序', 'ドラッグで並べ替え'],
+  '이 약을 내 약에서 지울까요?': ['Remove this from My medicines?', '要从我的药品中删除吗？', 'マイ薬から削除しますか？'],
+  '{0}을(를) 내 약에서 지웠어요': ['Removed {0} from My medicines', '已从我的药品中删除{0}', '{0}をマイ薬から削除しました'],
 };
