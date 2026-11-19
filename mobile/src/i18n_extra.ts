@@ -141,4 +141,12 @@ export const EXTRA: Record<string, [string, string, string]> = {
   '금색은 공복, 녹색은 식후 측정값이에요.': ['Gold is fasting, green is after meals.', '金色为空腹，绿色为餐后测量值。', '金色は空腹時、緑は食後の値です。'],
   '아직 기록이 없어요': ['No records yet', '还没有记录', 'まだ記録がありません'],
   '아래 버튼으로 첫 기록을 남겨 보세요. 이 휴대폰 안에만 저장돼요.': ['Add your first reading with the button below. It is saved only on this phone.', '用下方按钮添加第一条记录。只保存在本手机。', '下のボタンで最初の記録を残しましょう。このスマホにのみ保存されます。'],
+  '점심 식후': ['After lunch', '午饭后', '昼食後'],
+  '아침': ['Morning', '早上', '朝'],
+  '점심': ['Lunch', '中午', '昼'],
+  '저녁': ['Evening', '晚上', '夕'],
+  '자기 전': ['Bedtime', '睡前', '寝る前'],
+  '하루에 한 번은 골라 주세요': ['Pick at least one time', '请至少选择一个时间', '少なくとも1つ選んでください'],
+  '언제 드세요? 눌러서 여러 개 고를 수 있어요': ['When do you take it? Tap to pick one or more', '什么时候服用？可点选多个', 'いつ飲みますか？タップで複数選べます'],
+  '먹는 시간 · 눌러서 바꾸세요': ['When I take it · tap to change', '服用时间 · 点击更改', '飲む時間・タップで変更'],
 };

@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../state';
 import { loadPills, pillSearch, pillToFound, search, type PillRow } from '../real';
 import { Back, Chip, Heading } from '../ui';
-import { DrugRow } from './Drugs';
+import { DrugRow, SlotChips } from './Drugs';
 
 /** "내 약" tab: the saved list, plus type-ahead search over ingredient and product names. */
 export function Search() {
-  const { s, me, set, go, openDrug, t, L, F } = useApp();
+  const { s, me, set, edit, go, openDrug, t, L, F } = useApp();
   const hits = useMemo(() => (s.D ? search(s.query, s.lang) : []), [s.D, s.query, s.lang]);
   return (
     <div className="screen tab">
@@ -42,7 +42,8 @@ export function Search() {
       </div>
       {!me.meds.length && <div style={{ border: '1px dashed rgba(201,164,92,.3)', borderRadius: 16, padding: 22, textAlign: 'center', fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>{L('아직 등록한 약이 없어요.')}</div>}
       <div className="col" style={{ gap: 10 }}>
-        {me.meds.map(m => <DrugRow key={m.key} f={m} color={m.color} onOpen={() => openDrug(m)} />)}
+        {me.meds.map(m => <DrugRow key={m.key} f={m} color={m.color} onOpen={() => openDrug(m)}
+          foot={<SlotChips compact value={m.slots} onChange={v => edit(x => ({ meds: x.meds.map(y => y.key === m.key ? { ...y, slots: v } : y) }))} />} />)}
       </div>
       {me.meds.length > 0 && <button className="btn-line" onClick={() => go('symptom')} style={{ fontWeight: 400 }}>{t.compare}</button>}
     </div>

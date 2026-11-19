@@ -60,7 +60,7 @@ export const newMember = (name: string, rel: string): Member => ({
 export const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 function loadSaved(): Saved {
-  const fresh: Saved = { v: 1, lang: config.lang, times: { ...SLOT_TIME }, remind: { m: false, e: false, n: false }, member: 0, members: [newMember('', '나')] };
+  const fresh: Saved = { v: 1, lang: config.lang, times: { ...SLOT_TIME }, remind: { m: false, l: false, e: false, n: false }, member: 0, members: [newMember('', '나')] };
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return fresh;
@@ -68,7 +68,8 @@ function loadSaved(): Saved {
     if (s.v !== 1 || !Array.isArray(s.members) || !s.members.length) return fresh;
     if (new URLSearchParams(location.search).get('lang')) s.lang = config.lang;
     s.member = Math.min(Math.max(0, s.member | 0), s.members.length - 1);
-    return { ...fresh, ...s };
+    // Older saves have no lunch slot: fill in defaults for any missing time.
+    return { ...fresh, ...s, times: { ...fresh.times, ...s.times }, remind: { ...fresh.remind, ...s.remind } };
   } catch { return fresh; }
 }
 
@@ -175,6 +176,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const openDrug = useCallback((f: Found) => { need(f.ids); set(st => ({ drug: f, dtab: 'adr', stack: [...st.stack, 'detail'] })); }, [set, need]);
 
   const addMeds = useCallback((list: Found[], slots: SlotKey[] = ['m']) => {
+    if (!slots.length) slots = ['m'];
     const cur = stateRef.current.members[stateRef.current.member].meds;
     const have = new Set(cur.map(m => m.ids.slice().sort().join('+')));
     const add: Med[] = [];

@@ -12,10 +12,12 @@ export const LV: Record<Level, LevelInfo> = {
 };
 export type Tag = '금기' | '용량' | '주의' | '불필요';
 export const TAG: Record<Tag, LevelInfo> = { '금기': LV[4], '용량': LV[3], '주의': LV[2], '불필요': LV[1] };
-export type SlotKey = 'm' | 'e' | 'n';
-export const SLOT_KEYS: SlotKey[] = ['m', 'e', 'n'];
-export const SLOT_LABEL: Record<SlotKey, string> = { m: '아침 식후', e: '저녁 식후', n: '취침 전' };
-export const SLOT_TIME: Record<SlotKey, string> = { m: '08:00', e: '19:00', n: '22:00' };
+export type SlotKey = 'm' | 'l' | 'e' | 'n';
+export const SLOT_KEYS: SlotKey[] = ['m', 'l', 'e', 'n'];
+export const SLOT_LABEL: Record<SlotKey, string> = { m: '아침 식후', l: '점심 식후', e: '저녁 식후', n: '취침 전' };
+/** Short names for the tap-to-choose chips. */
+export const SLOT_SHORT: Record<SlotKey, string> = { m: '아침', l: '점심', e: '저녁', n: '자기 전' };
+export const SLOT_TIME: Record<SlotKey, string> = { m: '08:00', l: '12:30', e: '19:00', n: '22:00' };
 
 export type Quote = { t: string; a: string; en: string };
 export const QUOTES: Quote[] = [

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { LV, SLOT_KEYS, SLOT_LABEL, TAG, type Level, type SlotKey } from '../data';
+import { LV, SLOT_KEYS, SLOT_SHORT, TAG, type Level, type SlotKey } from '../data';
 import { drugInfo, organView, topLevel, trBadge, watchCount } from '../derive';
 import { useApp } from '../state';
 import { ingName, matchProblems, nedrugLink, probName, type Found } from '../real';
@@ -14,13 +14,39 @@ export const pillIcon = (color: string) => (
 const KIND: Record<string, string> = { rx: '처방전 글자 인식', photo: '사진 글자 인식', barcode: '바코드', pill: '알약 모양' };
 const keyOf = (f: Found) => f.ids.slice().sort().join('+');
 
+/** Tap-to-choose times of day (아침·점심·저녁·자기 전); several can be on, at least one stays on. */
+export function SlotChips({ value, onChange, compact }: { value: SlotKey[]; onChange: (v: SlotKey[]) => void; compact?: boolean }) {
+  const { s, L, flash } = useApp();
+  const toggle = (k: SlotKey) => {
+    if (value.includes(k)) {
+      if (value.length === 1) { flash(L('하루에 한 번은 골라 주세요')); return; }
+      onChange(value.filter(x => x !== k));
+    } else onChange(SLOT_KEYS.filter(x => x === k || value.includes(x)));
+  };
+  return (
+    <div role="group" aria-label={L('먹는 시간')} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+      {SLOT_KEYS.map(k => {
+        const on = value.includes(k);
+        return (
+          <button key={k} aria-pressed={on} onClick={() => toggle(k)} className={'chip' + (on ? ' on' : '')}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, padding: compact ? '6px 2px' : '9px 2px', borderRadius: 12, minHeight: compact ? 40 : 48 }}>
+            <span style={{ fontSize: compact ? 13 : 14, fontWeight: on ? 600 : 400 }}>{on ? '✓ ' : ''}{L(SLOT_SHORT[k])}</span>
+            <span style={{ fontSize: 10.5, opacity: 0.75 }}>{s.times[k]}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /** One found / saved medicine with its strongest side-effect tier. */
-export function DrugRow({ f, color, right, onOpen }: { f: Found; color: string; right?: React.ReactNode; onOpen: () => void }) {
+export function DrugRow({ f, color, right, onOpen, foot }: { f: Found; color: string; right?: React.ReactNode; onOpen: () => void; foot?: React.ReactNode }) {
   const { s, L, F } = useApp();
   const info = drugInfo(f, s.details, s.D, s.lang);
   const top = LV[topLevel(info.rows)], n = watchCount(info.rows);
   return (
-    <div className="card row" style={{ padding: 16, gap: 14, border: '1px solid rgba(201,164,92,.14)' }}>
+    <div className="card col" style={{ padding: 16, gap: 12, border: '1px solid rgba(201,164,92,.14)' }}>
+    <div className="row" style={{ gap: 14 }}>
       <button onClick={onOpen} className="row hoverable" style={{ flex: 1, minWidth: 0, gap: 14, textAlign: 'left' }}>
         {pillIcon(color)}
         <div className="col" style={{ flex: 1, minWidth: 0, gap: 3 }}>
@@ -37,6 +63,8 @@ export function DrugRow({ f, color, right, onOpen }: { f: Found; color: string; 
       </button>
       {right ?? <span className="chev">›</span>}
     </div>
+    {foot}
+    </div>
   );
 }
 
@@ -45,11 +73,12 @@ export function Results() {
   const r = s.found;
   const have = useMemo(() => new Set(me.meds.map(m => m.key)), [me.meds]);
   const [pick, setPick] = useState<Record<string, boolean>>({});
+  const [slots, setSlots] = useState<SlotKey[]>(['m']);
   useEffect(() => { setPick(Object.fromEntries((r?.found || []).map(f => [keyOf(f), !have.has(keyOf(f))]))); }, [r]);
   if (!r) return <div className="screen"><Back /></div>;
   const chosen = r.found.filter(f => pick[keyOf(f)] && !have.has(keyOf(f)));
   const add = () => {
-    const n = addMeds(chosen);
+    const n = addMeds(chosen, slots);
     flash(n ? F('내 약에 {0}개를 추가했어요', n) : L('이미 모두 등록된 약이에요'));
     if (n) go('schedule');
   };
@@ -79,6 +108,12 @@ export function Results() {
           );
         })}
       </div>
+      {chosen.length > 0 && (
+        <div className="col" style={{ gap: 8 }}>
+          <span style={{ fontSize: 12.5, color: 'var(--gold)' }}>{L('언제 드세요? 눌러서 여러 개 고를 수 있어요')}</span>
+          <SlotChips value={slots} onChange={setSlots} />
+        </div>
+      )}
       {r.found.length > 0 && (
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="btn-gold" style={{ flex: 1 }} disabled={!chosen.length} onClick={add}>{chosen.length ? F('내 약에 추가 ({0})', chosen.length) : t.addSched}</button>
@@ -105,9 +140,10 @@ export function Detail() {
   const en = f.ids.map(i => s.D?.drugs.find(d => d.id === i)?.en || '').filter(Boolean).join(' / ').toUpperCase();
   const rows = all ? info.rows : info.rows.slice(0, 12);
   const top = info.rows[0];
-  const setSlots = (k: SlotKey) => {
+  const [pickSlots, setPickSlots] = useState<SlotKey[]>(['m']);
+  const setSlots = (v: SlotKey[]) => {
     if (!mine) return;
-    edit(m => ({ meds: m.meds.map(x => x.key !== mine.key ? x : { ...x, slots: x.slots.includes(k) ? x.slots.filter(y => y !== k) : [...x.slots, k] }) }));
+    edit(m => ({ meds: m.meds.map(x => x.key !== mine.key ? x : { ...x, slots: v }) }));
   };
   return (
     <div className="screen">
@@ -122,7 +158,18 @@ export function Detail() {
           <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 2 }}>{f.ids.map(i => ingName(i, s.lang)).join(' · ')}</div>
         </div>
       </div>
-      {!mine && <button className="btn-gold" onClick={() => { addMeds([f]); flash(L('내 약에 추가했어요')); }} style={{ height: 46 }}>{L('내 약에 추가')}</button>}
+      {mine ? (
+        <div className="col" style={{ gap: 8 }}>
+          <span style={{ fontSize: 12.5, color: 'var(--gold)' }}>{L('먹는 시간 · 눌러서 바꾸세요')}</span>
+          <SlotChips value={mine.slots} onChange={setSlots} />
+        </div>
+      ) : (
+        <div className="col" style={{ gap: 8 }}>
+          <span style={{ fontSize: 12.5, color: 'var(--gold)' }}>{L('언제 드세요? 눌러서 여러 개 고를 수 있어요')}</span>
+          <SlotChips value={pickSlots} onChange={setPickSlots} />
+          <button className="btn-gold" onClick={() => { addMeds([f], pickSlots); flash(L('내 약에 추가했어요')); }} style={{ height: 46 }}>{L('내 약에 추가')}</button>
+        </div>
+      )}
 
       <div role="tablist" style={{ display: 'flex', borderBottom: '1px solid rgba(201,164,92,.18)' }}>
         {DETAIL_TABS.map(([k, l]) => {
@@ -191,10 +238,6 @@ export function Detail() {
         <div className="col" style={{ gap: 4 }}>
           {mine ? (
             <div className="col" style={{ gap: 10, padding: '6px 0 14px', borderBottom: '1px solid rgba(241,234,217,.08)' }}>
-              <span style={{ fontSize: 12.5, color: 'var(--gold)' }}>{L('먹는 시간')}</span>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {SLOT_KEYS.map(k => <Chip key={k} on={mine.slots.includes(k)} onClick={() => setSlots(k)} style={{ padding: '7px 12px', fontSize: 13 }}>{L(SLOT_LABEL[k])} · {s.times[k]}</Chip>)}
-              </div>
               <button onClick={() => { edit(m => ({ meds: m.meds.filter(x => x.key !== mine.key) })); flash(L('내 약에서 뺐어요')); }}
                 style={{ alignSelf: 'flex-start', fontSize: 12.5, color: 'var(--muted)', textDecoration: 'underline' }}>{L('내 약에서 빼기')}</button>
             </div>
