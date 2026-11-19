@@ -6,6 +6,7 @@ import { Back, Chip, Sheet, Toggle } from '../ui';
 const p2 = (n: number) => String(n).padStart(2, '0');
 const PRESETS: Record<SlotKey, string[]> = {
   m: ['07:00', '07:30', '08:00', '09:00'],
+  l: ['12:00', '12:30', '13:00', '13:30'],
   e: ['18:00', '18:30', '19:00', '20:00'],
   n: ['21:30', '22:00', '22:30', '23:00'],
 };
