@@ -1,14 +1,14 @@
-// Display constants from the Claude Design prototype (design/MediScan Mobile.dc.html).
+// Display constants from the Claude Design prototypes (design/MediScan Classical.dc.html; first version design/MediScan Mobile.dc.html).
 // Drug facts come from docs/data at run time (see real.ts); nothing here is sample patient data.
 
 export type Level = 1 | 2 | 3 | 4;
-export type Badge = { t: string; c: string; bg: string };
+export type Badge = { t: string; c: string; bd: string };
 export type LevelInfo = Badge & { d: string };
 export const LV: Record<Level, LevelInfo> = {
-  4: { t: '높음', c: '#eb9a89', bg: 'rgba(235,154,137,.14)', d: '흔하게' },
-  3: { t: '가능성 있음', c: '#e2c071', bg: 'rgba(226,192,113,.14)', d: '때때로·빈도 미기재' },
-  2: { t: '낮음', c: '#9ccbb6', bg: 'rgba(156,203,182,.13)', d: '드물게' },
-  1: { t: '매우 드묾', c: '#a9b5ad', bg: 'rgba(169,181,173,.12)', d: '매우 드물게' }
+  4: { t: '높음', c: 'var(--color-accent-800)', bd: 'var(--color-accent)', d: '흔하게' },
+  3: { t: '가능성 있음', c: 'var(--color-accent-700)', bd: 'var(--color-accent-300)', d: '때때로·빈도 미기재' },
+  2: { t: '낮음', c: 'var(--color-neutral-700)', bd: 'var(--color-neutral-400)', d: '드물게' },
+  1: { t: '매우 드묾', c: 'var(--color-neutral-600)', bd: 'var(--color-neutral-300)', d: '매우 드물게' }
 };
 export type Tag = '금기' | '용량' | '주의' | '불필요';
 export const TAG: Record<Tag, LevelInfo> = { '금기': LV[4], '용량': LV[3], '주의': LV[2], '불필요': LV[1] };
@@ -35,7 +35,7 @@ export const QUOTES: Quote[] = [
 
 export type BpEntry = { d: string; time: string; s: number; di: number; p: number };
 export type GluEntry = { d: string; time: string; v: number; when: string };
-const stOf = (n: Level, t: string): Badge => ({ c: LV[n].c, bg: LV[n].bg, t });
+const stOf = (n: Level, t: string): Badge => ({ c: LV[n].c, bd: LV[n].bd, t });
 export const bpSt = (s: number, di: number): Badge => s >= 140 || di >= 90 ? stOf(4, '높음') : s >= 120 || di >= 80 ? stOf(3, '주의') : stOf(2, '정상');
 export const gluSt = (v: number, w: string): Badge => { const [a, b] = w === '공복' ? [100, 126] : [140, 200]; return v >= b ? stOf(4, '높음') : v >= a ? stOf(3, '주의') : stOf(2, '정상'); };
 export const nowHM = () => { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };

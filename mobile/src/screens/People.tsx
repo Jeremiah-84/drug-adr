@@ -1,16 +1,33 @@
 import { useState } from 'react';
-import type { Lang } from '../i18n';
-import { adherence } from '../derive';
-import { newMember, useApp } from '../state';
-import { Back, Chip } from '../ui';
+import { LANGS, type Lang } from '../i18n';
+import { adherence, slotViews } from '../derive';
+import { newMember, useApp, type Role } from '../state';
+import { Back, Chip, Heading, Segment } from '../ui';
+import { ChevronLeft, ChevronRight, Plus } from '../icons';
 
-const LANG_ITEMS: [Lang, string][] = [['ko', '한국어'], ['en', 'English'], ['zh', '中文'], ['ja', '日本語']];
-
-const avatar = { width: 36, height: 36, margin: '0 auto', borderRadius: '50%', border: '1px solid rgba(201,164,92,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, color: 'var(--gold-light)' } as const;
+const LANG_NAMES: Record<Lang, string> = { ko: '한국어', en: 'English', zh: '中文', ja: '日本語' };
+const LANG_CODES: Record<Lang, string> = { ko: 'KO', en: 'EN', zh: '中', ja: '日' };
+const ROLES: Record<Role, { t: string; s: string; meta: string }> = {
+  patient: { t: '환자 · 보호자', s: '내 약과 가족의 복약을 관리합니다.', meta: '환자용' },
+  pro: { t: '의료 관계자', s: '의사 · 약사 · 간호사. 성분 코드와 허가정보 원문을 함께 봅니다.', meta: '의료진용' },
+};
+export { ROLES };
 const initialOf = (name: string, rel: string) => (name || rel || '?').slice(0, 1);
 
+/** Small outlined language cycler (KO → EN → 中 → 日). */
+export function LangButton() {
+  const { s, set } = useApp();
+  const next = LANGS[(LANGS.indexOf(s.lang) + 1) % LANGS.length];
+  return (
+    <button type="button" className="g lang-btn" aria-label={`Language: ${LANG_NAMES[s.lang]}`} onClick={() => set({ lang: next })}
+      style={{ height: 32, minWidth: 38, padding: '0 10px', border: '1px solid var(--color-divider)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '.08em', background: 'none', color: 'var(--color-text)' }}>
+      {LANG_CODES[s.lang]}
+    </button>
+  );
+}
+
 export function My() {
-  const { s, me, set, go, flash, t, L, F } = useApp();
+  const { s, me, set, go, tab, flash, t, L, F } = useApp();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(me.name);
   const reminders = Object.values(s.remind).filter(Boolean).length;
@@ -27,68 +44,69 @@ export function My() {
   const menu = [
     { t: '복약 알림 설정', v: reminders ? F('{0}개 켜짐', reminders) : '', go: () => go('schedule') },
     { t: '휴대폰 알림 허용', v: 'Notification' in window ? L(Notification.permission === 'granted' ? '허용됨' : '꺼짐') : '', go: askNotify },
-    { t: '혈압·당뇨 수첩', v: '', go: () => go('vitals') },
-    { t: '가족·보호자 관리', v: F('{0}명', s.members.length), go: () => go('family') },
-    { t: '병원·약국 찾기', v: '', go: () => go('pharmacy') },
+    { t: '혈압 · 당뇨 수첩', v: '', go: () => go('vitals') },
+    { t: '가족 · 보호자 관리', v: F('{0}명', s.members.length), go: () => go('family') },
+    { t: '복약 기록', v: '', go: () => tab('history') },
     { t: '건강 리포트', v: '', go: () => go('report') },
+    { t: '병원·약국 찾기', v: '', go: () => go('pharmacy') },
     { t: '오늘의 문장 다시 보기', v: '', go: () => set(x => ({ splash: true, splashKey: x.splashKey + 1 })) },
+    { t: '온보딩 다시 보기', v: '', go: () => set({ stack: ['onboarding'], onb: 0 }) },
     { t: '의료진용 웹 버전', v: '', go: () => { location.href = '../index.html'; } },
     { t: '개인정보 처리방침', v: '', go: () => { location.href = '../privacy.html'; } },
   ];
+  const role = s.role || 'patient';
   return (
-    <div className="screen tab">
-      <div className="eyebrow">MY PAGE</div>
-      <div className="row" style={{ gap: 14 }}>
-        <div className="serif" style={{ width: 58, height: 58, flex: 'none', borderRadius: '50%', background: 'linear-gradient(140deg,#e8d39a,#a8843f)', color: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 22 }}>{initialOf(me.name, L(me.rel))}</div>
+    <div className="page" style={{ paddingTop: 16, gap: 22 }}>
+      <span className="kicker">PROFILE</span>
+      <div style={{ display: 'flex', gap: 18, alignItems: 'center', paddingBottom: 22, borderBottom: '1px solid var(--color-divider)' }}>
+        <div className="avatar" style={{ width: 64, height: 64, fontSize: 22, boxShadow: 'inset 0 0 0 4px var(--color-bg),inset 0 0 0 5px color-mix(in srgb,var(--color-accent) 40%,transparent)' }}>{initialOf(me.name, L(me.rel))}</div>
         {editing ? (
-          <div className="row" style={{ gap: 8, flex: 1 }}>
-            <input className="field" value={name} onChange={e => setName(e.target.value)} placeholder={L('이름 (선택)')} aria-label={L('이름')} style={{ height: 42 }} autoFocus
+          <div className="row" style={{ gap: 8, flex: 1, minWidth: 0 }}>
+            <input className="inp" value={name} onChange={e => setName(e.target.value)} placeholder={L('이름 (선택)')} aria-label={L('이름')} style={{ height: 42 }} autoFocus
               onKeyDown={e => { if (e.key === 'Enter') saveName(); }} />
-            <button className="btn-gold" onClick={saveName} style={{ height: 42, padding: '0 14px', flex: 'none' }}>{t.save}</button>
+            <button className="btn btn-primary" onClick={saveName} style={{ height: 42, flex: 'none' }}>{t.save}</button>
           </div>
         ) : (
-          <button onClick={() => { setName(me.name); setEditing(true); }} style={{ textAlign: 'left' }}>
-            <div className="serif" style={{ fontSize: 20, fontWeight: 600 }}>{me.name || L(me.rel)}</div>
-            <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{F('복용 중 {0}개', me.meds.length)} · <span style={{ textDecoration: 'underline' }}>{L('이름 바꾸기')}</span></div>
+          <button className="tap" onClick={() => { setName(me.name); setEditing(true); }} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span className="serif" style={{ fontSize: 20, fontWeight: 600 }}>{me.name || L(me.rel)}</span>
+            <span className="sub">{L(ROLES[role].meta)} · {F('복용 중 {0}개', me.meds.length)} · <span className="link-u">{L('이름 바꾸기')}</span></span>
           </button>
         )}
       </div>
-
-      <div className="col" style={{ gap: 10 }}>
-        <div className="label">{t.family}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <span className="muted" style={{ fontSize: 12.5 }}>{L('사용자 역할')}</span>
+        <Segment<Role> items={(Object.keys(ROLES) as Role[]).map(k => [k, L(ROLES[k].t)])} value={role} onPick={k => set({ role: k })} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <span className="muted" style={{ fontSize: 12.5 }}>{t.langLabel}</span>
+        <Segment<Lang> small items={LANGS.map(k => [k, LANG_NAMES[k]])} value={s.lang} onPick={k => set({ lang: k })} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <span className="muted" style={{ fontSize: 12.5 }}>{t.family}</span>
         <div style={{ display: 'flex', gap: 10 }}>
           {s.members.slice(0, 3).map((m, i) => {
             const on = s.member === i;
             return (
-              <button key={m.id} onClick={() => { set({ member: i }); flash(F('{0} 님 화면으로 전환했어요', m.name || L(m.rel))); }}
-                style={{ flex: 1, minWidth: 0, borderRadius: 16, padding: '12px 8px', textAlign: 'center', border: `1px solid ${on ? '#c9a45c' : 'rgba(241,234,217,.1)'}`, background: on ? 'rgba(201,164,92,.1)' : 'var(--card)' }}>
-                <div className="serif" style={avatar}>{initialOf(m.name, L(m.rel))}</div>
-                <div style={{ fontSize: 12.5, marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{L(m.rel)}</div>
+              <button key={m.id} className="tap fam-card" onClick={() => { set({ member: i }); flash(F('{0} 님 화면으로 전환했어요', m.name || L(m.rel))); }}
+                style={{ flex: 1, minWidth: 0, padding: '12px 6px', textAlign: 'center', border: `1px solid ${on ? 'var(--color-accent)' : 'var(--color-divider)'}`, borderRadius: 'var(--radius-md)' }}>
+                <div className="avatar" style={{ width: 34, height: 34, margin: '0 auto', fontSize: 13 }}>{initialOf(m.name, L(m.rel))}</div>
+                <div className="ellip" style={{ fontSize: 12, marginTop: 6, color: on ? 'var(--color-accent-700)' : undefined }}>{L(m.rel)}</div>
               </button>
             );
           })}
-          <button onClick={() => go('family')} style={{ flex: 1, minWidth: 0, borderRadius: 16, padding: '12px 8px', textAlign: 'center', border: '1px dashed rgba(201,164,92,.35)' }}>
-            <div style={{ ...avatar, border: 0, color: 'var(--gold)', fontSize: 20, fontWeight: 400 }}>+</div>
-            <div style={{ fontSize: 12.5, marginTop: 6, color: 'var(--muted)' }}>{t.manage}</div>
+          <button className="tap fam-card" onClick={() => go('family')}
+            style={{ flex: 1, minWidth: 0, padding: '12px 6px', textAlign: 'center', border: '1px dashed var(--color-neutral-400)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ width: 34, height: 34, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}><Plus /></div>
+            <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t.manage}</div>
           </button>
         </div>
       </div>
-
-      <div className="col" style={{ gap: 10 }}>
-        <div className="label">{t.langLabel}</div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {LANG_ITEMS.map(([k, l]) => (
-            <Chip key={k} on={s.lang === k} onClick={() => set({ lang: k })} style={{ flex: 1, textAlign: 'center', padding: '9px 0', fontSize: 13 }}>{l}</Chip>
-          ))}
-        </div>
-      </div>
-
-      <div className="card" style={{ overflow: 'hidden' }}>
-        {menu.map(m => (
-          <button key={m.t} onClick={m.go} className="row" style={{ width: '100%', gap: 12, padding: '15px 16px', borderBottom: '1px solid rgba(241,234,217,.06)' }}>
-            <span style={{ flex: 1, fontSize: 14.5, textAlign: 'left' }}>{L(m.t)}</span>
-            <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{m.v}</span>
-            <span style={{ color: 'var(--gold)' }}>›</span>
+      <div className="col rule-top">
+        {menu.map(mn => (
+          <button key={mn.t} className="tap hov" onClick={mn.go} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 0', borderBottom: '1px solid var(--color-divider)' }}>
+            <span className="serif" style={{ flex: 1, fontSize: 14.5 }}>{L(mn.t)}</span>
+            <span className="sub">{mn.v}</span>
+            <ChevronRight size={16} />
           </button>
         ))}
       </div>
@@ -103,54 +121,77 @@ export function Family() {
   const { s, set, flash, t, L, F } = useApp();
   const [name, setName] = useState('');
   const [rel, setRel] = useState('어머니');
+  const [del, setDel] = useState<number | null>(null);
   const add = () => {
     set(x => ({ members: [...x.members, newMember(name.trim(), rel)] }));
     setName(''); flash(L('가족을 추가했어요'));
   };
   const remove = (i: number) => {
-    if (!confirmDelete()) return;
     set(x => { const members = x.members.filter((_, j) => j !== i); return { members, member: x.member === i ? 0 : x.member > i ? x.member - 1 : x.member }; });
+    setDel(null);
   };
   return (
-    <div className="screen" style={{ gap: 16 }}>
+    <div className="page">
       <Back />
-      <div>
-        <div className="eyebrow">FAMILY CARE</div>
-        <div className="title">{t.familyTitle}</div>
-        <div className="sub">{L('가족마다 약과 기록을 따로 관리해요. 이 휴대폰 안에만 저장돼요.')}</div>
-      </div>
-      {s.members.map((m, i) => {
-        const r = adherence(m, 7);
-        return (
-          <div key={m.id} className="card col" style={{ padding: 16, gap: 12, border: s.member === i ? '1px solid #c9a45c' : undefined }}>
-            <div className="row" style={{ gap: 12 }}>
-              <div className="serif" style={{ ...avatar, width: 42, height: 42, margin: 0 }}>{initialOf(m.name, L(m.rel))}</div>
-              <button style={{ flex: 1, textAlign: 'left' }} onClick={() => set({ member: i })}>
-                <div style={{ fontSize: 15, fontWeight: 500 }}>{m.name || L(m.rel)} {m.name && <span style={{ fontSize: 12, color: 'var(--muted)' }}>· {L(m.rel)}</span>}</div>
-                <div style={{ fontSize: 12, color: 'var(--muted)' }}>{F('복용 중 {0}개', m.meds.length)}{s.member === i ? ' · ' + L('지금 보는 중') : ''}</div>
-              </button>
-              <span className="display" style={{ fontSize: 24, color: 'var(--gold-light)' }}>{r.pct === null ? '—' : r.pct + '%'}</span>
+      <Heading eyebrow="FAMILY CARE" title={t.familyTitle} sub={L('가족마다 약과 기록을 따로 관리해요. 이 휴대폰 안에만 저장돼요.')} />
+      <div className="col rule-top">
+        {s.members.map((m, i) => {
+          const r = adherence(m, 7);
+          const sv = slotViews(s, m).filter(x => x.meds.length);
+          return (
+            <div key={m.id} style={{ padding: '18px 0', borderBottom: '1px solid var(--color-divider)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span className="avatar" style={{ width: 42, height: 42, fontSize: 15, borderWidth: s.member === i ? 2 : 1 }}>{initialOf(m.name, L(m.rel))}</span>
+                <button className="tap" style={{ flex: 1, minWidth: 0 }} onClick={() => set({ member: i })}>
+                  <div className="serif" style={{ fontSize: 15, fontWeight: 600 }}>{m.name || L(m.rel)} {m.name && <span className="muted" style={{ fontSize: 12, fontWeight: 400 }}>· {L(m.rel)}</span>}</div>
+                  <div className="muted" style={{ fontSize: 12, fontStyle: 'italic' }}>{F('복용 중 {0}개', m.meds.length)}{s.member === i ? ' · ' + L('지금 보는 중') : ''}</div>
+                </button>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="g tnum" style={{ fontSize: 26, lineHeight: 1 }}>{r.pct === null ? '—' : r.pct + '%'}</div>
+                  <div className="muted" style={{ fontSize: 10.5 }}>{L('이번 주')}</div>
+                </div>
+              </div>
+              {sv.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: `repeat(${sv.length},minmax(0,1fr))`, gap: 10 }}>
+                  {sv.map(x => {
+                    const miss = x.ss === 'missed';
+                    return (
+                      <div key={x.k} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                        <div style={{ height: 2, background: miss ? 'var(--color-accent-800)' : x.taken ? 'var(--color-accent)' : 'var(--color-divider)' }} />
+                        <span style={{ fontSize: 11, color: miss ? 'var(--color-accent-800)' : x.taken ? 'var(--color-accent-700)' : 'var(--color-neutral-600)' }}>
+                          {L(x.label)} · {L(miss ? '누락' : x.taken ? '완료' : '예정')}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {i > 0 && (del === i ? (
+                <div className="row" style={{ gap: 10, justifyContent: 'flex-end', fontSize: 12.5 }}>
+                  <span className="muted" style={{ fontStyle: 'italic' }}>{L('이 가족의 약과 기록을 모두 지울까요?')}</span>
+                  <button className="btn btn-secondary" style={{ height: 32 }} onClick={() => setDel(null)}>{L('취소')}</button>
+                  <button className="btn btn-primary" style={{ height: 32 }} onClick={() => remove(i)}>{L('삭제')}</button>
+                </div>
+              ) : (
+                <button className="tap link-u" onClick={() => setDel(i)} style={{ alignSelf: 'flex-end', fontSize: 12 }}>{L('삭제')}</button>
+              ))}
             </div>
-            {s.members.length > 1 && i > 0 && (
-              <button onClick={() => remove(i)} style={{ alignSelf: 'flex-end', fontSize: 12, color: 'var(--muted)', textDecoration: 'underline' }}>{L('삭제')}</button>
-            )}
-          </div>
-        );
-      })}
-      <div className="card col" style={{ padding: 16, gap: 10 }}>
-        <div className="label">{L('가족 추가')}</div>
-        <input className="field" value={name} onChange={e => setName(e.target.value)} placeholder={L('이름 (선택)')} aria-label={L('이름')} />
+          );
+        })}
+      </div>
+      <div className="col" style={{ gap: 12 }}>
+        <span className="label">{L('가족 추가')}</span>
+        <input className="inp" value={name} onChange={e => setName(e.target.value)} placeholder={L('이름 (선택)')} aria-label={L('이름')} />
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {RELS.slice(1).map(x => <Chip key={x} on={rel === x} onClick={() => setRel(x)} style={{ padding: '6px 11px', fontSize: 12.5 }}>{L(x)}</Chip>)}
         </div>
-        <button className="btn-line" style={{ fontWeight: 400 }} onClick={add}>{L('추가하기')}</button>
+        <button className="btn btn-primary cta" onClick={add}>{L('추가하기')}</button>
       </div>
+      <div className="fine">{L('가족의 약과 기록은 이 휴대폰 안에서 따로 관리합니다. 다른 휴대폰과 자동으로 공유되지는 않아요.')}</div>
     </div>
   );
 }
-const confirmDelete = () => { try { return window.confirm('이 가족의 약과 기록을 모두 지울까요?'); } catch { return true; } };
 
-const PINS = [{ x: '46%', y: '44%', s: 18, bg: '#e8d39a' }, { x: '30%', y: '30%', s: 12, bg: '#c9a45c' }, { x: '66%', y: '58%', s: 12, bg: '#c9a45c' }, { x: '20%', y: '68%', s: 12, bg: '#9ccbb6' }];
 const naver = (q: string) => 'https://map.naver.com/p/search/' + encodeURIComponent(q);
 const PLACES: { k: string; t: string; sub: string; url: string }[] = [
   { k: '약국', t: '가까운 약국', sub: '지도에서 내 주변 약국 보기', url: naver('약국') },
@@ -162,26 +203,27 @@ const PLACES: { k: string; t: string; sub: string; url: string }[] = [
 export function Pharmacy() {
   const { back, t, L } = useApp();
   return (
-    <div className="col" style={{ gap: 16, paddingBottom: 28 }}>
-      <div style={{ position: 'relative', height: 220, background: 'repeating-linear-gradient(135deg,#123126 0 10px,#0f2b21 10px 20px)' }}>
-        <button onClick={back} className="row" style={{ position: 'absolute', top: 10, left: 14, height: 36, padding: '0 14px', borderRadius: 18, background: 'rgba(11,29,22,.85)', color: 'var(--gold)', fontSize: 13.5 }}>‹ {t.back}</button>
-        {PINS.map((p, i) => (
-          <span key={i} style={{ position: 'absolute', left: p.x, top: p.y, width: p.s, height: p.s, borderRadius: '50%', background: p.bg, border: '2px solid #0b1d16', boxShadow: '0 0 0 4px rgba(201,164,92,.18)' }} />
+    <div className="col" style={{ gap: 18, paddingBottom: 28 }}>
+      <div className="plate" style={{ position: 'relative', height: 210, margin: '0 0 4px', background: 'repeating-linear-gradient(135deg,var(--color-neutral-200) 0 10px,var(--color-neutral-100) 10px 20px)' }}>
+        <button onClick={back} className="back" style={{ position: 'absolute', top: 8, left: 14, padding: '0 12px', height: 34, background: 'var(--color-bg)', border: '1px solid var(--color-divider)', borderRadius: 'var(--radius-md)' }}><ChevronLeft />{t.back}</button>
+        {[{ x: '46%', y: '44%', s: 16 }, { x: '30%', y: '30%', s: 11 }, { x: '66%', y: '58%', s: 11 }, { x: '20%', y: '68%', s: 11 }].map((p, i) => (
+          <span key={i} style={{ position: 'absolute', left: p.x, top: p.y, width: p.s, height: p.s, borderRadius: '50%', border: '1.5px solid var(--color-accent)', boxShadow: 'inset 0 0 0 3px var(--color-bg)', background: 'var(--color-accent)' }} />
         ))}
       </div>
-      <div className="col" style={{ padding: '0 20px', gap: 12 }}>
-        <div className="serif" style={{ fontSize: 21, fontWeight: 600 }}>{t.nearby}</div>
-        <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.6 }}>{L('지도 앱이나 공공 안내 사이트로 이어져요. 운영 시간은 방문 전 전화로 확인하세요.')}</div>
-        {PLACES.map(p => (
-          <a key={p.t} href={p.url} target="_blank" rel="noreferrer" className="row" style={{ gap: 12, padding: 14, borderRadius: 16, background: 'var(--card)', color: 'var(--ink)', textDecoration: 'none' }}>
-            <span className="kind">{L(p.k)}</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14.5, fontWeight: 500 }}>{L(p.t)}</div>
-              <div style={{ fontSize: 12, color: 'var(--muted)' }}>{L(p.sub)}</div>
-            </div>
-            <span style={{ color: 'var(--gold)' }}>↗</span>
-          </a>
-        ))}
+      <div className="col" style={{ padding: '0 26px', gap: 14 }}>
+        <Heading eyebrow="NEARBY" title={t.nearby} sub={L('지도 앱이나 공공 안내 사이트로 이어져요. 운영 시간은 방문 전 전화로 확인하세요.')} size={21} />
+        <div className="col rule-top">
+          {PLACES.map(p => (
+            <a key={p.t} href={p.url} target="_blank" rel="noreferrer" className="hov" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '15px 0', borderBottom: '1px solid var(--color-divider)', color: 'var(--color-text)', textDecoration: 'none' }}>
+              <span className="chip" style={{ borderColor: 'var(--color-accent)', color: 'var(--color-accent-700)', alignSelf: 'center' }}>{L(p.k)}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="serif" style={{ fontSize: 14.5, fontWeight: 600 }}>{L(p.t)}</div>
+                <div className="muted" style={{ fontSize: 12, fontStyle: 'italic' }}>{L(p.sub)}</div>
+              </div>
+              <span style={{ color: 'var(--color-accent-700)' }}>↗</span>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );

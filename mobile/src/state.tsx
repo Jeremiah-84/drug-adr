@@ -3,6 +3,7 @@ import { SLOT_KEYS, SLOT_TIME, type BpEntry, type GluEntry, type SlotKey } from 
 import { format, translate, uiStrings, type Lang, type UiStrings } from './i18n';
 import { config, type Screen } from './config';
 import { loadDetail, loadIndex, type Detail, type Found, type Index } from './real';
+import { sdkLoad, sdkValid, type SdkSize, type SdkState } from './sudoku';
 
 export type DetailTab = 'adr' | 'organ' | 'how';
 export type ScanMode = 'rx' | 'barcode' | 'pill';
@@ -23,9 +24,21 @@ export type Member = {
   scans: ScanRec[]; syms: SymRec[];
 };
 
-type Saved = { v: 1; lang: Lang; times: Record<SlotKey, string>; remind: Record<SlotKey, boolean>; member: number; members: Member[] };
+export type Role = 'patient' | 'pro';
+type Saved = {
+  v: 1; lang: Lang; times: Record<SlotKey, string>; remind: Record<SlotKey, boolean>; member: number; members: Member[];
+  /** First-run introduction finished (role picked). */
+  onboarded?: boolean;
+  role?: Role;
+  /** Today's quiz answer: day key + picked option. */
+  quiz?: { d: string; pick: number };
+};
 
 export type AppState = Saved & {
+  /** Minutes since local midnight, refreshed every 15 s (drives the ±2 h dose window). */
+  now: number;
+  onb: number;
+  sdk: SdkState;
   splash: boolean;
   splashKey: number;
   stack: Screen[];
@@ -51,6 +64,22 @@ export type AppState = Saved & {
 };
 
 const KEY = 'mediscan.v1';
+const SDK_KEY = 'mediscan.sudoku';
+/** "Mark as taken" works only within this many minutes either side of the set dose time. */
+export const WINDOW_MIN = 120;
+const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+
+type SdkSaved = { day: string; n: SdkSize; seed: number; sol: number[]; given: number[]; cells: number[]; hints: number; done: boolean; elapsed: number };
+const daySeed = () => { const d = new Date(); return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000); };
+function sdkRestore(): SdkState {
+  try {
+    const z = JSON.parse(localStorage.getItem(SDK_KEY) || 'null') as SdkSaved | null;
+    if (z && z.day === dayKey() && Array.isArray(z.cells) && (z.n === 6 || z.n === 9)) {
+      return { n: z.n, seed: z.seed, sol: z.sol, given: z.given, cells: z.cells, hints: z.hints, sel: -1, start: Date.now() - (z.elapsed || 0), end: z.done ? Date.now() : 0 };
+    }
+  } catch { /* ignore */ }
+  return sdkLoad(6, daySeed());
+}
 const PALETTE = ['#efe9da', '#e3b37a', '#f6f3ec', '#e9b6b0', '#b9d3c4', '#d8c48a', '#c8bfe0', '#f2d2a9', '#a9c7d8', '#e7a7a0'];
 
 export const newMember = (name: string, rel: string): Member => ({
@@ -60,7 +89,7 @@ export const newMember = (name: string, rel: string): Member => ({
 export const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 function loadSaved(): Saved {
-  const fresh: Saved = { v: 1, lang: config.lang, times: { ...SLOT_TIME }, remind: { m: false, l: false, e: false, n: false }, member: 0, members: [newMember('', '나')] };
+  const fresh: Saved = { v: 1, lang: config.lang, times: { ...SLOT_TIME }, remind: { m: false, l: false, e: false, n: false }, member: 0, members: [newMember('', '나')], onboarded: false, role: 'patient' };
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return fresh;
@@ -69,15 +98,23 @@ function loadSaved(): Saved {
     if (new URLSearchParams(location.search).get('lang')) s.lang = config.lang;
     s.member = Math.min(Math.max(0, s.member | 0), s.members.length - 1);
     // Older saves have no lunch slot: fill in defaults for any missing time.
+    // Saves from before the first-run introduction existed belong to people already using the app.
+    if (s.onboarded === undefined) s.onboarded = true;
     return { ...fresh, ...s, times: { ...fresh.times, ...s.times }, remind: { ...fresh.remind, ...s.remind } };
   } catch { return fresh; }
 }
 
-const initialState = (): AppState => ({
-  ...loadSaved(),
-  splash: config.splash && config.screen === 'home',
+const initialState = (): AppState => {
+  const saved = loadSaved();
+  const start: Screen = config.screen === 'home' && !saved.onboarded ? 'onboarding' : config.screen;
+  return {
+  ...saved,
+  now: nowMin(),
+  onb: 0,
+  sdk: sdkRestore(),
+  splash: config.splash && start === 'home',
   splashKey: 0,
-  stack: config.screen === 'home' ? ['home'] : ['home', config.screen],
+  stack: start === 'home' || start === 'onboarding' ? [start] : ['home', start],
   timeEdit: null,
   draft: { h: 8, mi: 0 },
   vt: 'bp',
@@ -94,7 +131,8 @@ const initialState = (): AppState => ({
   D: null,
   dataErr: false,
   details: {},
-});
+  };
+};
 
 type Patch = Partial<AppState> | ((s: AppState) => Partial<AppState>);
 
@@ -113,6 +151,10 @@ export type App = {
   need: (ids: string[]) => void;
   addMeds: (list: Found[], slots?: SlotKey[]) => number;
   showFound: (r: ScanRec) => void;
+  takeSlot: (k: SlotKey) => void;
+  sdk: {
+    select: (i: number) => void; put: (v: number) => void; hint: () => void; size: (n: SdkSize) => void; fresh: () => void;
+  };
   t: UiStrings;
   L: (s: string) => string;
   F: (key: string, ...args: (string | number)[]) => string;
@@ -142,12 +184,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Save what the person entered (on this device only).
   const savedRef = useRef('');
   useEffect(() => {
-    const out: Saved = { v: 1, lang: s.lang, times: s.times, remind: s.remind, member: s.member, members: s.members };
+    const out: Saved = { v: 1, lang: s.lang, times: s.times, remind: s.remind, member: s.member, members: s.members, onboarded: s.onboarded, role: s.role, quiz: s.quiz };
     const j = JSON.stringify(out);
     if (j === savedRef.current) return;
     savedRef.current = j;
     try { localStorage.setItem(KEY, j); } catch { /* storage full or blocked: keep working in memory */ }
-  }, [s.lang, s.times, s.remind, s.member, s.members]);
+  }, [s.lang, s.times, s.remind, s.member, s.members, s.onboarded, s.role, s.quiz]);
+
+  // Sudoku progress is saved per day, so leaving and coming back resumes the same puzzle.
+  useEffect(() => {
+    const z = s.sdk;
+    const out: SdkSaved = { day: dayKey(), n: z.n, seed: z.seed, sol: z.sol, given: z.given, cells: z.cells, hints: z.hints, done: !!z.end, elapsed: (z.end || Date.now()) - z.start };
+    try { localStorage.setItem(SDK_KEY, JSON.stringify(out)); } catch { /* ignore */ }
+  }, [s.sdk]);
+
+  // Clock for the dose window; a new day brings a new puzzle.
+  useEffect(() => {
+    let day = dayKey();
+    const tick = () => setState(st => {
+      const n = nowMin(), d = dayKey();
+      if (d !== day) { day = d; return { ...st, now: n, sdk: sdkLoad(6, daySeed()) }; }
+      return n === st.now ? st : { ...st, now: n };
+    });
+    const id = window.setInterval(tick, 15000);
+    const vis = () => { if (!document.hidden) tick(); };
+    document.addEventListener('visibilitychange', vis);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', vis); };
+  }, []);
 
   const set = useCallback((p: Patch) => setState(st => ({ ...st, ...(typeof p === 'function' ? p(st) : p) })), []);
   const edit = useCallback((f: (m: Member) => Partial<Member>) => setState(st => {
@@ -218,15 +281,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(id);
   }, []);
 
+  const takeSlot = useCallback((k: SlotKey) => {
+    edit(m => { const d = dayKey(), cur = m.taken[d] || []; return cur.includes(k) ? {} : { taken: { ...m.taken, [d]: [...cur, k] } }; });
+  }, [edit]);
+
+  const sdk = useMemo(() => {
+    const upd = (f: (z: SdkState) => SdkState | null) => setState(st => { const z = f(st.sdk); return z ? { ...st, sdk: z } : st; });
+    return {
+      select: (i: number) => upd(z => ({ ...z, sel: i })),
+      put: (v: number) => upd(q => {
+        if (q.sel < 0 || q.given[q.sel] || q.end) return null;
+        const cells = q.cells.slice(); cells[q.sel] = v;
+        const full = cells.every(c => c) && sdkValid(cells, q.n);
+        return { ...q, cells, end: full ? Date.now() : 0 };
+      }),
+      hint: () => upd(q => {
+        const i = q.sel >= 0 && !q.given[q.sel] && q.cells[q.sel] !== q.sol[q.sel] ? q.sel : q.cells.findIndex((c, k) => c !== q.sol[k]);
+        if (i < 0 || q.end) return null;
+        const cells = q.cells.slice(); cells[i] = q.sol[i];
+        const full = cells.every((c, k) => c === q.sol[k]);
+        return { ...q, cells, sel: i, hints: q.hints + 1, end: full ? Date.now() : 0 };
+      }),
+      size: (n: SdkSize) => upd(q => (q.n === n ? null : sdkLoad(n, q.seed))),
+      fresh: () => upd(q => sdkLoad(q.n, q.seed + 1)),
+    };
+  }, []);
+
   const value = useMemo<App>(() => {
     const lang = s.lang;
     return {
-      s, me: s.members[s.member], screen: s.stack[s.stack.length - 1], set, edit, go, tab, back, flash, openDrug, need, addMeds, showFound,
+      s, me: s.members[s.member], screen: s.stack[s.stack.length - 1], set, edit, go, tab, back, flash, openDrug, need, addMeds, showFound, takeSlot, sdk,
       t: uiStrings(lang),
       L: (x: string) => translate(lang, x),
       F: (key: string, ...args: (string | number)[]) => format(lang, key, ...args),
     };
-  }, [s, set, edit, go, tab, back, flash, openDrug, need, addMeds, showFound]);
+  }, [s, set, edit, go, tab, back, flash, openDrug, need, addMeds, showFound, takeSlot, sdk]);
 
   useEffect(() => { document.documentElement.lang = s.lang === 'zh' ? 'zh-CN' : s.lang; }, [s.lang]);
 

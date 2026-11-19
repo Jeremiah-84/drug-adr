@@ -1,7 +1,9 @@
 # MediScan Pro mobile app (`/m/`)
 
-Phone app version of MediScan, built from the Claude Design file `design/MediScan Mobile.dc.html`
-(option 1a: dark green & gold). React + Vite, built into `docs/m/` so GitHub Pages serves it at
+Phone app version of MediScan. Since 2026-11 it uses the **MediScan Classical** design (warm paper
+`#f3f2f2`, ink `#201f1d`, gold accent `#b68235`, Cormorant Garamond / Lora / Noto Serif, outlined
+buttons and hairline dividers; tokens in `src/styles/classical.css`). The earlier dark green & gold
+design file is kept in `design/MediScan Mobile.dc.html` for reference. React + Vite, built into `docs/m/` so GitHub Pages serves it at
 `https://jeremiah-84.github.io/drug-adr/m/` and it can be installed to the home screen.
 
 It uses the same data and engines as the web app and the Chrome extension (no AI, nothing uploaded):
@@ -28,3 +30,13 @@ npm run build      # typecheck + build into ../docs/m
 ```
 
 URL options for testing: `?splash=0` skip the quote intro, `?lang=en|zh|ja`, `?screen=detail|vitals|pill|…`, `?quote=0..9`.
+
+## Classical screens and rules
+
+- **Onboarding** (3 steps: intro, role 환자·보호자 / 의료 관계자, camera + notification permission). Shown once; "온보딩 다시 보기" in 마이.
+- **Today's page** (`today`): a short drug story and a 3-choice quiz, both preferring the user's own medicines (`src/daily.ts`), and a monthly stamp calendar built from the real taken log. Story texts are written from the MFDS labels and should be source-checked before wide release.
+- **Daily sudoku** (`puzzle`, 6×6 or 9×9, `src/sudoku.ts`), saved under `localStorage` key `mediscan.sudoku`.
+- **Dose button window**: "복용 완료" only works from 2 hours before to 2 hours after the dose time (`WINDOW_MIN` in `src/state.tsx`); outside it the slot shows 예정 / 누락.
+- **4 languages** (ko, en, zh, ja): classical strings live in `src/i18n_classical.ts` (zh/ja need a native review).
+- Medical-pro role shows the MFDS 품목기준코드 on the detail page.
+- New saved fields in `mediscan.v1`: `onboarded`, `role`, `quiz`.

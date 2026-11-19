@@ -1,4 +1,5 @@
 import { EXTRA } from './i18n_extra';
+import { CLASSICAL } from './i18n_classical';
 // Translations ported 1:1 from the Claude Design prototype. Korean is the source language;
 // D maps each Korean string to [en, zh, ja].
 
@@ -164,6 +165,7 @@ const D: Record<string, [string, string, string]> = {
 };
 
 Object.assign(D, EXTRA);
+for (const [k, v] of Object.entries(CLASSICAL)) if (!(k in D)) D[k] = v;
 
 export type UiKey = keyof typeof UI;
 export type UiStrings = Record<UiKey, string>;
