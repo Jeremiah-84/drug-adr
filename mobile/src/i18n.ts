@@ -1,3 +1,4 @@
+import { EXTRA } from './i18n_extra';
 // Translations ported 1:1 from the Claude Design prototype. Korean is the source language;
 // D maps each Korean string to [en, zh, ja].
 
@@ -32,7 +33,7 @@ export const UI = {
  symSub: ["복용 중인 약 중 원인일 수 있는 약을 찾아드려요.", "We'll find which of your medicines could be the cause.", "帮您找出可能导致症状的药物。", "服用中の薬から原因となりうる薬を探します。"],
  symEmpty: ["위에서 증상을 하나 이상 골라주세요", "Pick at least one symptom above", "请在上方选择至少一个症状", "上から症状を1つ以上選んでください"],
  sched: ["복약 일정", "Dose schedule", "服药计划", "服薬スケジュール"],
- schedNote: ["알림을 켜두면 복용 시간 10분 전, 그리고 30분이 지나도 기록이 없으면 다시 알려드려요.", "With reminders on, we'll notify you 10 minutes before each dose, and again if nothing is logged 30 minutes after.", "开启提醒后，会在服药前10分钟提醒您；若30分钟后仍未记录，会再次提醒。", "通知をオンにすると服用10分前にお知らせし、30分過ぎても記録がなければ再度お知らせします。"],
+ schedNote: ["알림을 켜면 이 앱이 열려 있거나 백그라운드에 있을 때 복용 시간에 휴대폰 알림을 보내드려요. 앱을 완전히 닫으면 울리지 않아요.", "With reminders on, you get a phone notification at each dose time while this app is open or in the background. It cannot ring once the app is fully closed.", "开启提醒后，本应用打开或在后台时会在服药时间发送手机通知。完全关闭应用后不会提醒。", "通知をオンにすると、アプリが開いているかバックグラウンドにある間、服用時間にスマホ通知を送ります。アプリを完全に閉じると鳴りません。"],
  records: ["기록", "Records", "记录", "記録"],
  weekRate: ["이번 주 복약률", "Adherence this week", "本周服药率", "今週の服薬率"],
  reportLink: ["건강 리포트 ›", "Health report ›", "健康报告 ›", "健康レポート ›"],
@@ -161,6 +162,8 @@ const D: Record<string, [string, string, string]> = {
  "병원": ["Clinics", "医院", "病院"], "약국": ["Pharmacy", "药店", "薬局"], "맑은눈 안과의원": ["Clear Eye Clinic", "明眸眼科诊所", "クリアアイ眼科医院"], "서울중앙병원 응급실": ["Seoul Central Hospital ER", "首尔中央医院急诊", "ソウル中央病院 救急外来"], "19:00까지": ["Until 19:00", "营业至19:00", "19:00まで"],
  "읽는 중… 사진은 이 기기 안에서만 처리합니다": ["Reading… Photos are processed only on this device", "识别中… 照片仅在本设备上处理", "読み取り中… 写真はこの端末内でのみ処理します"]
 };
+
+Object.assign(D, EXTRA);
 
 export type UiKey = keyof typeof UI;
 export type UiStrings = Record<UiKey, string>;

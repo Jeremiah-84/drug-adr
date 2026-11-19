@@ -6,14 +6,15 @@ import { AppProvider, useApp } from './state';
 import { BottomNav, ScanOverlay } from './screens/Chrome';
 import { Detail, Results, Symptom } from './screens/Drugs';
 import { Home } from './screens/Home';
-import { Chat, ChatInput, Family, My, Pharmacy } from './screens/People';
+import { Family, My, Pharmacy } from './screens/People';
+import { Pill, Search } from './screens/Find';
 import { History, Report } from './screens/Records';
 import { Schedule, TimeSheet } from './screens/Schedule';
 import { Vitals, VitalsSheet } from './screens/Vitals';
 
 const SCREENS: Partial<Record<Screen, () => ReactNode>> = {
   home: Home, results: Results, detail: Detail, symptom: Symptom, schedule: Schedule, vitals: Vitals,
-  history: History, report: Report, chat: Chat, my: My, family: Family, pharmacy: Pharmacy,
+  history: History, report: Report, search: Search, pill: Pill, my: My, family: Family, pharmacy: Pharmacy,
 };
 
 /** Quote of the day: one per local calendar day, cycling through the ten philosophers. */
@@ -52,7 +53,7 @@ function Shell() {
   const dateStr = useMemo(() => { const d = new Date(); return `${d.getMonth() + 1}.${d.getDate()}`; }, []);
 
   const View = SCREENS[screen];
-  const bottom = screen === 'chat' ? 154 : scanLike || screen === 'pharmacy' ? 0 : 88;
+  const bottom = scanLike || screen === 'pharmacy' ? 0 : 88;
 
   return (
     <div className="stage">
@@ -71,7 +72,6 @@ function Shell() {
             {View && <View />}
           </main>
 
-          {screen === 'chat' && <ChatInput />}
           {scanLike && <ScanOverlay />}
           {!scanLike && screen !== 'pharmacy' && <BottomNav />}
           <TimeSheet />

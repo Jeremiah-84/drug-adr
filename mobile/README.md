@@ -1,40 +1,30 @@
-# MediScan Pro — mobile app (PWA)
+# MediScan Pro mobile app (`/m/`)
 
-Implementation of design option **1a** from `../project/MediScan Mobile.dc.html`: dark green and champagne gold, Android-first.
-It's built with React 18, TypeScript and Vite, and installs as a PWA. It can be wrapped with Capacitor later to make an APK.
+Phone app version of MediScan, built from the Claude Design file `design/MediScan Mobile.dc.html`
+(option 1a: dark green & gold). React + Vite, built into `docs/m/` so GitHub Pages serves it at
+`https://jeremiah-84.github.io/drug-adr/m/` and it can be installed to the home screen.
 
-```bash
-npm install
-npm run dev        # http://localhost:5173
-npm run build      # outputs to dist/ (static; works under any sub-path)
-npm run preview
+It uses the same data and engines as the web app and the Chrome extension (no AI, nothing uploaded):
+
+| Feature | Source |
+| --- | --- |
+| Search by ingredient / product name | `docs/data/index.json` |
+| Side effects (4 tiers), renal/hepatic notes, label quote + MFDS link | `docs/data/d/<id>.json` |
+| Prescription / pill-bag photo → drug names | on-device OCR, `docs/vendor/ocr` |
+| Box barcode → product | `docs/data/barcode.json`, `docs/vendor/barcode` |
+| Pill ID (imprint, shape, color) | `docs/data/pills.json` |
+| Symptom check (free text or chips) | same alias matching as the web app (`src/probs.ts`) |
+
+My medicines, dose times, taken log, BP/glucose notebook, symptom log and family members are kept in
+`localStorage` on the phone only. Dose reminders fire as phone notifications while the app is open or in
+the background (a web app cannot ring once fully closed). "병원·약국 찾기" opens Naver Map and the
+official holiday-pharmacy / E-Gen sites. The ad slot loads `docs/ad.html` (non-drug ads with disclosure).
+
+```sh
+cd mobile
+npm ci
+npm run dev        # http://localhost:5173 (data paths need docs/ served one level up; use `npm run build` + a static server on docs/)
+npm run build      # typecheck + build into ../docs/m
 ```
 
-On a phone the app fills the screen. On a wider screen it appears inside the 400×840 handset frame from the design.
-
-## Screens
-Splash (today's philosopher quote, which scatters into gold particles) · Home · Scan (Rx / barcode / pill) → Results → Drug detail
-(side effects · kidney/liver · how to take) · Symptom check · Dose schedule (tap a time to change it) · BP & glucose notebook
-(with an entry sheet) · Records · Health report · AI chat · My · Family & caregivers · Nearby clinics & pharmacies.
-Languages: KO / EN / 中 / 日 (tap the KO button on Home, or use My → Language).
-
-## Launch options (the prototype's "Tweaks")
-| Query | Effect |
-|---|---|
-| `?lang=en` | Starting language: `ko` `en` `zh` `ja` |
-| `?splash=0` | Skip the quote splash |
-| `?quote=3` | Force quote 0–9 (by default it changes daily) |
-| `?screen=vitals` | Open a screen directly |
-| `?scan=1.2` | Length of the simulated scan in seconds (0.5–4) |
-
-## Code map
-- `src/data.ts`: sample drugs, schedule, people, places, quotes, and the BP/glucose cut-offs (copied 1:1 from the prototype)
-- `src/i18n.ts`: UI strings and the Korean → EN/ZH/JA dictionary
-- `src/state.tsx`: app state, navigation stack and actions (`useApp()`)
-- `src/screens/*`: one file per screen group; `Chrome.tsx` holds the scan overlay and the bottom nav
-- `src/Splash.tsx`: canvas particle animation (it skips the effect when reduced motion is on)
-
-## Not real yet
-The drug information, AI replies, scan results, map and people are **example data** from the design. The camera, the PDF export
-and push reminders are simulated. The real data lives in `Jeremiah-84/drug-adr` (`docs/data/*.json`), which is the next thing to connect.
-Translations and the BP/glucose thresholds came from the design session and still need a pharmacist or clinician to review them.
+URL options for testing: `?splash=0` skip the quote intro, `?lang=en|zh|ja`, `?screen=detail|vitals|pill|…`, `?quote=0..9`.

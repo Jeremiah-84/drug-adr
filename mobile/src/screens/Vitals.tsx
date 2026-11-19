@@ -10,7 +10,7 @@ const GOLD_BAR = 'linear-gradient(180deg,#e8d39a,#a8843f)';
 
 type Row = BadgeT & { d: string; time: string; big: string; sub: string };
 type View = {
-  unit: string; addLabel: string; rows: Row[]; last: Row;
+  unit: string; addLabel: string; rows: Row[]; last: Row | null;
   refs: { b: number; l: string }[];
   cols: { d: string; b: number; h: number; bg: string }[];
   stats: { v: string; k: string }[];
@@ -18,38 +18,39 @@ type View = {
 };
 
 function useVitalsView(): View {
-  const { s, L, F } = useApp();
+  const { s, me, L, F } = useApp();
+  const bp = me.bp, glu = me.glu;
   if (s.vt === 'bp') {
-    const rows = s.bp.map(e => ({ ...trBadge(bpSt(e.s, e.di), L), d: e.d, time: e.time, big: `${e.s}/${e.di}`, sub: F('맥박 {0}', e.p) }));
-    const last7 = s.bp.slice(0, 7).reverse();
+    const rows = bp.map(e => ({ ...trBadge(bpSt(e.s, e.di), L), d: e.d, time: e.time, big: `${e.s}/${e.di}`, sub: F('맥박 {0}', e.p) }));
+    const last7 = bp.slice(0, 7).reverse();
     return {
-      unit: 'mmHg', addLabel: L('혈압 기록하기'), rows, last: { ...rows[0], sub: F('맥박 {0} bpm', s.bp[0].p) },
+      unit: 'mmHg', addLabel: L('혈압 기록하기'), rows, last: rows.length ? { ...rows[0], sub: F('맥박 {0} bpm', bp[0].p) } : null,
       refs: [{ b: px(140, 50, 180), l: '140' }, { b: px(90, 50, 180), l: '90' }],
       cols: last7.map(e => ({
         d: e.d.slice(3), b: px(e.di, 50, 180), h: Math.max(6, px(e.s, 50, 180) - px(e.di, 50, 180)),
         bg: bpSt(e.s, e.di).t === '높음' ? 'linear-gradient(180deg,#eb9a89,#c9a45c)' : GOLD_BAR,
       })),
       stats: [
-        { v: `${avg(last7, e => e.s)}/${avg(last7, e => e.di)}`, k: L('7일 평균') },
-        { v: `${Math.max(...last7.map(e => e.s))}`, k: L('최고 수축기') },
-        { v: `${avg(last7, e => e.p)}`, k: L('평균 맥박') },
+        { v: last7.length ? `${avg(last7, e => e.s)}/${avg(last7, e => e.di)}` : '-', k: L('7일 평균') },
+        { v: last7.length ? `${Math.max(...last7.map(e => e.s))}` : '-', k: L('최고 수축기') },
+        { v: last7.length ? `${avg(last7, e => e.p)}` : '-', k: L('평균 맥박') },
       ],
-      note: L('혈압약 아모잘탄(1일 1회 아침)을 복용 중이에요. 약 먹기 전, 아침에 같은 시간에 재면 변화를 비교하기 좋아요.'),
+      note: L('아침에 약 먹기 전, 매일 같은 시간에 재면 변화를 비교하기 좋아요.'),
     };
   }
-  const rows = s.glu.map(e => ({ ...trBadge(gluSt(e.v, e.when), L), d: e.d, time: e.time, big: `${e.v}`, sub: L(e.when) }));
-  const last7 = s.glu.slice(0, 7).reverse();
-  const fast = s.glu.filter(e => e.when === '공복').slice(0, 7);
+  const rows = glu.map(e => ({ ...trBadge(gluSt(e.v, e.when), L), d: e.d, time: e.time, big: `${e.v}`, sub: L(e.when) }));
+  const last7 = glu.slice(0, 7).reverse();
+  const fast = glu.filter(e => e.when === '공복').slice(0, 7);
   return {
-    unit: 'mg/dL', addLabel: L('혈당 기록하기'), rows, last: rows[0],
+    unit: 'mg/dL', addLabel: L('혈당 기록하기'), rows, last: rows[0] || null,
     refs: [{ b: px(126, 60, 220), l: '126' }, { b: px(200, 60, 220), l: '200' }],
     cols: last7.map(e => ({ d: e.d.slice(3), b: 0, h: px(e.v, 60, 220), bg: e.when === '공복' ? GOLD_BAR : 'linear-gradient(180deg,#9ccbb6,#3f7a63)' })),
     stats: [
       { v: fast.length ? `${avg(fast, e => e.v)}` : '-', k: L('공복 평균') },
-      { v: `${Math.max(...last7.map(e => e.v))}`, k: L('7일 최고') },
+      { v: last7.length ? `${Math.max(...last7.map(e => e.v))}` : '-', k: L('7일 최고') },
       { v: `${last7.length}`, k: L('측정 횟수') },
     ],
-    note: L('당뇨약 다이아벡스(1일 2회 식후)를 복용 중이에요. 금색은 공복, 녹색은 식후 2시간 측정값이에요.'),
+    note: L('금색은 공복, 녹색은 식후 측정값이에요.'),
   };
 }
 
@@ -65,7 +66,14 @@ export function Vitals() {
       </div>
       <Segment<VitalsTab> items={[['bp', L('혈압')], ['glu', L('혈당')]]} value={s.vt} onPick={k => set({ vt: k })} />
 
-      <div className="col" style={{ borderRadius: 22, padding: 20, background: 'var(--hero)', border: '1px solid rgba(201,164,92,.3)', gap: 16 }}>
+      {!vt.last && (
+        <div className="col" style={{ borderRadius: 22, padding: 22, background: 'var(--hero)', border: '1px solid rgba(201,164,92,.3)', gap: 8 }}>
+          <span className="eyebrow">NO RECORDS YET</span>
+          <span className="serif" style={{ fontSize: 18 }}>{L('아직 기록이 없어요')}</span>
+          <span style={{ fontSize: 13, color: 'var(--ink-body)', lineHeight: 1.6 }}>{L('아래 버튼으로 첫 기록을 남겨 보세요. 이 휴대폰 안에만 저장돼요.')}</span>
+        </div>
+      )}
+      {vt.last && <div className="col" style={{ borderRadius: 22, padding: 20, background: 'var(--hero)', border: '1px solid rgba(201,164,92,.3)', gap: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div className="col" style={{ gap: 6 }}>
             <span style={{ fontSize: 12, color: 'var(--muted)' }}>{t.recent} · {vt.last.d} {vt.last.time}</span>
@@ -91,7 +99,7 @@ export function Vitals() {
         <div style={{ display: 'flex', marginTop: -8 }}>
           {vt.cols.map((c, i) => <span key={i} style={{ flex: 1, textAlign: 'center', fontSize: 10, color: 'var(--faint)' }}>{c.d}</span>)}
         </div>
-      </div>
+      </div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
         {vt.stats.map(r => (
@@ -104,7 +112,7 @@ export function Vitals() {
 
       <div style={{ borderLeft: '2px solid #c9a45c', padding: '2px 0 2px 14px', fontSize: 12.5, lineHeight: 1.7, color: 'var(--ink-body)' }}>{vt.note}</div>
 
-      <div className="col" style={{ gap: 8 }}>
+      {vt.rows.length > 0 && <div className="col" style={{ gap: 8 }}>
         <div className="label">{t.records}</div>
         {vt.rows.map((r, i) => (
           <div key={vt.rows.length - i} className="row" style={{ gap: 12, padding: '12px 14px', borderRadius: 14, background: 'var(--card)' }}>
@@ -118,7 +126,7 @@ export function Vitals() {
             <Badge b={r} style={{ fontSize: 10.5 }} />
           </div>
         ))}
-      </div>
+      </div>}
       <button className="btn-gold" onClick={() => set({ sheet: true })}>+ {vt.addLabel}</button>
       <div className="fine">{t.criteria}</div>
     </div>
@@ -128,7 +136,7 @@ export function Vitals() {
 const WHEN = ['공복', '식후 2시간', '취침 전'];
 
 export function VitalsSheet() {
-  const { s, set, flash, t, L, F } = useApp();
+  const { s, set, edit, flash, t, L, F } = useApp();
   const vt = useVitalsView();
   if (!s.sheet) return null;
   const f = s.form, isBp = s.vt === 'bp';
@@ -140,8 +148,8 @@ export function VitalsSheet() {
     set(x => ({ form: { ...x.form, [k]: Math.max(0, (Number(x.form[k]) || 0) + d) } }));
   const save = () => {
     const time = nowHM(), d = todayMD();
-    if (isBp) set(x => ({ sheet: false, bp: [{ d, time, s: +x.form.s || 0, di: +x.form.di || 0, p: +x.form.p || 0 }, ...x.bp] }));
-    else set(x => ({ sheet: false, glu: [{ d, time, v: +x.form.v || 0, when: x.form.when }, ...x.glu] }));
+    if (isBp) { edit(m => ({ bp: [{ d, time, s: +f.s || 0, di: +f.di || 0, p: +f.p || 0 }, ...m.bp].slice(0, 400) })); set({ sheet: false }); }
+    else { edit(m => ({ glu: [{ d, time, v: +f.v || 0, when: f.when }, ...m.glu].slice(0, 400) })); set({ sheet: false }); }
     flash(isBp ? F('혈압 {0}/{1}을 기록했어요', f.s, f.di) : F('혈당 {0} mg/dL을 기록했어요', f.v));
   };
   const circle = { width: 44, height: 44, borderRadius: '50%', fontSize: 20 };

@@ -1,6 +1,6 @@
 import { LANGS, type Lang } from './i18n';
 
-export const SCREENS = ['home', 'scan', 'scanning', 'results', 'detail', 'symptom', 'schedule', 'vitals', 'history', 'report', 'chat', 'my', 'family', 'pharmacy'] as const;
+export const SCREENS = ['home', 'scan', 'scanning', 'results', 'detail', 'symptom', 'schedule', 'vitals', 'history', 'report', 'search', 'pill', 'my', 'family', 'pharmacy'] as const;
 export type Screen = (typeof SCREENS)[number];
 
 /**
@@ -9,7 +9,6 @@ export type Screen = (typeof SCREENS)[number];
  *   ?splash=0           skip the quote splash on load
  *   ?quote=0..9         force a specific quote (default: one per day)
  *   ?screen=<name>      open a screen directly (home, scan, results, detail, …)
- *   ?scan=1.8           seconds the fake scan takes (0.5–4)
  */
 const q = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
 const num = (v: string | null, lo: number, hi: number, d: number) => {
@@ -24,5 +23,4 @@ export const config = {
   splash: q.get('splash') !== '0',
   quoteIndex: Math.round(num(q.get('quote'), -1, 9, -1)),
   screen: screen && SCREENS.includes(screen) && screen !== 'scanning' ? screen : ('home' as Screen),
-  scanSeconds: num(q.get('scan'), 0.5, 4, 1.8),
 };

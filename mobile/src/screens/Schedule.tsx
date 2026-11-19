@@ -11,7 +11,7 @@ const PRESETS: Record<SlotKey, string[]> = {
 };
 
 export function Schedule() {
-  const { s, set, t, L } = useApp();
+  const { s, me, set, t, L } = useApp();
   const edit = (k: SlotKey) => {
     const [h, mi] = s.times[k].split(':').map(Number);
     set({ timeEdit: k, draft: { h, mi } });
@@ -24,7 +24,8 @@ export function Schedule() {
         <div className="title">{t.sched}</div>
         <div className="sub">{t.editHint}</div>
       </div>
-      {slotViews(s).map(x => (
+      {!me.meds.length && <div style={{ border: '1px dashed rgba(201,164,92,.3)', borderRadius: 16, padding: 22, textAlign: 'center', fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>{L('약을 등록하면 먹는 시간별로 모아서 보여드려요.')}</div>}
+      {slotViews(s, me).map(x => (
         <div key={x.k} className="col" style={{ borderRadius: 20, padding: 18, background: 'var(--card)', border: '1px solid rgba(201,164,92,.14)', gap: 12 }}>
           <div className="row" style={{ gap: 12 }}>
             <button className="display time-edit" onClick={() => edit(x.k)}
@@ -33,12 +34,13 @@ export function Schedule() {
               <div style={{ fontSize: 14, fontWeight: 500 }}>{L(x.label)}</div>
               <div style={{ fontSize: 12, color: 'var(--muted)' }}>{L(x.taken ? '오늘 복용 완료' : '복용 전')}</div>
             </div>
-            <Toggle on={x.remind} onClick={() => set(st => ({ remind: { ...st.remind, [x.k]: !st.remind[x.k] } }))} />
+            <Toggle on={x.remind} onClick={() => { if (!x.remind && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission(); set(st => ({ remind: { ...st.remind, [x.k]: !st.remind[x.k] } })); }} />
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {x.drugs.map(dr => (
-              <span key={dr.id} className="row" style={{ gap: 6, fontSize: 12.5, padding: '5px 10px', borderRadius: 999, background: 'var(--bg)' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: dr.color }} />{L(dr.short)}
+            {!x.meds.length && <span style={{ fontSize: 12, color: 'var(--faint)' }}>{L('이 시간에 먹는 약이 없어요')}</span>}
+            {x.meds.map(dr => (
+              <span key={dr.key} className="row" style={{ gap: 6, fontSize: 12.5, padding: '5px 10px', borderRadius: 999, background: 'var(--bg)' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: dr.color }} />{dr.name}
               </span>
             ))}
           </div>
@@ -51,9 +53,9 @@ export function Schedule() {
 
 /** Bottom sheet for changing a dose time (hours by 1, minutes by 5, plus four presets per slot). */
 export function TimeSheet() {
-  const { s, set, flash, t, L, F } = useApp();
+  const { s, me, set, flash, t, L, F } = useApp();
   if (!s.timeEdit) return null;
-  const slot = slotViews(s).find(x => x.k === s.timeEdit)!;
+  const slot = slotViews(s, me).find(x => x.k === s.timeEdit)!;
   const cur = p2(s.draft.h) + ':' + p2(s.draft.mi);
   const step = (dh: number, dm: number) => () => set(x => {
     const m = (x.draft.h * 60 + x.draft.mi + dh * 60 + dm + 1440) % 1440;
@@ -73,7 +75,7 @@ export function TimeSheet() {
     <Sheet onClose={() => set({ timeEdit: null })} gap={18}>
       <div className="col" style={{ gap: 4 }}>
         <span className="serif" style={{ fontSize: 19, fontWeight: 600 }}>{t.timeTitle}</span>
-        <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{L(slot.label)} · {slot.drugs.map(d => L(d.short)).join(' · ')}</span>
+        <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{L(slot.label)} · {slot.meds.map(d => d.name).join(' · ')}</span>
       </div>
       <div className="row" style={{ justifyContent: 'center', gap: 14 }}>
         {cols.map(c => (
