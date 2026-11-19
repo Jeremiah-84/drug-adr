@@ -231,7 +231,9 @@ function build(){
 function measure(){W=plot.clientWidth;PH=plot.clientHeight;const c=$('cv');if(c){const r=devicePixelRatio||1;c.width=W*r;c.height=PH*r;c.getContext('2d').setTransform(r,0,0,r,0,0)}kick()}
 // 작은 점: 약 사전의 나머지 성분 (캔버스에 그려 1천 개가 넘어도 부드럽게)
 // 점마다 지금 높이(h)와 칸 중심까지의 어긋남(o)을 기억해 두고 목표로 천천히 옮김 → 확대할 때 점들이 흘러가듯 다시 쌓임
-let hovR=0;
+let hovR=0,TOPS=new Map();
+// 큰 점이 그 해의 작은 점 더미 위에 올라앉도록: 지금(움직이는 중인) 더미 높이
+const topAt=x=>{if(!TOPS.bw||!cats.more)return 0;const b=Math.floor(x/TOPS.bw);let m=-1;for(let i=b-1;i<=b+1;i++){const v=TOPS.get(i);if(v!=null&&v>m)m=v}return m<0?0:(m+TOPS.r*2+10)*TOPS.a};
 function drawAll(ppy,dt){
   const c=$('cv');if(!c)return;const g=c.getContext('2d');g.clearRect(0,0,W,PH);hits=[];
   if(!ALL.length)return;
@@ -249,6 +251,7 @@ function drawAll(ppy,dt){
     const x=it.x+it.o,y=PH-44-it.h;hits.push([x,y,i]);
     if(i!==hovX&&!(pulse&&pulse.i===i)){g.moveTo(x+r,y);g.arc(x,y,r,0,7)}}
   g.fill();
+  TOPS=new Map();TOPS.bw=bw;TOPS.r=r;for(const it of ALL){if(!it.vis)continue;const b=Math.floor((it.x+it.o)/bw);if(!(TOPS.get(b)>=it.h))TOPS.set(b,it.h)}TOPS.a=moreA;
   hovR=ease(hovR*10,hovX>=0?25:0,k)/10;
   const hi=(i,extra)=>{const h=hits.find(q=>q[2]===i);if(!h)return;g.fillStyle='#ffffff';g.beginPath();g.arc(h[0],h[1],r+extra,0,7);g.fill();g.strokeStyle='rgba(76,201,166,.75)';g.lineWidth=3;g.stroke()};
   if(hovX>=0)hi(hovX,hovR);
@@ -262,15 +265,17 @@ function layout(dt=1/60){
   plot.classList.toggle('labels',labels);
   // 가까운 점은 위로 쌓기 (이름이 보일 때는 이름 폭만큼 띄움)
   drawAll(ppy,dt);
-  const lv=[],STEP=W<640?18:21,BASE=60;
+  const placed=[],STEP=W<640?18:21,BASE=60;
   for(const p of pts){
     const on=cats[p.d.cat];p.el.classList.toggle('off',!on);
     p.x=xOf(p.d.y);
     if(!on){p.ty=BASE-10;continue}
-    const w=labels?p.lw+30:19;let r=0;while(lv[r]!=null&&lv[r]>p.x-9)r++;lv[r]=p.x+w;
-    p.ty=BASE+r*STEP;
+    // 작은 점 더미 위에서 시작해, 다른 큰 점(이름 폭 포함)과 겹치면 한 칸씩 위로
+    const w=labels?p.lw+30:19;let y=BASE+topAt(p.x),hit;
+    let guard=0;while(guard++<60&&(hit=placed.find(q=>q.x1>p.x-9&&q.x0<p.x+w&&Math.abs(q.y-y)<STEP-.5)))y=hit.y+STEP;
+    placed.push({x0:p.x-9,x1:p.x+w,y});p.ty=y;
   }
-  const maxY=PH-56;for(const p of pts){p.ty=Math.min(p.ty,maxY);p.cy=ease(p.cy,p.ty,reduce?1:1-Math.exp(-dt*10));p.el.style.transform=`translate3d(${p.x}px,${-p.cy}px,0)`}
+  const maxY=PH-56;for(const p of pts){p.ty=Math.min(p.ty,maxY);p.cy=ease(p.cy,p.ty,reduce?1:1-Math.exp(-dt*12));p.el.style.transform=`translate3d(${p.x}px,${-p.cy}px,0)`}
   evs.forEach((e,i)=>e.style.left=xOf(H.events[i].y)+'px');
   plot.querySelectorAll('.era').forEach(e=>{const r=H.eras[+e.dataset.era],x0=xOf(r.a),x1=xOf(r.b);e.style.left=x0+'px';e.style.width=Math.max(x1-x0,0)+'px';e.style.display=x1<0||x0>W?'none':'';e.firstChild.style.display=x1-Math.max(x0,0)<120?'none':'';e.firstChild.style.left=Math.max(10,-x0+10)+'px'});
   // 눈금: 화면 폭에 맞춰 1·2·5·10·20·50년 간격
