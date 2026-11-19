@@ -31,6 +31,8 @@ const IC={
 const icon=(n,c='i')=>`<svg class="${c}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||''}</svg>`;
 // 페이지 안의 <i data-i="이름"></i>를 아이콘으로 바꿈
 document.querySelectorAll('i[data-i]').forEach(e=>e.outerHTML=icon(e.dataset.i));
+// data-chrome="own"인 페이지(첫 화면)는 머리·꼬리를 직접 그림
+if(document.body.dataset.chrome!=='own'){
 document.body.insertAdjacentHTML('afterbegin',`<header class="top"><div class="wrap">
 <a class="logo" href="${B}index.html"><span class="mark">${icon('pill')}</span>약 바로알기</a>
 <nav class="nav" aria-label="주 메뉴">${NAV.map(([k,h,t])=>`<a href="${B}${h}"${k===page?' aria-current="page"':''}>${t}</a>`).join('')}</nav></div></header>`);
@@ -43,6 +45,7 @@ document.body.insertAdjacentHTML('beforeend',`<footer class="foot"><div class="w
 </div>
 <div class="legal"><span id="dataVer">자료: 식품의약품안전처 의약품 허가정보</span><span class="sos">${icon('phone')}숨이 차거나 얼굴·입술이 붓는 등 응급 증상은 <b>119</b></span></div>
 </div></footer>`);
+}
 fetch(DATA+'version.json').then(r=>r.json()).then(v=>{const e=document.getElementById('dataVer');if(e)e.textContent=`자료: 식품의약품안전처 의약품 허가정보 · 기준일 ${v.version} · 성분 ${v.drugs.toLocaleString()}개 · 제품명 ${v.products.toLocaleString()}개`;document.querySelectorAll('[data-count]').forEach(x=>x.textContent=Number(v[x.dataset.count]).toLocaleString())}).catch(()=>{});
 
 let IDX=null;
