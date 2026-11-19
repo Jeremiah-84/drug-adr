@@ -35,7 +35,7 @@ def efficacy(ee):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default="docs/data"); ap.add_argument("--cache", default=".cache"); ap.add_argument("--budget", type=float, default=70, help="분 단위 시간 예산")
+    ap.add_argument("--out", default="docs/data"); ap.add_argument("--cache", default=".cache"); ap.add_argument("--budget", type=float, default=70, help="분 단위 시간 예산"); ap.add_argument("--workers", type=int, default=4)
     a = ap.parse_args()
     key = os.environ.get("MFDS_KEY", "")
     os.makedirs(a.cache, exist_ok=True)
@@ -46,22 +46,26 @@ def main():
     bp = os.path.join(a.out, "brief.json")
     out = json.load(open(bp)) if os.path.exists(bp) else {}   # 지난번 결과를 이어서 채움
     t0, n_ee, n_new = time.time(), 0, 0
-    for i, d in enumerate(idx["drugs"]):
-        if d["id"] in out and not os.path.exists(os.path.join(a.cache, "detail", f"{d['seq']}.json")):
-            continue  # 이미 있고 캐시도 없으면 다시 받지 않음
-        if time.time() - t0 > a.budget * 60:
-            print("시간 예산을 다 써서 여기까지 저장", i, "/", len(idx["drugs"])); break
-        try:
-            raw = fetch_detail(d["seq"], key, a.cache)
-        except Exception as e:
-            print("건너뜀", d["id"], e); continue
-        ef = efficacy(raw.get("EE_DOC_DATA") or "")
-        n_ee += bool(ef); n_new += 1
-        c = klass(raw.get("PRDUCT_TYPE") or types.get(d["seq"]))
-        if c or ef: out[d["id"]] = [c, ef]
-        if i % 100 == 0:
-            print("소개", i, "/", len(idx["drugs"]), flush=True)
-            json.dump(out, open(bp, "w"), ensure_ascii=False, separators=(",", ":"))
+    todo = [d for d in idx["drugs"] if d["id"] not in out or os.path.exists(os.path.join(a.cache, "detail", f"{d['seq']}.json"))]
+    print("받을 성분", len(todo), "/ 이미 있음", len(out), flush=True)
+    # 식약처 서버가 느릴 때가 많아 여러 개를 동시에 받음 (한꺼번에 너무 많이 보내지 않게 4개씩)
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    def one(d):
+        if time.time() - t0 > a.budget * 60: return d, None
+        try: return d, fetch_detail(d["seq"], key, a.cache)
+        except Exception as e: print("건너뜀", d["id"], e, flush=True); return d, None
+    with ThreadPoolExecutor(max_workers=a.workers) as ex:
+        for k, fu in enumerate(as_completed([ex.submit(one, d) for d in todo])):
+            d, raw = fu.result()
+            if raw is None: continue
+            ef = efficacy(raw.get("EE_DOC_DATA") or "")
+            n_ee += bool(ef); n_new += 1
+            c = klass(raw.get("PRDUCT_TYPE") or types.get(d["seq"]))
+            if c or ef: out[d["id"]] = [c, ef]
+            if k % 100 == 0:
+                print("소개", k, "/", len(todo), round((time.time() - t0) / 60), "분", flush=True)
+                json.dump(out, open(bp, "w"), ensure_ascii=False, separators=(",", ":"))
+    if time.time() - t0 > a.budget * 60: print("시간 예산을 다 써서 여기까지 저장. 한 번 더 돌리면 이어서 채움")
     json.dump(out, open(bp, "w"), ensure_ascii=False, separators=(",", ":"))
     print("완료", len(out), "이번에 받은 것", n_new, "효능", n_ee)
 
