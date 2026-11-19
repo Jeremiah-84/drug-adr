@@ -22,4 +22,4 @@ jobs:
           git config user.email "data-bot@users.noreply.github.com"
           git add docs/data/brief.json
           git diff --cached --quiet || git commit -m "성분 짧은 소개 갱신 $(date +%Y-%m-%d)"
-          git push
+          git pull --rebase origin main && git push
