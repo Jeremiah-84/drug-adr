@@ -1,16 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <radialGradient id="bg" cx="50%" cy="40%" r="75%">
-      <stop offset="0" stop-color="#17392b"/>
-      <stop offset="1" stop-color="#0b1d16"/>
-    </radialGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#e8d39a"/>
-      <stop offset="1" stop-color="#b8924a"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" fill="url(#bg)"/>
-  <circle cx="256" cy="256" r="150" fill="none" stroke="#c9a45c" stroke-opacity=".35" stroke-width="4"/>
-  <circle cx="256" cy="256" r="112" fill="none" stroke="#c9a45c" stroke-opacity=".2" stroke-width="3"/>
-  <rect x="206" y="206" width="100" height="100" rx="6" transform="rotate(45 256 256)" fill="url(#gold)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><radialGradient id="bg" cx="50%" cy="38%" r="78%"><stop offset="0" stop-color="#1b4232"/><stop offset=".6" stop-color="#0f271d"/><stop offset="1" stop-color="#08170f"/></radialGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4e5b4"/><stop offset=".45" stop-color="#d9b96f"/><stop offset=".55" stop-color="#b8924a"/><stop offset="1" stop-color="#e2c784"/></linearGradient>
+<linearGradient id="goldEdge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e7b8"/><stop offset=".5" stop-color="#b58d44"/><stop offset="1" stop-color="#e8d39a"/></linearGradient>
+<linearGradient id="green" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d6a50"/><stop offset=".5" stop-color="#143a2a"/><stop offset="1" stop-color="#0c2419"/></linearGradient>
+<linearGradient id="pearl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf6"/><stop offset=".5" stop-color="#efe6d0"/><stop offset="1" stop-color="#cfc2a2"/></linearGradient>
+<linearGradient id="shine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000" flood-opacity=".5"/></filter>
+</defs><rect width="512" height="512" fill="url(#bg)"/>
+<g transform="rotate(-40 256 256)" filter="url(#sh)">
+ <rect x="116" y="196" width="280" height="120" rx="60" fill="url(#goldEdge)"/>
+ <path d="M176 200 h80 v112 h-80 a56 56 0 0 1 0 -112z" fill="url(#gold)"/>
+ <path d="M256 200 h80 a56 56 0 0 1 0 112 h-80z" fill="url(#green)"/>
+ <rect x="252" y="198" width="8" height="116" fill="url(#goldEdge)"/>
+ <rect x="150" y="212" width="212" height="30" rx="15" fill="url(#shine)" opacity=".55"/>
+</g>
+<circle cx="256" cy="256" r="196" fill="none" stroke="#c9a45c" stroke-opacity=".28" stroke-width="3"/>
 </svg>
