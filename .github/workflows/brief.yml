@@ -6,7 +6,7 @@ permissions:
 jobs:
   brief:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -15,7 +15,7 @@ jobs:
       - name: 식약처 허가정보에서 약효 분류·효능효과 받기
         env:
           MFDS_KEY: ${{ secrets.MFDS_KEY }}
-        run: python3 pipeline/brief.py --out docs/data --cache .cache
+        run: python3 pipeline/brief.py --out docs/data --cache .cache --budget 75
       - name: 올리기
         run: |
           git config user.name "data-bot"
