@@ -31,6 +31,8 @@ const IC={
 const icon=(n,c='i')=>`<svg class="${c}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||''}</svg>`;
 // 페이지 안의 <i data-i="이름"></i>를 아이콘으로 바꿈
 document.querySelectorAll('i[data-i]').forEach(e=>e.outerHTML=icon(e.dataset.i));
+// 첫 화면과 같은 제목 글꼴
+if(!document.querySelector('link[href*="family=Archivo"]')){document.head.insertAdjacentHTML('beforeend','<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">')}
 // data-chrome="own"인 페이지(첫 화면)는 머리·꼬리를 직접 그림
 if(document.body.dataset.chrome!=='own'){
 document.body.insertAdjacentHTML('afterbegin',`<header class="top"><div class="wrap">
