@@ -72,7 +72,7 @@ function Shell() {
     <div className="ms-stage">
       <div className="ms-device">
         <div className="ms-phone">
-          <div className="ms-statusbar" style={{ color: scanLike ? 'var(--color-neutral-100)' : 'var(--color-text)' }} aria-hidden="true">
+          <div className="ms-statusbar" style={{ color: scanLike ? '#f8f4f4' : 'var(--color-text)' }} aria-hidden="true">
             <span className="tnum">{fmtMin(s.now)}</span><span className="notch" /><span>87%</span>
           </div>
 

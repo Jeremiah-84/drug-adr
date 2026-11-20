@@ -245,3 +245,42 @@ button:disabled { cursor: default; }
   .ms-scroll { position: static !important; overflow: visible !important; }
   nav, .toast, .ms-statusbar, .ms-homebar, .dev, .dev-fab { display: none !important; }
 }
+
+/* Dark screen colours (마이 → 화면 색). Same Classical look on ink paper: the
+   ramps are flipped so every "muted / gold text" token stays readable. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #1b1a19;
+  --color-surface: #252321;
+  --color-text: #ece7df;
+  --color-accent: #c99a4f;
+  --color-accent-2: #bf9150;
+  --color-divider: color-mix(in srgb, #ece7df 16%, transparent);
+  --color-neutral-100: #2a2827;
+  --color-neutral-200: #34312f;
+  --color-neutral-300: #44403e;
+  --color-neutral-400: #5f5b59;
+  --color-neutral-500: #7d7979;
+  --color-neutral-600: #9b9797;
+  --color-neutral-700: #b5b0ad;
+  --color-neutral-800: #d0cbc7;
+  --color-neutral-900: #ece7e3;
+  --color-accent-100: #3a270d;
+  --color-accent-200: #4d340f;
+  --color-accent-300: #6b4815;
+  --color-accent-400: #8f6324;
+  --color-accent-500: #b07d38;
+  --color-accent-600: #cf9a4e;
+  --color-accent-700: #e1ad66;
+  --color-accent-800: #efc58c;
+  --color-accent-900: #fff3e4;
+  --color-accent-2-100: #382810;
+  --color-accent-2-800: #f5cd96;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  --shadow-md: 0 3px 10px rgba(0, 0, 0, .45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, .55);
+  --ms-dark: #0f0e0e;
+}
+:root[data-theme="dark"] .sheet-scrim,
+:root[data-theme="dark"] .dialog-backdrop { background: rgba(0, 0, 0, .55); }
+:root[data-theme="dark"] .plate { filter: sepia(.15) saturate(.8) brightness(.9); }

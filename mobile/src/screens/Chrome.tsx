@@ -120,7 +120,7 @@ export function ScanOverlay() {
   const fr = FRAMES[s.mode];
   const ring = { width: 44, height: 44, borderRadius: '50%', border: '1px solid rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: 'inherit' } as const;
   return (
-    <div className="col" style={{ position: 'absolute', inset: 0, background: 'var(--ms-dark)', zIndex: 20, color: 'var(--color-neutral-100)' }}>
+    <div className="col" style={{ position: 'absolute', inset: 0, background: 'var(--ms-dark)', zIndex: 20, color: '#f8f4f4' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(135deg,rgba(255,255,255,.015) 0 12px,transparent 12px 24px)' }} />
       <video ref={video} playsInline muted style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: live ? 1 : 0 }} />
       {!live && <span style={{ position: 'absolute', top: '46%', left: 24, right: 24, textAlign: 'center', fontSize: 12, fontStyle: 'italic', color: 'var(--color-neutral-500)', lineHeight: 1.6 }}>{L('카메라를 쓸 수 없으면 아래 버튼으로 사진을 고르세요')}</span>}
