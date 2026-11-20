@@ -282,10 +282,10 @@ async function ocrImage(f,how,rect){if(!f||ocrBusy)return;const hint=$('drughint
     hint.textContent=r.f.length?T(how==='ocr'?'ocrDone':'capDone',r.f.length,r.added.length):T(how==='ocr'?'ocrNone':'capNone');
   }catch(e){track(how+'_fail');hint.textContent=T('ocrErr')+(e&&e.message||e)}
   finally{ocrBusy=false}}
-if($('capzone')){
+// 캡처 붙여넣기 칸은 웹 버전만 (확장은 아래 '지금 화면 찍어서 약 찾기'만 씀)
+if($('capzone')&&!IS_EXT){
   const cz=$('capzone'),imgOf=items=>{for(const it of items||[])if(it.kind==='file'&&/^image\//.test(it.type))return it.getAsFile();return null};
   cz.hidden=false;
-  if(IS_EXT){const h=cz.querySelector('[data-i18n-html]');h.dataset.i18nHtml='capHowExt';h.innerHTML=T('capHowExt')}
   cz.onclick=()=>{$('capIn').value='';$('capIn').click()};
   cz.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();cz.click()}};
   $('capIn').onchange=()=>ocrImage($('capIn').files[0],'cap');
