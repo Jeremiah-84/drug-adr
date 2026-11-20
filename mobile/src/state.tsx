@@ -21,7 +21,7 @@ export type Med = {
 export const medsOn = (meds: Med[], day: string) => meds.filter(m => !m.until || m.until >= day);
 /** YYYY-MM-DD of today + n days. */
 export const dayPlus = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
-export type ScanRec = { at: number; kind: 'rx' | 'barcode' | 'pill' | 'photo'; found: Found[] };
+export type ScanRec = { at: number; kind: 'rx' | 'barcode' | 'qr' | 'pill' | 'photo'; found: Found[] };
 export type SymRec = { d: string; text: string; drugs: string };
 export type Member = {
   id: string; name: string; rel: string; born?: string;

@@ -291,15 +291,15 @@ export async function ocr(img: Blob | HTMLCanvasElement, onProgress: (p: number)
   return best.text;
 }
 
-type Detector = { detect: (src: CanvasImageSource) => Promise<{ rawValue: string }[]> };
+type Detector = { detect: (src: CanvasImageSource) => Promise<{ rawValue: string; format?: string }[]> };
 let det: Promise<Detector> | null = null;
 export function barcodeDetector(): Promise<Detector> {
   if (!det) {
     det = (async () => {
-      const formats = ['ean_13', 'data_matrix', 'code_128'];
+      const formats = ['ean_13', 'data_matrix', 'code_128', 'qr_code', 'pdf417'];
       const W = window as unknown as { BarcodeDetector?: { new(o: unknown): Detector; getSupportedFormats: () => Promise<string[]> }; BarcodeDetectionAPI?: { prepareZXingModule: (o: unknown) => void; BarcodeDetector: new (o: unknown) => Detector } };
       if (W.BarcodeDetector) {
-        try { const f = await W.BarcodeDetector.getSupportedFormats(); if (f.includes('ean_13') && f.includes('data_matrix')) return new W.BarcodeDetector({ formats }); } catch { /* fall through to the ponyfill */ }
+        try { const f = await W.BarcodeDetector.getSupportedFormats(); if (f.includes('ean_13') && f.includes('data_matrix') && f.includes('qr_code')) return new W.BarcodeDetector({ formats: formats.filter(x => f.includes(x)) }); } catch { /* fall through to the ponyfill */ }
       }
       if (!W.BarcodeDetectionAPI) await loadScript(VENDOR + 'barcode/ponyfill.js');
       const A = W.BarcodeDetectionAPI!;
@@ -361,3 +361,36 @@ export async function pillToFound(r: PillRow): Promise<Found | null> {
 }
 
 export const nedrugLink = (seq: string) => `https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=${seq}`;
+
+let SQ: Promise<Record<string, string>> | null = null;
+/** Product from its MFDS 품목기준코드 (item sequence, 9 digits), via the box barcode it carries. */
+export async function lookupSeq(seq: string): Promise<Found | null> {
+  if (!SQ) { SQ = fetch(DATA + 'seq.json').then(r => r.json()).then(j => j.s || {}); SQ.catch(() => { SQ = null; }); }
+  const key = (await SQ)[seq];
+  return key ? lookupBarcode('880' + key + '00') : null;
+}
+
+export type CodeRead = { found: Found[]; url?: string; note?: string };
+/**
+ * Make sense of a scanned barcode or QR code:
+ * - a drug standard code (box barcode, GS1 DataMatrix "(01)0880…"),
+ * - a link or text carrying a 품목기준코드 (itemSeq=…), as in the MFDS e-label QR on boxes,
+ * - text that names medicines (some pill-bag QR codes),
+ * - otherwise a plain link (a pharmacy's own page) that the person can open.
+ * Prescription 2D barcodes (PDF417) are encrypted for pharmacies and cannot be read.
+ */
+export async function readCode(raw: string, format = ''): Promise<CodeRead> {
+  const text = String(raw || '').trim();
+  if (format === 'pdf417') return { found: [], note: 'rx2d' };
+  const c = code13(text);
+  if (c && !/[?&/]/.test(text)) { const f = await lookupBarcode(c); return { found: f ? [f] : [], note: f ? undefined : 'unknown:' + c }; }
+  let dec = text; try { dec = decodeURIComponent(text.replace(/\+/g, ' ')); } catch { /* keep as is */ }
+  const seqs = [...dec.matchAll(/(?:item_?seq|itemseq|품목기준코드|seq)\s*[=:]\s*(\d{9})/gi)].map(m => m[1]);
+  const found: Found[] = [];
+  for (const q of [...new Set(seqs)]) { const f = await lookupSeq(q); if (f && !found.some(x => x.ids.join() === f.ids.join())) found.push(f); }
+  if (!found.length && c) { const f = await lookupBarcode(c); if (f) found.push(f); }
+  if (!found.length) { await loadIndex(); found.push(...findInText(dec).filter(f => !f.guess)); }
+  const url = /^https?:\/\//i.test(text) ? text : undefined;
+  return { found, url };
+}
+

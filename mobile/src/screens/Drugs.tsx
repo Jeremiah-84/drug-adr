@@ -12,7 +12,7 @@ export const pillIcon = (color: string) => (
   </div>
 );
 
-const KIND: Record<string, string> = { rx: '처방전 글자 인식', photo: '사진 글자 인식', barcode: '바코드', pill: '알약 모양' };
+const KIND: Record<string, string> = { rx: '처방전 글자 인식', photo: '사진 글자 인식', barcode: '바코드', qr: 'QR 코드', pill: '알약 모양' };
 const keyOf = (f: Found) => f.ids.slice().sort().join('+');
 /** Times of day for "1일 N회": 1 → 아침, 2 → 아침·저녁, 3 → 아침·점심·저녁, 4 → 자기 전까지. */
 const SLOTS_FOR: Record<number, SlotKey[]> = { 1: ['m'], 2: ['m', 'e'], 3: ['m', 'l', 'e'], 4: ['m', 'l', 'e', 'n'] };

@@ -6,7 +6,7 @@ import { ChevronRight } from '../icons';
 
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-const KIND: Record<string, string> = { rx: '처방전', photo: '사진', barcode: '바코드', pill: '알약' };
+const KIND: Record<string, string> = { rx: '처방전', photo: '사진', barcode: '바코드', qr: 'QR', pill: '알약' };
 
 export function History() {
   const { me, go, showFound, edit, t, L, F } = useApp();

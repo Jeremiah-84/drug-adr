@@ -2,18 +2,18 @@ import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as R
 import type { Screen } from '../config';
 import { useApp, type ScanMode } from '../state';
 import { BookOpen, House, Pill as PillIcon, ScanLine, User, X, Zap } from '../icons';
-import { barcodeDetector, code13, findInText, loadIndex, lookupBarcode, ocr, photoCanvas, readDosing, warmOcr } from '../real';
+import { barcodeDetector, code13, findInText, loadIndex, ocr, photoCanvas, readCode, readDosing, warmOcr } from '../real';
 
 const MODES: Record<ScanMode, [string, string]> = {
   rx: ['처방전·약봉투', '처방전이나 약봉투의 글자가 네모 안에 들어오게 비춰주세요'],
-  barcode: ['바코드', '약 상자의 바코드를 가로로 맞춰주세요'],
+  barcode: ['QR·바코드', '약 상자·약봉투의 QR 코드나 바코드를 네모 안에 맞춰주세요'],
   pill: ['알약 모양', '알약에 새겨진 글자와 모양·색으로 찾아요. 아래 버튼을 누르세요'],
 };
 
 // Frame geometry from the design (390×844), relative to the viewport height so it keeps its proportions.
 const FRAMES: Record<ScanMode, CSSProperties> = {
   rx: { left: 30, right: 30, top: '20%', height: '45%' },
-  barcode: { left: 40, right: 40, top: '34%', height: 150 },
+  barcode: { left: 'calc(50% - 120px)', right: 'calc(50% - 120px)', top: '27%', height: 240 },
   pill: { left: 'calc(50% - 100px)', right: 'calc(50% - 100px)', top: '29%', height: 200 },
 };
 const corner = (pos: CSSProperties): CSSProperties => ({ position: 'absolute', width: 26, height: 26, ...pos });
@@ -63,14 +63,20 @@ export function ScanOverlay() {
     return () => { stop = true; stream.current?.getTracks().forEach(x => x.stop()); stream.current = null; };
   }, [cam]);
 
-  const found = async (code: string) => {
-    const c = code13(code);
-    if (!c || seen.current.has(c)) return false;
-    seen.current.add(c);
-    const f = await lookupBarcode(c);
-    if (f) { if (navigator.vibrate) navigator.vibrate(60); showFound({ at: Date.now(), kind: 'barcode', found: [f] }); return true; }
-    setBusy(F('등록되지 않은 바코드예요 ({0})', c));
-    return false;
+  // A QR code that only links to a page (e.g. a pharmacy's own guide) can be opened from here.
+  const [link, setLink] = useState('');
+  /** true = medicine shown; 'said' = a message about this code is on screen; false = nothing useful. */
+  const found = async (code: string, format = ''): Promise<boolean | 'said'> => {
+    if (!code || seen.current.has(code)) return false;
+    seen.current.add(code);
+    const r = await readCode(code, format);
+    if (r.found.length) { if (navigator.vibrate) navigator.vibrate(60); showFound({ at: Date.now(), kind: format === 'qr_code' ? 'qr' : 'barcode', found: r.found }); return true; }
+    if (r.note === 'rx2d') setBusy(L('처방전 아래쪽 2D 바코드는 약국용 암호라 읽을 수 없어요. 처방전·약봉투 버튼으로 글자를 찍어 주세요'));
+    else if (r.note?.startsWith('unknown:')) setBusy(F('등록되지 않은 바코드예요 ({0})', r.note.slice(8)));
+    else if (r.url) { setBusy(L('약 이름이 들어 있지 않은 QR이에요. 연결된 안내 페이지를 열어 볼 수 있어요')); setLink(r.url); }
+    else if (code13(code) === null && format !== 'qr_code') return false;
+    else setBusy(L('이 QR에서는 약을 찾지 못했어요'));
+    return 'said';
   };
 
   // Barcode mode: keep looking at the video.
@@ -80,7 +86,7 @@ export function ScanOverlay() {
     const id = window.setInterval(async () => {
       if (run || !video.current || video.current.readyState < 2) return;
       run = true;
-      try { const d = await barcodeDetector(); for (const b of await d.detect(video.current)) { if (!on) break; if (await found(b.rawValue)) { on = false; break; } } } catch { /* keep trying */ }
+      try { const d = await barcodeDetector(); for (const b of await d.detect(video.current)) { if (!on) break; if ((await found(b.rawValue, b.format)) === true) { on = false; break; } } } catch { /* keep trying */ }
       run = false;
     }, 300);
     return () => { on = false; clearInterval(id); };
@@ -118,7 +124,7 @@ export function ScanOverlay() {
       const photo = await takePhoto(stream.current);
       setStill(photo ? URL.createObjectURL(photo) : c.toDataURL('image/jpeg', 0.7)); camOff(); readText(photo || c, 'rx'); return;
     }
-    try { const d = await barcodeDetector(); const r = await d.detect(c); let ok = false; for (const b of r) if (await found(b.rawValue)) { ok = true; break; } if (!ok && !r.length) setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
+    try { const d = await barcodeDetector(); const r = await d.detect(c); let ok: boolean | 'said' = false; for (const b of r) { const x = await found(b.rawValue, b.format); if (x === true) { ok = true; break; } if (x) ok = x; } if (!ok) setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
     catch { setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
   };
 
@@ -126,7 +132,7 @@ export function ScanOverlay() {
     if (!f) return;
     camOff(); setStill(URL.createObjectURL(f));
     if (s.mode === 'barcode') {
-      try { const d = await barcodeDetector(); const r = await d.detect(await photoCanvas(f, 1600)); seen.current.clear(); for (const b of r) if (await found(b.rawValue)) return; setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
+      try { const d = await barcodeDetector(); const r = await d.detect(await photoCanvas(f, 1600)); seen.current.clear(); let said = false; for (const b of r) { const x = await found(b.rawValue, b.format); if (x === true) return; if (x) said = true; } if (!said) setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
       catch { setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
       camOn();
       return;
@@ -186,12 +192,13 @@ export function ScanOverlay() {
       <div className="col" style={{ marginTop: 'auto', position: 'relative', padding: '0 22px calc(36px + env(safe-area-inset-bottom, 0px))', alignItems: 'center', gap: 18 }}>
         <div className="serif" aria-live="polite" style={{ fontSize: 14, textAlign: 'center', lineHeight: 1.7, minHeight: 48, maxWidth: 300, textShadow: '0 1px 6px rgba(0,0,0,.8)' }}>
           {busy || L(hint)}
+          {link && busy && <div><a href={link} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 6, fontSize: 13, color: '#facb8d', textDecoration: 'underline' }}>{L('안내 페이지 열기')}</a></div>}
           {!busy && live && s.mode !== 'pill' && <div style={{ fontSize: 12, color: '#e9d2ad' }}>{L('글자를 한 번 누르면 초점을 맞춰요')}</div>}
           {!busy && <div style={{ fontSize: 11.5, fontStyle: 'italic', color: '#bab6b6' }}>{L('사진은 이 기기 안에서만 처리합니다')}</div>}
         </div>
         <div style={{ display: 'flex', border: '1px solid rgba(255,255,255,.18)', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: 'rgba(0,0,0,.35)' }} role="radiogroup">
           {(Object.keys(MODES) as ScanMode[]).map(k => (
-            <button key={k} role="radio" aria-checked={s.mode === k} onClick={() => { setBusy(''); seen.current.clear(); set({ mode: k }); }}
+            <button key={k} role="radio" aria-checked={s.mode === k} onClick={() => { setBusy(''); setLink(''); seen.current.clear(); set({ mode: k }); }}
               style={{ whiteSpace: 'nowrap', padding: '8px 13px', fontSize: 12.5, background: 'none', border: 0, color: s.mode === k ? '#facb8d' : '#bab6b6', boxShadow: s.mode === k ? 'inset 0 0 0 1px #e1ad66' : 'none' }}>
               {L(MODES[k][0])}
             </button>
@@ -228,7 +235,8 @@ const GUIDE: Record<'rx' | 'barcode', [string, string][]> = {
     ['그래도 안 되면', '휴대폰 기본 카메라로 찍은 뒤 왼쪽 아래 "사진" 버튼으로 골라 주세요. 기본 카메라가 초점을 더 잘 맞춰요.'],
   ],
   barcode: [
-    ['바코드를 가로로', '약 상자의 바코드가 네모 안에 가로로 들어오게 맞춰요. 비추기만 하면 저절로 읽어요.'],
+    ['QR 코드나 바코드를 네모 안에', '약 상자·약병·약봉투의 QR 코드나 바코드가 네모 안에 들어오게 맞춰요. 비추기만 하면 저절로 읽어요.'],
+    ['어떤 QR을 읽나요', '약 상자의 바코드·QR(식약처 전자 첨부문서)과 약 이름이 담긴 약봉투 QR을 읽어요. 처방전 아래쪽의 큰 2D 바코드는 약국용 암호라 읽을 수 없어요.'],
     ['10cm쯤 떨어져서', '너무 가까우면 초점이 안 맞아요. 화면을 한 번 누르면 초점을 다시 맞춰요.'],
     ['반사 피하기', '비닐 포장이 번쩍이면 상자를 조금 기울여요. 어두우면 플래시(번개)를 켜요.'],
   ],
