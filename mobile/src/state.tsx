@@ -25,6 +25,7 @@ export type Member = {
 };
 
 export type Role = 'patient' | 'pro';
+export type Theme = 'light' | 'dark' | 'auto';
 type Saved = {
   v: 1; lang: Lang; times: Record<SlotKey, string>; remind: Record<SlotKey, boolean>; member: number; members: Member[];
   /** First-run introduction finished (role picked). */
@@ -32,6 +33,8 @@ type Saved = {
   role?: Role;
   /** Today's quiz answer: day key + picked option. */
   quiz?: { d: string; pick: number };
+  /** Screen colours: light paper (default), dark, or follow the phone setting. */
+  theme?: Theme;
 };
 
 export type AppState = Saved & {
@@ -184,12 +187,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Save what the person entered (on this device only).
   const savedRef = useRef('');
   useEffect(() => {
-    const out: Saved = { v: 1, lang: s.lang, times: s.times, remind: s.remind, member: s.member, members: s.members, onboarded: s.onboarded, role: s.role, quiz: s.quiz };
+    const out: Saved = { v: 1, lang: s.lang, times: s.times, remind: s.remind, member: s.member, members: s.members, onboarded: s.onboarded, role: s.role, quiz: s.quiz, theme: s.theme };
     const j = JSON.stringify(out);
     if (j === savedRef.current) return;
     savedRef.current = j;
     try { localStorage.setItem(KEY, j); } catch { /* storage full or blocked: keep working in memory */ }
-  }, [s.lang, s.times, s.remind, s.member, s.members, s.onboarded, s.role, s.quiz]);
+  }, [s.lang, s.times, s.remind, s.member, s.members, s.onboarded, s.role, s.quiz, s.theme]);
+
+  // Light / dark screen colours (index.html sets the first value before the app loads, so there is no flash).
+  useEffect(() => {
+    const mq = matchMedia('(prefers-color-scheme: dark)');
+    const apply = () => {
+      const dark = s.theme === 'dark' || (s.theme === 'auto' && mq.matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#1b1a19' : '#f3f2f2');
+    };
+    apply();
+    if (s.theme !== 'auto') return;
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, [s.theme]);
 
   // Sudoku progress is saved per day, so leaving and coming back resumes the same puzzle.
   useEffect(() => {

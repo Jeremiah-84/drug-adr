@@ -4,6 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#f3f2f2" />
+  <script>
+    // Apply the saved light / dark choice before the app draws, so the screen does not flash.
+    try {
+      var t = (JSON.parse(localStorage.getItem('mediscan.v1') || '{}') || {}).theme;
+      if (t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.dataset.theme = 'dark';
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1b1a19');
+      }
+    } catch (e) {}
+  </script>
   <meta name="description" content="처방약을 스캔하고 이상반응·신간기능·복용법을 알려주는 메디스캔 프로" />
   <title>MediScan Pro</title>
   <link rel="manifest" href="./manifest.webmanifest" />
@@ -12,8 +22,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&family=Noto+Serif+JP:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="./assets/index-C3xsMX6n.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-BT8RhDU_.css">
+  <script type="module" crossorigin src="./assets/index-f-Jrpmj2.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Ba8R7fmS.css">
 </head>
 <body>
   <div id="root"></div>

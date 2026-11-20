@@ -184,4 +184,8 @@ export const EXTRA: Record<string, [string, string, string]> = {
   '이 스캔 기록을 지울까요?': ['Delete this scan record?', '删除此扫描记录？', 'このスキャン記録を削除しますか？'],
   '스캔 기록 {0}개를 모두 지울까요?': ['Delete all {0} scan records?', '删除全部 {0} 条扫描记录？', 'スキャン記録 {0}件をすべて削除しますか？'],
   '스캔 기록 모두 지우기': ['Delete all scan records', '删除全部扫描记录', 'スキャン記録をすべて削除'],
+  '화면 색': ['Screen colour', '屏幕颜色', '画面の色'],
+  '밝게': ['Light', '浅色', 'ライト'],
+  '어둡게': ['Dark', '深色', 'ダーク'],
+  '기기 설정 따르기': ['Follow device', '跟随设备', '端末に合わせる'],
 };
