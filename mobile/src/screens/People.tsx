@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { LANGS, type Lang } from '../i18n';
 import { adherence, slotViews } from '../derive';
-import { newMember, useApp, type Role, type Theme } from '../state';
+import { newMember, useApp, type Role, type TextSize, type Theme } from '../state';
 import { Back, Chip, Heading, Segment } from '../ui';
 import { ChevronLeft, ChevronRight, Plus } from '../icons';
 
@@ -80,6 +80,10 @@ export function My() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <span className="muted" style={{ fontSize: 12.5 }}>{t.langLabel}</span>
         <Segment<Lang> small items={LANGS.map(k => [k, LANG_NAMES[k]])} value={s.lang} onPick={k => set({ lang: k })} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <span className="muted" style={{ fontSize: 12.5 }}>{L('글자 크기')}</span>
+        <Segment<TextSize> items={[['m', L('보통')], ['l', L('크게')], ['xl', L('아주 크게')]]} value={s.text || 'm'} onPick={k => set({ text: k })} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <span className="muted" style={{ fontSize: 12.5 }}>{L('화면 색')}</span>
