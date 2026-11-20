@@ -252,6 +252,7 @@ button:disabled { cursor: default; }
 .btn.cta:disabled { opacity: .45; }
 
 @media print {
+  .no-print { display: none !important; }
   .ms-stage, .ms-device, .ms-phone { height: auto !important; width: auto !important; overflow: visible !important; box-shadow: none !important; padding: 0 !important; }
   .ms-scroll { position: static !important; overflow: visible !important; }
   nav, .toast, .ms-statusbar, .ms-homebar, .dev, .dev-fab { display: none !important; }

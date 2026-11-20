@@ -8,7 +8,7 @@ import { Detail, Results, Symptom } from './screens/Drugs';
 import { Home } from './screens/Home';
 import { Family, My, Pharmacy } from './screens/People';
 import { Pill, Search } from './screens/Find';
-import { History, Report } from './screens/Records';
+import { DoseLog, History, Report } from './screens/Records';
 import { Schedule, TimeSheet } from './screens/Schedule';
 import { Vitals, VitalsSheet } from './screens/Vitals';
 import { Onboarding } from './screens/Onboarding';
@@ -21,7 +21,7 @@ import { Diag } from './Diag';
 const SCREENS: Partial<Record<Screen, () => ReactNode>> = {
   onboarding: Onboarding, today: Today, puzzle: Puzzle, xword: Crossword,
   home: Home, results: Results, detail: Detail, symptom: Symptom, schedule: Schedule, vitals: Vitals,
-  history: History, report: Report, search: Search, pill: Pill, my: My, family: Family, pharmacy: Pharmacy,
+  history: History, report: Report, doselog: DoseLog, search: Search, pill: Pill, my: My, family: Family, pharmacy: Pharmacy,
 };
 
 /** Body serif per language. */
