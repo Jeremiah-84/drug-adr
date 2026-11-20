@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { LV, SLOT_KEYS, SLOT_SHORT, TAG, type Level, type SlotKey } from '../data';
+import { levels, SLOT_KEYS, SLOT_SHORT, TAG, type Level, type SlotKey } from '../data';
 import { drugInfo, organView, topLevel, trBadge, watchCount } from '../derive';
 import { useApp } from '../state';
 import { ingName, matchProblems, nedrugLink, probName, type Found } from '../real';
@@ -44,6 +44,7 @@ export function SlotChips({ value, onChange, compact }: { value: SlotKey[]; onCh
 export function DrugRow({ f, color, right, onOpen, foot }: { f: Found; color: string; right?: React.ReactNode; onOpen: () => void; foot?: React.ReactNode }) {
   const { s, L, F } = useApp();
   const info = drugInfo(f, s.details, s.D, s.lang);
+  const pro = s.role === 'pro', LV = levels(s.role);
   const top = LV[topLevel(info.rows)], n = watchCount(info.rows);
   return (
     <div className="col" style={{ padding: '16px 0', gap: 12, borderBottom: '1px solid var(--color-divider)' }}>
@@ -56,7 +57,8 @@ export function DrugRow({ f, color, right, onOpen, foot }: { f: Found; color: st
             <div style={{ display: 'flex', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
               {info.loading ? <Badge b={{ t: L('불러오는 중…'), c: 'var(--color-neutral-600)', bd: 'var(--color-divider)' }} />
                 : info.rows.length ? <>
-                  <Badge b={{ t: n ? F('흔한 이상반응 {0}', n) : F('최고 단계 · {0}', L(top.t)), c: top.c, bd: top.bd }} />
+                  {pro ? <Badge b={{ t: n ? F('흔한 이상반응 {0}', n) : F('최고 단계 · {0}', L(top.t)), c: top.c, bd: top.bd }} />
+                    : n > 0 && <Badge b={{ t: F('가능성 있는 이상반응 {0}', n), c: top.c, bd: top.bd }} />}
                   <Badge b={{ t: F('이상반응 {0}개', info.rows.length), c: 'var(--color-neutral-700)', bd: 'var(--color-divider)' }} />
                 </> : <Badge b={{ t: L('정리된 이상반응 없음'), c: 'var(--color-neutral-600)', bd: 'var(--color-divider)' }} />}
             </div>
@@ -147,7 +149,7 @@ export function Detail() {
     if (!mine) return;
     edit(m => ({ meds: m.meds.map(x => x.key !== mine.key ? x : { ...x, slots: v }) }));
   };
-  const pro = s.role === 'pro';
+  const pro = s.role === 'pro', LV = levels(s.role);
   return (
     <div className="page">
       <Back />
@@ -197,7 +199,7 @@ export function Detail() {
             <button key={a.pid} onClick={() => setOpen(open === a.pid ? null : a.pid)} className="tap hov col" style={{ ...row, flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
               <div className="row" style={{ gap: 12, width: '100%' }}>
                 <span style={{ flex: 1, fontSize: 14 }}>{a.name}{a.ing && <span className="muted" style={{ fontSize: 11.5 }}> · {a.ing}</span>}</span>
-                <span className="muted" style={{ fontSize: 11.5, flex: 'none', maxWidth: 90, textAlign: 'right' }}>{L(a.freq)}</span>
+                {pro && <span className="muted" style={{ fontSize: 11.5, flex: 'none', maxWidth: 90, textAlign: 'right' }}>{L(a.freq)}</span>}
                 <span style={{ width: 78, flex: 'none', textAlign: 'center', fontSize: 11, padding: '2px 0', borderRadius: 3, border: `1px solid ${LV[a.lv].bd}`, color: LV[a.lv].c }}>{L(LV[a.lv].t)}</span>
               </div>
               {open === a.pid && <span className="serif just" style={{ fontSize: 12.5, lineHeight: 1.75, color: 'var(--color-neutral-800)' }}>“{a.quote}”</span>}
@@ -263,6 +265,7 @@ const COMMON = ['dizziness', 'somnolence', 'edema', 'nausea', 'diarrhea', 'myalg
 
 export function Symptom() {
   const { s, me, set, edit, openDrug, flash, t, L } = useApp();
+  const LV = levels(s.role);
   const matched = useMemo(() => (s.D && s.symText.trim() ? matchProblems(s.D, s.symText) : []), [s.D, s.symText]);
   const picked = [...new Set([...(matched.length ? [matched[0]] : []), ...s.sym])];
   const infos = me.meds.map(m => ({ m, info: drugInfo(m, s.details, s.D, s.lang) }));

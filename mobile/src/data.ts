@@ -10,6 +10,18 @@ export const LV: Record<Level, LevelInfo> = {
   2: { t: '낮음', c: 'var(--color-neutral-700)', bd: 'var(--color-neutral-400)', d: '드물게' },
   1: { t: '매우 드묾', c: 'var(--color-neutral-600)', bd: 'var(--color-neutral-300)', d: '매우 드물게' }
 };
+/**
+ * Gentler wording for the general public (role "patient"): the top tier reads
+ * only "가능성 있음", so a list of side effects does not look like a forecast.
+ * Medical staff (role "pro") keep the tiers above.
+ */
+export const LV_SOFT: Record<Level, LevelInfo> = {
+  4: { t: '가능성 있음', c: 'var(--color-accent-700)', bd: 'var(--color-accent-300)', d: '비교적 자주 보고됨' },
+  3: { t: '가끔 가능', c: 'var(--color-neutral-800)', bd: 'var(--color-neutral-400)', d: '가끔 보고·빈도 미기재' },
+  2: { t: '드묾', c: 'var(--color-neutral-700)', bd: 'var(--color-neutral-400)', d: '드물게 보고됨' },
+  1: { t: '매우 드묾', c: 'var(--color-neutral-600)', bd: 'var(--color-neutral-300)', d: '매우 드물게 보고됨' }
+};
+export const levels = (role?: string) => (role === 'pro' ? LV : LV_SOFT);
 export type Tag = '금기' | '용량' | '주의' | '불필요';
 export const TAG: Record<Tag, LevelInfo> = { '금기': LV[4], '용량': LV[3], '주의': LV[2], '불필요': LV[1] };
 export type SlotKey = 'm' | 'l' | 'e' | 'n';

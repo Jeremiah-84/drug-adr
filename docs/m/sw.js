@@ -2,7 +2,7 @@
 // - pages: network first, cached copy when offline
 // - drug data (../data/): network first so the monthly update shows up; cached copy when offline
 // - built assets, OCR/barcode engines, fonts: cache first (file names change when they change)
-const CACHE = 'mediscan-v7';
+const CACHE = 'mediscan-v8';
 const SCOPE = new URL('./', self.location).href;
 const DATA = new URL('../data/', self.location).href;
 const VENDOR = new URL('../vendor/', self.location).href;
