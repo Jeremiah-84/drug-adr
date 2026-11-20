@@ -154,7 +154,7 @@ const initialState = (): AppState => {
   form: { s: 120, di: 80, p: 70, v: 100, when: '공복' },
   mode: 'rx',
   drug: { name: '', ids: [] },
-  dtab: 'adr',
+  dtab: 'how',
   sym: [],
   symText: '',
   found: null,
@@ -290,7 +290,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [set]);
 
-  const openDrug = useCallback((f: Found) => { need(f.ids); set(st => ({ drug: f, dtab: 'adr', stack: [...st.stack, 'detail'] })); }, [set, need]);
+  const openDrug = useCallback((f: Found) => { need(f.ids); set(st => ({ drug: f, dtab: 'how', stack: [...st.stack, 'detail'] })); }, [set, need]);
 
   const addMeds = useCallback((list: Found[], slots: SlotKey[] = ['m'], per: Record<string, { slots?: SlotKey[]; until?: string }> = {}) => {
     if (!slots.length) slots = ['m'];
