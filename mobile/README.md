@@ -1,6 +1,6 @@
 # MediScan Pro mobile app (`/m/`)
 
-Phone app version of MediScan. Since 2026-11 it uses the **MediScan Classical** design (warm paper
+Phone app version of MediScan Pro. Since 2026-11 it uses the **MediScan Classical** design (warm paper
 `#f3f2f2`, ink `#201f1d`, gold accent `#b68235`, Cormorant Garamond / Lora / Noto Serif, outlined
 buttons and hairline dividers; tokens in `src/styles/classical.css`). The earlier dark green & gold
 design file is kept in `design/MediScan Mobile.dc.html` for reference. React + Vite, built into `docs/m/` so GitHub Pages serves it at

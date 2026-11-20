@@ -34,7 +34,7 @@ export function Onboarding() {
       }
     } catch { flash(L('허용되지 않았어요. 나중에 설정에서 바꿀 수 있어요')); }
   };
-  const cta = ['시작하기', '다음', '메디스캔 열기'][onb];
+  const cta = ['시작하기', '다음', '메디스캔 프로 열기'][onb];
 
   return (
     <div style={{ minHeight: '100%', padding: '20px 30px 34px', display: 'flex', flexDirection: 'column' }} className="onb">
@@ -52,8 +52,8 @@ export function Onboarding() {
 
       {onb === 0 && (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22, padding: '40px 0 20px' }}>
-          <div className="kicker" style={{ letterSpacing: '.32em' }}>MEDISCAN</div>
-          <div className="g" style={{ fontSize: 64, lineHeight: 0.95, fontWeight: 400, letterSpacing: '-.01em' }}>Medi<br /><span style={{ fontStyle: 'italic' }}>Scan</span></div>
+          <div className="kicker" style={{ letterSpacing: '.32em' }}>MEDISCAN PRO</div>
+          <div className="g" style={{ fontSize: 64, lineHeight: 0.95, fontWeight: 400, letterSpacing: '-.01em' }}>Medi<br /><span style={{ fontStyle: 'italic' }}>Scan</span> <span style={{ fontSize: 26, letterSpacing: '.18em', color: 'var(--color-accent)', verticalAlign: 'middle' }}>PRO</span></div>
           <div style={{ width: 48, height: 1, background: 'var(--color-accent)' }} />
           <div className="serif" style={{ fontSize: 21, fontWeight: 600, lineHeight: 1.5 }}>{t('onbTitle1')}<br />{t('onbTitle2')}</div>
           <div className="just" style={{ fontSize: 14, lineHeight: 1.85, color: 'var(--color-neutral-800)' }}>{t('onbLead')}</div>
