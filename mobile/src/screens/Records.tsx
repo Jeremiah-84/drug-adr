@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { adherence } from '../derive';
 import { useApp } from '../state';
 import { Back, Heading, SecHead, Stats } from '../ui';
@@ -8,7 +9,11 @@ const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT
 const KIND: Record<string, string> = { rx: '처방전', photo: '사진', barcode: '바코드', pill: '알약' };
 
 export function History() {
-  const { me, go, showFound, t, L, F } = useApp();
+  const { me, go, showFound, edit, t, L, F } = useApp();
+  const [editing, setEditing] = useState(false);
+  const [ask, setAsk] = useState<number | 'all' | null>(null);
+  const drop = (at: number) => { edit(m => ({ scans: m.scans.filter(x => x.at !== at) })); setAsk(null); if (me.scans.length <= 1) setEditing(false); };
+  const dropAll = () => { edit(() => ({ scans: [] })); setAsk(null); setEditing(false); };
   const wk = adherence(me, 7);
   const month = adherence(me, new Date().getDate());
   const labels = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return DAYS[d.getDay()]; });
@@ -34,24 +39,54 @@ export function History() {
       <Stats items={[{ v: String(month.done), k: L('복용 완료') }, { v: String(month.missed), k: L('누락') }, { v: String(me.scans.length), k: L('스캔') }]} />
       <div className="col">
         <SecHead name={t.scanRec} en="SCANS" />
+        {me.scans.length > 0 && (
+          <div className="row" style={{ justifyContent: 'space-between', paddingTop: 8 }}>
+            <span className="sub" style={{ fontSize: 12 }}>{editing ? L('지울 기록의 ✕를 누르세요') : L('편집을 누르면 기록을 지울 수 있어요')}</span>
+            <button onClick={() => { setEditing(v => !v); setAsk(null); }} className="tap" style={{ fontSize: 13, color: 'var(--color-accent-700)', fontWeight: editing ? 600 : 400, padding: '4px 0 4px 12px' }}>{editing ? L('완료') : L('편집')}</button>
+          </div>
+        )}
         {!me.scans.length && <div className="empty" style={{ marginTop: 14 }}>{L('아직 스캔 기록이 없어요')}</div>}
         {me.scans.map(sc => {
           const d = new Date(sc.at);
           return (
-            <button key={sc.at} className="tap hov" onClick={() => showFound(sc)}
-              style={{ display: 'flex', gap: 16, alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--color-divider)' }}>
-              <div style={{ width: 40, flex: 'none', textAlign: 'center' }}>
-                <div className="g tnum" style={{ fontSize: 26, lineHeight: 1 }}>{String(d.getDate()).padStart(2, '0')}</div>
-                <div className="g" style={{ fontSize: 10.5, letterSpacing: '.14em', fontWeight: 700, color: 'var(--color-accent-700)' }}>{MON[d.getMonth()]}</div>
+            <div key={sc.at} className="col" style={{ borderBottom: '1px solid var(--color-divider)' }}>
+              <div className="row" style={{ gap: 10 }}>
+                <button className="tap hov" onClick={() => { if (!editing) showFound(sc); }}
+                  style={{ flex: 1, minWidth: 0, display: 'flex', gap: 16, alignItems: 'center', padding: '14px 0' }}>
+                  <div style={{ width: 40, flex: 'none', textAlign: 'center' }}>
+                    <div className="g tnum" style={{ fontSize: 26, lineHeight: 1 }}>{String(d.getDate()).padStart(2, '0')}</div>
+                    <div className="g" style={{ fontSize: 10.5, letterSpacing: '.14em', fontWeight: 700, color: 'var(--color-accent-700)' }}>{MON[d.getMonth()]}</div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="serif ellip" style={{ fontSize: 14.5, fontWeight: 600 }}>{sc.found.map(f => f.name).join(', ')}</div>
+                    <div className="muted" style={{ fontSize: 12, fontStyle: 'italic' }}>{F('{0}개 약', sc.found.length)}</div>
+                  </div>
+                  <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 3, border: '1px solid var(--color-accent)', color: 'var(--color-accent-700)', flex: 'none' }}>{L(KIND[sc.kind])}</span>
+                </button>
+                {editing && (
+                  <button aria-label={L('지우기')} onClick={() => setAsk(a => a === sc.at ? null : sc.at)}
+                    style={{ width: 34, height: 34, flex: 'none', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-accent)', color: 'var(--color-accent-800)', fontSize: 15, background: 'none', cursor: 'pointer' }}>✕</button>
+                )}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="serif ellip" style={{ fontSize: 14.5, fontWeight: 600 }}>{sc.found.map(f => f.name).join(', ')}</div>
-                <div className="muted" style={{ fontSize: 12, fontStyle: 'italic' }}>{F('{0}개 약', sc.found.length)}</div>
-              </div>
-              <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 3, border: '1px solid var(--color-accent)', color: 'var(--color-accent-700)', flex: 'none' }}>{L(KIND[sc.kind])}</span>
-            </button>
+              {ask === sc.at && (
+                <div className="row" style={{ gap: 8, padding: '10px 12px', marginBottom: 12, borderRadius: 'var(--radius-md)', border: '1px solid var(--color-accent)' }}>
+                  <span className="serif" style={{ flex: 1, fontSize: 13 }}>{L('이 스캔 기록을 지울까요?')}</span>
+                  <button className="btn btn-secondary" onClick={() => setAsk(null)} style={{ height: 32 }}>{L('취소')}</button>
+                  <button className="btn btn-primary" onClick={() => drop(sc.at)} style={{ height: 32 }}>{L('지우기')}</button>
+                </div>
+              )}
+            </div>
           );
         })}
+        {editing && me.scans.length > 1 && (ask === 'all' ? (
+          <div className="row" style={{ gap: 8, padding: '10px 12px', marginTop: 12, borderRadius: 'var(--radius-md)', border: '1px solid var(--color-accent)' }}>
+            <span className="serif" style={{ flex: 1, fontSize: 13 }}>{F('스캔 기록 {0}개를 모두 지울까요?', me.scans.length)}</span>
+            <button className="btn btn-secondary" onClick={() => setAsk(null)} style={{ height: 32 }}>{L('취소')}</button>
+            <button className="btn btn-primary" onClick={dropAll} style={{ height: 32 }}>{L('지우기')}</button>
+          </div>
+        ) : (
+          <button className="tap link-u" onClick={() => setAsk('all')} style={{ fontSize: 12.5, alignSelf: 'flex-start', marginTop: 12 }}>{L('스캔 기록 모두 지우기')}</button>
+        ))}
       </div>
       <button className="tap hov" onClick={() => go('report')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', borderTop: '1px solid var(--color-text)', borderBottom: '1px solid var(--color-divider)' }}>
         <span className="serif" style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{L('이번 달 건강 리포트')}</span>
