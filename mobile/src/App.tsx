@@ -74,7 +74,12 @@ function Shell() {
   }
   // Back to the top before the new page is painted (a layout effect, not a normal one), so the
   // page-turn animation never starts on a scrolled position that is then reset underneath it.
-  useLayoutEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [screen, prev.current.n]);
+  // Also put every box around it, and the page itself, back to the top in case the browser
+  // scrolled one of them (that cut off the top of every screen on the user's phone).
+  useLayoutEffect(() => {
+    for (let el = scrollRef.current as HTMLElement | null; el; el = el.parentElement) if (el.scrollTop) el.scrollTop = 0;
+    if (scrollX || scrollY) scrollTo(0, 0);
+  }, [screen, prev.current.n]);
   const showNav = !scanLike && !isOnb && screen !== 'pharmacy';
 
   return (

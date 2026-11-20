@@ -28,7 +28,7 @@ export function LangButton() {
 
 /** App build number shown in 마이 so we can tell whether a phone has the latest version.
  *  Keep it equal to the number in public/sw.js's cache name. */
-const APP_BUILD = 18;
+const APP_BUILD = 19;
 
 export function My() {
   const { s, me, set, go, tab, flash, t, L, F } = useApp();

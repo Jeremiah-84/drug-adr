@@ -32,9 +32,16 @@ button { font: inherit; color: inherit; }
 /* ── shell ─────────────────────────────────────────────────────────────── */
 .ms-stage { min-height: 100%; }
 .ms-phone {
-  position: relative; width: 100%; height: 100dvh; overflow: hidden;
+  position: relative; width: 100%; height: 100dvh; overflow: hidden; overflow: clip;
   background: var(--color-bg); color: var(--color-text);
   font-weight: 500; font-family: var(--ms-lora);
+}
+/* Phones: the app is pinned to the screen. Chrome on the user's phone sometimes left the page
+   itself scrolled (the top of every screen cut off, and with the page locked it could not be
+   scrolled back). Pinned, the app stays put whatever the page underneath does. overflow: clip
+   (above) also stops the browser from scrolling the frame itself to show a focused button. */
+@media (max-width: 719.98px), (max-height: 759.98px) {
+  .ms-phone { position: fixed; inset: 0; width: auto; height: auto; }
 }
 .ms-statusbar { display: none; }
 .ms-homebar { display: none; }
@@ -63,7 +70,7 @@ button { font: inherit; color: inherit; }
 
 .ms-scroll {
   position: absolute; top: var(--ms-top); left: 0; right: 0; overflow-y: auto;
-  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
 }
 .ms-scroll::-webkit-scrollbar { display: none; }
 
