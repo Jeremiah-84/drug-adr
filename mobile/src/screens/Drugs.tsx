@@ -120,8 +120,10 @@ export function Results() {
               right={owned ? <span className="sub" style={{ fontSize: 11.5, flex: 'none' }}>{L('등록됨')}</span>
                 : <button role="checkbox" aria-checked={!!pick[k]} aria-label={L('추가할 약으로 고르기')} onClick={() => setPick(p => ({ ...p, [k]: !p[k] }))}
                   className={'tick' + (pick[k] ? ' on' : '')}>{pick[k] ? '✓' : ''}</button>}
-              foot={dosed && !owned && pick[k] && pk ? (
+              foot={(f.guess || (dosed && !owned && pick[k] && pk)) ? (
                 <div className="col" style={{ gap: 8 }}>
+                  {f.guess && <span style={{ fontSize: 12, color: 'var(--color-accent-800)', fontStyle: 'italic' }}>{L('글자가 흐려 비슷한 이름으로 찾았어요. 맞는 약인지 확인해 주세요.')}</span>}
+                  {dosed && !owned && pick[k] && pk && <>
                   <div className="row" style={{ gap: 8, flexWrap: 'wrap', fontSize: 12.5 }}>
                     <span style={{ color: 'var(--color-accent-700)' }}>
                       {[f.times ? F('1일 {0}회', f.times) : L('복용 횟수를 못 읽었어요'), pk.days ? F('{0}일분', pk.days) : ''].filter(Boolean).join(' · ')}
@@ -130,6 +132,7 @@ export function Results() {
                     {pk.days && <button className="tap link-u" style={{ fontSize: 12, color: 'var(--color-neutral-700)' }} onClick={() => setPer(p => ({ ...p, [k]: { ...p[k], days: undefined } }))}>{L('기간 빼기')}</button>}
                   </div>
                   <SlotChips compact value={pk.slots} onChange={v => setPer(p => ({ ...p, [k]: { ...p[k], slots: v } }))} />
+                  </>}
                 </div>
               ) : undefined} />
           );
