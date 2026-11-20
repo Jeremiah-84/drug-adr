@@ -92,11 +92,14 @@ export function ScanOverlay() {
     return () => { on = false; clearInterval(id); };
   }, [s.mode, live]);
 
-  const readText = async (img: Blob | HTMLCanvasElement, kind: 'rx' | 'photo') => {
+  /** Read the text; when the first picture gives no medicine, try the backup picture (a still video frame). */
+  const readText = async (img: Blob | HTMLCanvasElement, kind: 'rx' | 'photo', backup?: HTMLCanvasElement) => {
     setBusy(L('글자 읽기 준비 중… 처음 한 번은 조금 걸려요'));
     try {
       await loadIndex();
-      const text = await ocr(img, p => setBusy(F('글자를 읽는 중… {0}%', p)), t => findInText(t).length);
+      const prog = (p: number) => setBusy(F('글자를 읽는 중… {0}%', p)), score = (t: string) => findInText(t).length;
+      let text = await ocr(img, prog, score);
+      if (!findInText(text).length && backup) { setBusy(L('한 번 더 읽어 보는 중…')); text = await ocr(backup, prog, score); }
       setBusy('');
       const found = readDosing(text, findInText(text));
       if (!found.length) camOn();
@@ -121,8 +124,11 @@ export function ScanOverlay() {
     if (s.mode === 'rx') {
       // A real photo (ImageCapture) is sharper and larger than a video frame, and the phone focuses for it.
       setBusy(L('초점을 맞춰 찍는 중…'));
-      const photo = await takePhoto(stream.current);
-      setStill(photo ? URL.createObjectURL(photo) : c.toDataURL('image/jpeg', 0.7)); camOff(); readText(photo || c, 'rx'); return;
+      // The sharpest of a few video frames is the backup (a hand that is still moving blurs one frame).
+      const frame = await sharpest(c, grab);
+      const photo = await takePhoto(stream.current).then(b => (b ? upright(b, frame) : null));
+      setStill(frame.toDataURL('image/jpeg', 0.7)); camOff();
+      readText(photo || frame, 'rx', photo ? frame : undefined); return;
     }
     try { const d = await barcodeDetector(); const r = await d.detect(c); let ok: boolean | 'said' = false; for (const b of r) { const x = await found(b.rawValue, b.format); if (x === true) { ok = true; break; } if (x) ok = x; } if (!ok) setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
     catch { setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
@@ -299,6 +305,52 @@ async function openCamera(stopped: () => boolean): Promise<MediaStream | null> {
     if (stopped()) return null;
   }
   return navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, ...size }, audio: false });
+}
+
+/** Rough sharpness: how much neighbouring pixels differ in the middle of the picture. */
+function sharpness(c: HTMLCanvasElement): number {
+  const w = 320, h = Math.round(c.height * w / c.width), t = document.createElement('canvas');
+  t.width = w; t.height = h; const g = t.getContext('2d')!; g.drawImage(c, 0, 0, w, h);
+  const d = g.getImageData(w / 4, h / 4, w / 2, h / 2).data, W = w / 2;
+  let sum = 0;
+  for (let i = 4; i < d.length - W * 4; i += 4) sum += Math.abs(d[i] - d[i - 4]) + Math.abs(d[i] - d[i + W * 4]);
+  return sum;
+}
+/** Take a few more frames over half a second and keep the sharpest. */
+async function sharpest(first: HTMLCanvasElement, grab: () => HTMLCanvasElement | null): Promise<HTMLCanvasElement> {
+  let best = first, bs = sharpness(first);
+  for (let i = 0; i < 3; i++) {
+    await new Promise(r => setTimeout(r, 150));
+    const c = grab(); if (!c) break;
+    const v = sharpness(c); if (v > bs) { best = c; bs = v; }
+  }
+  return best;
+}
+/**
+ * Some phones hand back the full photo turned on its side (as the camera sensor sits) without
+ * saying so, and sideways text cannot be read. Turn the photo so that it matches the video frame
+ * the person saw: of the possible turns, keep the one that looks most like the frame.
+ */
+async function upright(photo: Blob, frame: HTMLCanvasElement): Promise<HTMLCanvasElement> {
+  const bmp = await createImageBitmap(photo, { imageOrientation: 'from-image' }).catch(() => null);
+  const draw = (deg: number, max: number) => {
+    const side = deg % 180 !== 0, w0 = bmp!.width, h0 = bmp!.height, k = Math.min(1, max / Math.max(w0, h0));
+    const c = document.createElement('canvas'); c.width = Math.round((side ? h0 : w0) * k); c.height = Math.round((side ? w0 : h0) * k);
+    const g = c.getContext('2d')!; g.translate(c.width / 2, c.height / 2); g.rotate(deg * Math.PI / 180); g.drawImage(bmp!, -w0 * k / 2, -h0 * k / 2, w0 * k, h0 * k);
+    return c;
+  };
+  if (!bmp) { const c = document.createElement('canvas'); c.width = frame.width; c.height = frame.height; c.getContext('2d')!.drawImage(frame, 0, 0); return c; }
+  const tiny = (c: HTMLCanvasElement) => { const t = document.createElement('canvas'); t.width = 24; t.height = 24; const g = t.getContext('2d')!; g.filter = 'grayscale(1)'; g.drawImage(c, 0, 0, 24, 24); return g.getImageData(0, 0, 24, 24).data; };
+  const ref = tiny(frame), frameTall = frame.height > frame.width;
+  let best = 0, bd = Infinity;
+  for (const deg of [0, 90, 180, 270]) {
+    const c = draw(deg, 200);
+    if ((c.height > c.width) !== frameTall && Math.abs(c.width - c.height) > 4) continue; // wrong way round
+    const t = tiny(c); let d = 0;
+    for (let i = 0; i < t.length; i += 4) d += Math.abs(t[i] - ref[i]);
+    if (d < bd) { bd = d; best = deg; }
+  }
+  return draw(best, 3000);
 }
 
 /** A full-resolution still (the phone focuses for it). Null where the browser cannot take one. */
