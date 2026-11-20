@@ -289,7 +289,7 @@ if($('capzone')){
   cz.onclick=()=>{$('capIn').value='';$('capIn').click()};
   cz.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();cz.click()}};
   $('capIn').onchange=()=>ocrImage($('capIn').files[0],'cap');
-  document.addEventListener('paste',e=>{const f=imgOf(e.clipboardData&&e.clipboardData.items);if(!f)return;e.preventDefault();cz.scrollIntoView({block:'nearest'});ocrImage(f,'cap')});
+  document.addEventListener('paste',e=>{const f=imgOf(e.clipboardData&&e.clipboardData.items);if(!f)return;e.preventDefault();$('capbox').open=true;cz.scrollIntoView({block:'nearest'});ocrImage(f,'cap')});
   cz.addEventListener('dragover',e=>{e.preventDefault();cz.classList.add('over')});
   cz.addEventListener('dragleave',()=>cz.classList.remove('over'));
   cz.addEventListener('drop',e=>{e.preventDefault();cz.classList.remove('over');const f=[...(e.dataTransfer.files||[])].find(x=>/^image\//.test(x.type));if(f)ocrImage(f,'cap')});
