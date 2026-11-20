@@ -12,6 +12,10 @@
 }
 
 html, body, #root { height: 100%; }
+/* No pull-to-refresh: pulling down at the top of a page reloaded the whole app (back to the quote
+   splash). The app scrolls inside .ms-scroll, so the page itself never needs to. */
+html, body { overscroll-behavior: none; }
+@media (max-width: 719.98px), (max-height: 759.98px) { html, body { overflow: hidden; } }
 body {
   margin: 0;
   background: var(--color-surface);
@@ -324,9 +328,9 @@ button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], .ta
 @keyframes msInBack { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
 @keyframes msInFade { from { opacity: 0; } to { opacity: 1; } }
 .ms-view { min-height: 100%; }
-.ms-view.fwd { animation: msInFwd .26s cubic-bezier(.2,.7,.2,1) both; }
-.ms-view.back { animation: msInBack .26s cubic-bezier(.2,.7,.2,1) both; }
-.ms-view.fade { animation: msInFade .2s ease-out both; }
+.ms-view.fwd { animation: msInFwd .26s cubic-bezier(.2,.7,.2,1) backwards; }
+.ms-view.back { animation: msInBack .26s cubic-bezier(.2,.7,.2,1) backwards; }
+.ms-view.fade { animation: msInFade .2s ease-out backwards; }
 @keyframes msSheetUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 .sheet { animation: msSheetUp .24s cubic-bezier(.2,.7,.2,1) both; }
 @media (prefers-reduced-motion: reduce) { .ms-view.fwd, .ms-view.back, .ms-view.fade, .sheet { animation: none; } }
