@@ -243,4 +243,5 @@ export const EXTRA: Record<string, [string, string, string]> = {
   '{0}일 남음': ['{0} days left', '剩{0}天', '残り{0}日'],
   '{0}에 끝났어요': ['Finished {0}', '已于{0}结束', '{0}に終了'],
   '계속 먹어요': ['Still taking', '继续服用', '飲み続ける'],
+  '글자가 흐려 비슷한 이름으로 찾았어요. 맞는 약인지 확인해 주세요.': ['The text was blurry, so this was matched to a similar name. Please check it is the right medicine.', '文字模糊，按相近名称找到。请确认是否为正确的药品。', '文字がぼやけていたため、似た名前で見つけました。正しい薬か確認してください。'],
 };

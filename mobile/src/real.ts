@@ -87,7 +87,7 @@ function hitKey(t: string, k: string, forms: string[] | null | undefined, needSu
 }
 
 /** `times` = doses a day and `days` = days supplied, when a prescription or pill bag shows them. */
-export type Found = { name: string; ids: string[]; times?: number; days?: number };
+export type Found = { name: string; ids: string[]; times?: number; days?: number; /** found by a near-match of a misread name */ guess?: boolean };
 /** Returns products found in the text (product name kept for display), falling back to ingredient names. */
 export function findInText(text: string): Found[] {
   const t = norm(text), out: Found[] = [], seen = new Set<string>();
@@ -104,6 +104,64 @@ export function findInText(text: string): Found[] {
     if (seen.has(d.id) || !formOk(d.form)) continue;
     const keys = [d.ko, d.en, d.brand].filter(Boolean).map(x => norm(x!).replace(/\(.*$/, '')).filter(k => k.length >= 3 || (k.length === 2 && /[가-힣]/.test(k)));
     if (keys.some(k => hitKey(t, k, d.form, k.length < 3))) { seen.add(d.id); out.push({ name: d.ko, ids: [d.id] }); }
+  }
+  return [...out, ...fuzzyFind(String(text || '').toLowerCase(), out, seen)];
+}
+
+/** Edit distance, giving up (returns max+1) once it is clearly larger than `max`. */
+function editDist(a: string, b: string, max: number): number {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let low = i;
+    for (let j = 1; j <= b.length; j++) { cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); low = Math.min(low, cur[j]); }
+    if (low > max) return max + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+/** How the text reader often misreads the "정" of "…정" on a photo (청, 철, 렁, 럼, 할 …). */
+const JEONG_LIKE = /[정청철털헐렁럼릴할창럴점젱졍잠장컹겅헝컬걸절칭청쩡첨젼]$/;
+/**
+ * On a blurry or small photo the reader gets a letter or two of a name wrong ("다이아케스럼500" for
+ * "다이아벡스정500"), so an exact search misses it. Words that sit where a medicine name sits — just
+ * before a strength number or ending in a letter that looks like 정 — are compared with the known
+ * names and accepted when only one letter differs (two for long names) and one name fits best.
+ * These are marked `guess` so the result screen can say so.
+ */
+function fuzzyFind(raw: string, have: Found[], seen: Set<string>): Found[] {
+  const out: Found[] = [];
+  const known = have.map(f => norm(f.name));
+  const runs = new Set<string>();
+  // Words are taken from the text as read (spaces and line breaks kept), so two lines never merge.
+  for (const m of raw.matchAll(/[가-힣]{3,16}/g)) {
+    const r = m[0], next = raw.slice(m.index! + r.length).trimStart()[0] || '';
+    const anchored = /\d/.test(next) || JEONG_LIKE.test(r);
+    if (!anchored) continue;
+    if (known.some(k => r.includes(k) || k.includes(r))) continue;
+    runs.add(r); if (r.length >= 4) runs.add(r.slice(0, -1));
+  }
+  if (!runs.size) return out;
+  const names = [
+    ...prods.filter(p => formOk(p.form) && p.n.length >= 4).map(p => ({ n: p.n, name: p.name, ids: p.ids })),
+    ...Object.values(byId).filter(d => formOk(d.form) && norm(d.ko).length >= 4).map(d => ({ n: norm(d.ko).replace(/\(.*$/, ''), name: d.ko, ids: [d.id] })),
+  ];
+  for (const r of runs) {
+    if (r.length < 4) continue;
+    const max = r.length >= 7 ? 2 : 1;
+    let best: { d: number; name: string; ids: string[] }[] = [];
+    for (const c of names) {
+      if (Math.abs(c.n.length - r.length) > max || (c.n[0] !== r[0] && c.n[c.n.length - 1] !== r[r.length - 1])) continue;
+      const d = editDist(r, c.n, max);
+      if (d > max || d === 0) continue;
+      if (!best.length || d < best[0].d) best = [{ d, ...c }]; else if (d === best[0].d) best.push({ d, ...c });
+    }
+    const keys = new Set(best.map(b => b.ids.slice().sort().join('+')));
+    if (keys.size !== 1) continue; // nothing close, or two different medicines equally close
+    const b = best[0], key = b.ids.join('+');
+    if (seen.has(key) || b.ids.every(i => seen.has(i))) continue;
+    seen.add(key); b.ids.forEach(i => seen.add(i));
+    out.push({ name: b.name, ids: b.ids, guess: true });
   }
   return out;
 }
