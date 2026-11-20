@@ -287,12 +287,21 @@ button:disabled { cursor: default; }
 
 /* Large text (마이 → 글자 크기). Zoom scales each screen's content and lets it
    reflow to the narrower width, so inline font sizes all grow together. */
-:root[data-text="l"] .ms-scroll > *,
-:root[data-text="l"] .sheet,
-:root[data-text="l"] .toast { zoom: 1.18; }
-:root[data-text="xl"] .ms-scroll > *,
-:root[data-text="xl"] .sheet,
-:root[data-text="xl"] .toast { zoom: 1.36; }
+:root[data-text="l"] { --tz: 1.18; }
+:root[data-text="xl"] { --tz: 1.36; }
+:root[data-text] .ms-scroll > *,
+:root[data-text] .sheet,
+:root[data-text] .toast { zoom: var(--tz); }
+/* Some browsers (older Chrome, Samsung Internet) lay a zoomed box out at its parent's full width
+   and then enlarge it, so it spills off the right edge. state.tsx detects that and sets .zfix. */
+:root.zfix[data-text] .ms-scroll > *,
+:root.zfix[data-text] .sheet { width: calc(100% / var(--tz)); }
 :root[data-text="l"] .nav-bar .lb { font-size: 12.5px; }
 :root[data-text="xl"] .nav-bar .lb { font-size: 13.5px; font-weight: 600; }
 :root[data-text="xl"] { --ms-nav-h: calc(70px + env(safe-area-inset-bottom, 0px)); }
+
+/* Korean wraps between words (not mid-word); a very long unbroken word may still break so nothing
+   runs off the screen. */
+.ms-phone { word-break: keep-all; overflow-wrap: anywhere; }
+/* Justified paragraphs keep letter-level breaks so lines stay even without wide gaps. */
+.ms-phone .just, .ms-phone .lead, .ms-phone .fine { word-break: normal; }
