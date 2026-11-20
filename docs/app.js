@@ -233,31 +233,49 @@ let pillT=null;$('pillq').addEventListener('input',()=>{clearTimeout(pillT);pill
 /* ---------- 휴대폰 카메라: 사진 글자 읽기(OCR)와 약 상자 바코드 (웹 버전, 모두 이 기기 안에서 처리) ---------- */
 const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error(src));document.head.appendChild(s)});
 const here=p=>new URL(p,location.href).href;
-let ocrW=null, ocrProg=()=>{};
-async function ocrWorker(){
-  if(ocrW)return ocrW;
-  if(!window.Tesseract)await loadScript('vendor/ocr/tesseract.min.js');
-  // 프로그램·한글 자료 모두 이 사이트에서 받음 (사진은 밖으로 나가지 않음)
-  ocrW=await Tesseract.createWorker(['kor','eng'],1,{workerPath:here('vendor/ocr/worker.min.js'),corePath:here('vendor/ocr/'),langPath:here('vendor/ocr/'),gzip:true,
-    logger:m=>{if(m.status==='recognizing text')ocrProg(Math.round((m.progress||0)*100))}});
-  return ocrW}
-async function photoCanvas(file,max){
-  let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'})}catch(e){bmp=await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=URL.createObjectURL(file)})}
-  const w0=bmp.width,h0=bmp.height,k=Math.min(1,max/Math.max(w0,h0)),c=document.createElement('canvas');
-  c.width=Math.round(w0*k);c.height=Math.round(h0*k);const g=c.getContext('2d');g.filter='grayscale(1) contrast(1.3)';g.drawImage(bmp,0,0,c.width,c.height);return c}
+let ocrW={}, ocrProg=()=>{};
+// 사진(처방전·약봉투)은 한글 모델만 써서 더 빨리 읽고, 처방 창 캡처는 영문 약 이름도 있어 한글+영문으로 읽음
+function ocrWorker(langs){
+  const k=langs.join('+');
+  if(!ocrW[k])ocrW[k]=(async()=>{
+    if(!window.Tesseract)await loadScript('vendor/ocr/tesseract.min.js');
+    // 프로그램·한글 자료 모두 이 사이트에서 받음 (사진은 밖으로 나가지 않음)
+    const w=await Tesseract.createWorker(langs,1,{workerPath:here('vendor/ocr/worker.min.js'),corePath:here('vendor/ocr/'),langPath:here('vendor/ocr/'),gzip:true,
+      logger:m=>{if(m.status==='recognizing text')ocrProg(Math.round((m.progress||0)*100))}});
+    // 사진은 자동 쪽 배치(3)로 읽음. 기본값(한 덩어리 글)은 처방전 표의 줄을 대부분 놓침
+    if(k==='kor')await w.setParameters({tessedit_pageseg_mode:'3'});
+    return w})();
+  ocrW[k].catch(()=>{delete ocrW[k]});
+  return ocrW[k]}
+async function decodeImg(file){try{return await createImageBitmap(file,{imageOrientation:'from-image'})}catch(e){return await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=URL.createObjectURL(file)})}}
+function sizedCanvas(src,max,grow){const w0=src.width,h0=src.height,k0=max/Math.max(w0,h0),k=grow?k0:Math.min(1,k0),c=document.createElement('canvas');
+  c.width=Math.round(w0*k);c.height=Math.round(h0*k);const g=c.getContext('2d');g.filter='grayscale(1) contrast(1.3)';g.drawImage(src,0,0,c.width,c.height);return c}
+async function photoCanvas(file,max){return sizedCanvas(await decodeImg(file),max)}
+// 글자 높이가 약 20px일 때 가장 잘 읽혀서, 보통 사진에 맞는 크기로 먼저 한 번 읽고
+// 확신이 낮거나 약을 못 찾았을 때만 더 크게·더 작게 다시 읽어 가장 좋은 결과를 씀
+async function ocrPhoto(file){
+  const w=await ocrWorker(['kor']),src=await decodeImg(file),long=Math.max(src.width,src.height);
+  const sizes=[Math.min(long,1700),long>2000?2400:Math.min(2400,Math.round(long*1.4)),1150].filter((v,i,a)=>a.indexOf(v)===i);
+  let best={text:'',n:-1,conf:-1};
+  for(let i=0;i<sizes.length;i++){
+    const {data}=await w.recognize(sizedCanvas(src,sizes[i],i===1));
+    const text=(data&&data.text)||'',conf=(data&&data.confidence)||0,n=findDrugs(text).length;
+    if(n>best.n||(n===best.n&&conf>best.conf))best={text,n,conf};
+    if(n>0&&conf>=86)break}
+  return best.text}
 if(!IS_EXT&&$('camrow')){
   $('camrow').hidden=false;
-  $('camText').onclick=()=>{$('photoIn').value='';$('photoIn').click()};
+  $('camText').onclick=()=>{ocrWorker(['kor']).catch(()=>{});$('photoIn').value='';$('photoIn').click()};
   // 사진·캡처 그림 한 장에서 글자를 읽어 약을 찾음 (how: ocr=휴대폰 사진, cap=처방 창 캡처)
   async function ocrImage(f,how){if(!f)return;const hint=$('drughint');
     hint.textContent=T('ocrLoad');track(how+'_start');
-    try{const w=await ocrWorker();ocrProg=p=>{hint.textContent=T('ocrRun',p)};
-      const {data}=await w.recognize(how==='cap'?await capCanvas(f):await photoCanvas(f,2400));
-      const text=(data&&data.text)||'';
+    try{ocrProg=p=>{hint.textContent=T('ocrRun',p)};
+      const text=how==='cap'?await ocrCap(f):await ocrPhoto(f);
       $('paste').value=text;$('pastebox').open=true;
       const r=addFromText(text,how);
       hint.textContent=r.f.length?T(how==='cap'?'capDone':'ocrDone',r.f.length,r.added.length):T(how==='cap'?'capNone':'ocrNone');
     }catch(e){track(how+'_fail');hint.textContent=T('ocrErr')+(e&&e.message||e)}}
+  async function ocrCap(f){const w=await ocrWorker(['kor','eng']);const {data}=await w.recognize(await capCanvas(f));return (data&&data.text)||''}
   $('photoIn').onchange=()=>ocrImage($('photoIn').files[0],'ocr');
   // 화면 캡처는 글자가 작으니(12~13px) 2배 키워서 읽음
   async function capCanvas(file){
