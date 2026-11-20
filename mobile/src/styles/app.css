@@ -324,10 +324,10 @@ button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], .ta
 .nav-bar > button:active .ic { transform: scale(.92); }
 .nav-bar .ic { transition: transform .12s ease; }
 
-/* Page change: the new page settles in like a turned leaf (Classical, quiet). Forward pages come
-   from the right, going back comes from the left, tab changes just fade. */
-@keyframes msInFwd { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
-@keyframes msInBack { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+/* Page change: the new page fades in. Opacity only, no sliding: on the user's phone browser a
+   sliding (transformed) page came back enlarged with its top cut off after going back. */
+@keyframes msInFwd { from { opacity: 0; } to { opacity: 1; } }
+@keyframes msInBack { from { opacity: 0; } to { opacity: 1; } }
 @keyframes msInFade { from { opacity: 0; } to { opacity: 1; } }
 .ms-view { min-height: 100%; }
 .ms-view.fwd { animation: msInFwd .26s cubic-bezier(.2,.7,.2,1) backwards; }
