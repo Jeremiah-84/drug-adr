@@ -155,7 +155,7 @@ export function Results() {
   );
 }
 
-const DETAIL_TABS = [['adr', '이상반응'], ['organ', '신·간기능'], ['how', '복용·출처']] as const;
+const DETAIL_TABS = [['how', '복용·출처'], ['adr', '이상반응'], ['organ', '신·간기능']] as const;
 const row = { display: 'flex', alignItems: 'center', gap: 12, padding: '13px 0', borderBottom: '1px solid var(--color-divider)' } as const;
 
 export function Detail() {
