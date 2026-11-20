@@ -43,7 +43,6 @@ function Shell() {
   useLayoutEffect(() => {
     document.documentElement.style.setProperty('--ms-serif', SERIF[s.lang]);
   }, [s.lang]);
-  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [screen]);
 
   // Android back button / browser back walks the in-app stack instead of leaving the app.
   const depth = s.stack.length;
@@ -73,6 +72,9 @@ function Shell() {
     const d = s.stack.length > prev.current.depth ? 'fwd' : s.stack.length < prev.current.depth ? 'back' : 'fade';
     prev.current = { screen, depth: s.stack.length, n: prev.current.n + 1, dir: d };
   }
+  // Back to the top before the new page is painted (a layout effect, not a normal one), so the
+  // page-turn animation never starts on a scrolled position that is then reset underneath it.
+  useLayoutEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [screen, prev.current.n]);
   const showNav = !scanLike && !isOnb && screen !== 'pharmacy';
 
   return (
