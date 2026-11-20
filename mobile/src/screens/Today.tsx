@@ -7,10 +7,12 @@ import type { ReactNode } from 'react';
 function Section({ n, title, en, children, gap = 12 }: { n: string; title: string; en: string; children: ReactNode; gap?: number }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, paddingBottom: 10, borderBottom: '1px solid var(--color-text)' }}>
+      {/* The title keeps its words together; a long English name drops to its own line instead of
+          squeezing the title into one letter per line. */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 12, rowGap: 2, paddingBottom: 10, borderBottom: '1px solid var(--color-text)' }}>
         <span className="g" style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-accent)' }}>{n}</span>
-        <span className="serif" style={{ fontSize: 15, fontWeight: 600, flex: 1 }}>{title}</span>
-        <span className="g muted" style={{ fontSize: 12, letterSpacing: '.16em', fontWeight: 700 }}>{en}</span>
+        <span className="serif" style={{ fontSize: 15, fontWeight: 600, flex: '1 0 auto', wordBreak: 'keep-all' }}>{title}</span>
+        <span className="g muted" style={{ fontSize: 12, letterSpacing: '.16em', fontWeight: 700, marginLeft: 'auto', textAlign: 'right', minWidth: 0, overflowWrap: 'anywhere' }}>{en}</span>
       </div>
       {children}
     </div>

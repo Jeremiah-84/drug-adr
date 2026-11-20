@@ -70,6 +70,19 @@ export type AppState = Saved & {
 };
 
 const KEY = 'mediscan.v1';
+
+/** Does this browser make a zoomed box wider than its parent? (see .zfix in app.css) */
+let spills: boolean | null = null;
+function zoomSpills(): boolean {
+  if (spills !== null) return spills;
+  const outer = document.createElement('div'), inner = document.createElement('div');
+  outer.style.cssText = 'position:absolute;left:-9999px;top:0;width:200px;visibility:hidden';
+  inner.style.cssText = 'zoom:2;height:1px';
+  outer.appendChild(inner); document.body.appendChild(outer);
+  spills = inner.getBoundingClientRect().width > 250;
+  outer.remove();
+  return spills;
+}
 const SDK_KEY = 'mediscan.sudoku';
 /** "Mark as taken" works only within this many minutes either side of the set dose time. */
 export const WINDOW_MIN = 120;
@@ -213,8 +226,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Large text: app.css zooms the page content when this is set.
   useEffect(() => {
-    if (s.text === 'l' || s.text === 'xl') document.documentElement.dataset.text = s.text;
-    else delete document.documentElement.dataset.text;
+    const root = document.documentElement;
+    if (s.text === 'l' || s.text === 'xl') root.dataset.text = s.text;
+    else delete root.dataset.text;
+    if (s.text === 'l' || s.text === 'xl') root.classList.toggle('zfix', zoomSpills());
   }, [s.text]);
 
   // Sudoku progress is saved per day, so leaving and coming back resumes the same puzzle.
