@@ -77,8 +77,8 @@ export function Home() {
       </button>
 
       {!me.meds.length ? (
-        <div style={{ border: '1px solid var(--color-divider)', borderRadius: 'var(--radius-md)', padding: 22, display: 'flex', flexDirection: 'column', gap: 12, position: 'relative' }}>
-          <div style={{ position: 'absolute', inset: 5, border: '1px solid color-mix(in srgb,var(--color-accent) 30%,transparent)', borderRadius: 2, pointerEvents: 'none' }} />
+        <div style={{ border: '1px solid color-mix(in srgb,var(--color-text) 65%,transparent)', borderRadius: 'var(--radius-md)', padding: 22, display: 'flex', flexDirection: 'column', gap: 12, position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 5, border: '1px solid var(--color-accent)', borderRadius: 2, pointerEvents: 'none' }} />
           <span className="kicker">GET STARTED</span>
           <span className="serif" style={{ fontSize: 19, fontWeight: 600, lineHeight: 1.45 }}>{L('먹고 있는 약을 등록해 보세요')}</span>
           <span className="just" style={{ fontSize: 13, color: 'var(--color-neutral-800)', lineHeight: 1.75 }}>{L('처방전·약봉투를 찍거나, 약 상자 바코드를 비추거나, 이름으로 찾을 수 있어요.')}</span>
@@ -88,8 +88,8 @@ export function Home() {
           </div>
         </div>
       ) : next ? (
-        <div style={{ border: '1px solid var(--color-divider)', borderRadius: 'var(--radius-md)', padding: 22, display: 'flex', flexDirection: 'column', gap: 16, position: 'relative' }}>
-          <div style={{ position: 'absolute', inset: 5, border: '1px solid color-mix(in srgb,var(--color-accent) 30%,transparent)', borderRadius: 2, pointerEvents: 'none' }} />
+        <div style={{ border: '1px solid color-mix(in srgb,var(--color-text) 65%,transparent)', borderRadius: 'var(--radius-md)', padding: 22, display: 'flex', flexDirection: 'column', gap: 16, position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 5, border: '1px solid var(--color-accent)', borderRadius: 2, pointerEvents: 'none' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
             <span className="kicker">NEXT DOSE</span>
             <span className="sub">{L(next.label)}</span>
@@ -111,7 +111,7 @@ export function Home() {
           </span>
         </div>
       ) : (
-        <div style={{ border: '1px solid var(--color-divider)', borderRadius: 'var(--radius-md)', padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ border: '1px solid color-mix(in srgb,var(--color-text) 65%,transparent)', borderRadius: 'var(--radius-md)', padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span className="kicker">ALL DONE</span>
           <span className="serif" style={{ fontSize: 18, fontWeight: 600 }}>{L(allDone ? '오늘 복용을 모두 마쳤습니다' : '오늘 남은 복약이 없습니다')}</span>
           {allDone && <button className="tap" onClick={() => go('today')} style={{ fontSize: 13, color: 'var(--color-accent-700)', fontStyle: 'italic' }}>{F('오늘의 장서표가 찍혔습니다 · {0}월 {1}일째', stamps.month, stamps.count)}</button>}
