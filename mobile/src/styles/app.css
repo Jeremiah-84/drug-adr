@@ -330,3 +330,7 @@ button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], .ta
 @keyframes msSheetUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 .sheet { animation: msSheetUp .24s cubic-bezier(.2,.7,.2,1) both; }
 @media (prefers-reduced-motion: reduce) { .ms-view.fwd, .ms-view.back, .ms-view.fade, .sheet { animation: none; } }
+
+/* crossword: a wrong letter */
+:root { --xw-bad: #b3261e; }
+:root[data-theme="dark"] { --xw-bad: #ff8a80; }

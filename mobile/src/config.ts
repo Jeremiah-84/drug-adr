@@ -1,6 +1,6 @@
 import { LANGS, type Lang } from './i18n';
 
-export const SCREENS = ['onboarding', 'today', 'puzzle', 'home', 'scan', 'scanning', 'results', 'detail', 'symptom', 'schedule', 'vitals', 'history', 'report', 'search', 'pill', 'my', 'family', 'pharmacy'] as const;
+export const SCREENS = ['onboarding', 'today', 'puzzle', 'xword', 'home', 'scan', 'scanning', 'results', 'detail', 'symptom', 'schedule', 'vitals', 'history', 'report', 'search', 'pill', 'my', 'family', 'pharmacy'] as const;
 export type Screen = (typeof SCREENS)[number];
 
 /**

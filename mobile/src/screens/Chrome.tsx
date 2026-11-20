@@ -205,7 +205,7 @@ const NAV = [
   { k: 'my', l: '마이', Icon: User },
 ] as const;
 const TAB_OF: Partial<Record<Screen, Screen>> = {
-  home: 'home', results: 'home', detail: 'search', symptom: 'home', schedule: 'home', vitals: 'home', pill: 'home', today: 'home', puzzle: 'home',
+  home: 'home', results: 'home', detail: 'search', symptom: 'home', schedule: 'home', vitals: 'home', pill: 'home', today: 'home', puzzle: 'home', xword: 'home',
   pharmacy: 'my', history: 'history', report: 'history', search: 'search', my: 'my', family: 'my',
 };
 
