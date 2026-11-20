@@ -282,14 +282,14 @@ async function ocrImage(f,how,rect){if(!f||ocrBusy)return;const hint=$('drughint
     hint.textContent=r.f.length?T(how==='ocr'?'ocrDone':'capDone',r.f.length,r.added.length):T(how==='ocr'?'ocrNone':'capNone');
   }catch(e){track(how+'_fail');hint.textContent=T('ocrErr')+(e&&e.message||e)}
   finally{ocrBusy=false}}
-// 캡처 붙여넣기 칸은 웹 버전만 (확장은 아래 '지금 화면 찍어서 약 찾기'만 씀)
+// 캡처 붙여넣기 칸은 웹 버전만 (확장은 '지금 화면 찍어서 약 찾기'만 씀)
 if($('capzone')&&!IS_EXT){
   const cz=$('capzone'),imgOf=items=>{for(const it of items||[])if(it.kind==='file'&&/^image\//.test(it.type))return it.getAsFile();return null};
   cz.hidden=false;
   cz.onclick=()=>{$('capIn').value='';$('capIn').click()};
   cz.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();cz.click()}};
   $('capIn').onchange=()=>ocrImage($('capIn').files[0],'cap');
-  document.addEventListener('paste',e=>{const f=imgOf(e.clipboardData&&e.clipboardData.items);if(!f)return;e.preventDefault();$('capbox').open=true;cz.scrollIntoView({block:'nearest'});ocrImage(f,'cap')});
+  document.addEventListener('paste',e=>{const f=imgOf(e.clipboardData&&e.clipboardData.items);if(!f)return;e.preventDefault();cz.scrollIntoView({block:'nearest'});ocrImage(f,'cap')});
   cz.addEventListener('dragover',e=>{e.preventDefault();cz.classList.add('over')});
   cz.addEventListener('dragleave',()=>cz.classList.remove('over'));
   cz.addEventListener('drop',e=>{e.preventDefault();cz.classList.remove('over');const f=[...(e.dataTransfer.files||[])].find(x=>/^image\//.test(x.type));if(f)ocrImage(f,'cap')});
