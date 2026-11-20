@@ -20,7 +20,7 @@ const QUICK: { t: string; en: string; Icon: typeof ScanLine; go: Screen }[] = [
 ];
 
 export function Home() {
-  const { s, me, go, tab, flash, t, L, F, showFound, takeSlot, edit } = useApp();
+  const { s, me, go, tab, flash, t, L, F, showFound, takeSlot } = useApp();
   const slots = slotViews(s, me).filter(x => x.meds.length);
   const next = slots.find(x => x.ss === 'open' || x.ss === 'early');
   const missed = slots.filter(x => x.ss === 'missed');
@@ -119,7 +119,7 @@ export function Home() {
           <span className="kicker">ALL DONE</span>
           <span className="serif" style={{ fontSize: 18, fontWeight: 600 }}>{L(allDone ? '오늘 복용을 모두 마쳤습니다' : '오늘 남은 복약이 없습니다')}</span>
           {allDone && <button className="tap" onClick={() => go('today')} style={{ fontSize: 13, color: 'var(--color-accent-700)', fontStyle: 'italic' }}>{F('오늘의 장서표가 찍혔습니다 · {0}월 {1}일째', stamps.month, stamps.count)}</button>}
-          {doneCount > 0 && <button className="tap link-u" onClick={() => edit(m => ({ taken: { ...m.taken, [dayKey()]: [] } }))} style={{ fontSize: 12.5, alignSelf: 'flex-start' }}>{t.undo}</button>}
+          {doneCount > 0 && <button className="tap link-u" onClick={() => go('doselog')} style={{ fontSize: 12.5, alignSelf: 'flex-start' }}>{L('잘못 눌렀다면 복약 기록 고치기')}</button>}
         </div>
       )}
       {missed.length > 0 && (

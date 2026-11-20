@@ -386,7 +386,7 @@ const NAV = [
 ] as const;
 const TAB_OF: Partial<Record<Screen, Screen>> = {
   home: 'home', results: 'home', detail: 'search', symptom: 'home', schedule: 'home', vitals: 'home', pill: 'home', today: 'home', puzzle: 'home', xword: 'home',
-  pharmacy: 'my', history: 'history', report: 'history', search: 'search', my: 'my', family: 'my',
+  pharmacy: 'my', history: 'history', report: 'history', doselog: 'history', search: 'search', my: 'my', family: 'my',
 };
 
 export function BottomNav() {

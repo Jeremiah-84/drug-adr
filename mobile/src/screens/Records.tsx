@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { adherence } from '../derive';
-import { useApp } from '../state';
+import { dayKey, dayPlus, medsOn, useApp } from '../state';
+import { SLOT_KEYS, SLOT_SHORT, type SlotKey } from '../data';
 import { Back, Heading, SecHead, Stats } from '../ui';
 import { ChevronRight } from '../icons';
 
@@ -37,6 +38,15 @@ export function History() {
       </button>
       {wk.pct === null && <span className="sub" style={{ marginTop: -12 }}>{L('홈에서 "복용 완료"를 누르면 여기에 쌓여요')}</span>}
       <Stats items={[{ v: String(month.done), k: L('복용 완료') }, { v: String(month.missed), k: L('누락') }, { v: String(me.scans.length), k: L('스캔') }]} />
+      {me.meds.length > 0 && (
+        <button className="tap hov row" onClick={() => go('doselog')} style={{ justifyContent: 'space-between', padding: '14px 0', borderTop: '1px solid var(--color-divider)', borderBottom: '1px solid var(--color-divider)', marginTop: -6 }}>
+          <span className="col" style={{ gap: 2, alignItems: 'flex-start' }}>
+            <span className="serif" style={{ fontSize: 15, fontWeight: 600 }}>{L('날짜별 복약 기록')}</span>
+            <span className="sub" style={{ fontSize: 12 }}>{L('먹은 시간을 눌러 기록을 고칠 수 있어요')}</span>
+          </span>
+          <ChevronRight />
+        </button>
+      )}
       <div className="col">
         <SecHead name={t.scanRec} en="SCANS" />
         {me.scans.length > 0 && (
@@ -98,7 +108,9 @@ export function History() {
 }
 
 export function Report() {
-  const { me, t, L } = useApp();
+  const { me, edit, flash, t, L } = useApp();
+  const [ask, setAsk] = useState<number | null>(null);
+  const dropSym = (i: number) => { edit(m => ({ syms: m.syms.filter((_, j) => j !== i) })); setAsk(null); flash(L('기록을 지웠어요')); };
   const now = new Date();
   const m = adherence(me, now.getDate());
   const pct = m.pct ?? 0;
@@ -119,14 +131,77 @@ export function Report() {
         <SecHead name={t.symLog} en="SYMPTOMS" />
         {!me.syms.length && <div className="sub" style={{ padding: '12px 0' }}>{L('증상 체크에서 "이 증상 기록해 두기"를 누르면 여기에 남아요')}</div>}
         {me.syms.map((x, i) => (
-          <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--color-divider)', fontSize: 13.5 }}>
-            <span className="g tnum" style={{ color: 'var(--color-accent-700)', width: 44, flex: 'none', fontWeight: 700 }}>{x.d}</span>
-            <span className="serif" style={{ flex: 1 }}>{x.text}</span>
-            <span className="muted" style={{ fontSize: 12, maxWidth: 120, textAlign: 'right', fontStyle: 'italic' }}>{x.drugs}</span>
+          <div key={i} className="col" style={{ borderBottom: '1px solid var(--color-divider)' }}>
+            <div style={{ display: 'flex', gap: 12, padding: '12px 0', fontSize: 13.5, alignItems: 'center' }}>
+              <span className="g tnum" style={{ color: 'var(--color-accent-700)', width: 44, flex: 'none', fontWeight: 700 }}>{x.d}</span>
+              <span className="serif" style={{ flex: 1 }}>{x.text}</span>
+              <span className="muted" style={{ fontSize: 12, maxWidth: 110, textAlign: 'right', fontStyle: 'italic' }}>{x.drugs}</span>
+              <button className="no-print" aria-label={L('지우기')} onClick={() => setAsk(a => a === i ? null : i)}
+                style={{ width: 32, height: 32, flex: 'none', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-divider)', color: 'var(--color-accent-800)', fontSize: 14, background: 'none', cursor: 'pointer' }}>✕</button>
+            </div>
+            {ask === i && (
+              <div className="row no-print" style={{ gap: 8, padding: '10px 12px', marginBottom: 12, borderRadius: 'var(--radius-md)', border: '1px solid var(--color-accent)' }}>
+                <span className="serif" style={{ flex: 1, fontSize: 13 }}>{L('이 증상 기록을 지울까요?')}</span>
+                <button className="btn btn-secondary" onClick={() => setAsk(null)} style={{ height: 32 }}>{L('취소')}</button>
+                <button className="btn btn-primary" onClick={() => dropSym(i)} style={{ height: 32 }}>{L('지우기')}</button>
+              </div>
+            )}
           </div>
         ))}
       </div>
       <button className="btn btn-primary cta" onClick={() => window.print()}>{L('인쇄하거나 PDF로 저장')}</button>
+    </div>
+  );
+}
+
+/**
+ * Taken log by day: tap a time of day to mark it taken or not. Unlike the home button (only within
+ * 2 hours of the dose time), past days can be corrected here, e.g. a dose taken but not pressed.
+ */
+export function DoseLog() {
+  const { me, edit, flash, L, F, s } = useApp();
+  const today = dayKey();
+  const start = me.since || Object.keys(me.taken).sort()[0] || today;
+  const days: string[] = [];
+  for (let i = 0; i < 31; i++) { const k = dayPlus(-i); if (k < start) break; days.push(k); }
+  const toggle = (d: string, k: SlotKey) => {
+    const on = (me.taken[d] || []).includes(k);
+    edit(m => { const cur = m.taken[d] || []; return { taken: { ...m.taken, [d]: on ? cur.filter(x => x !== k) : SLOT_KEYS.filter(x => x === k || cur.includes(x)) } }; });
+    flash(on ? L('먹지 않은 것으로 고쳤어요') : L('먹은 것으로 고쳤어요'));
+  };
+  const fmt = (d: string) => new Date(d + 'T12:00:00').toLocaleDateString({ ko: 'ko-KR', en: 'en-US', zh: 'zh-CN', ja: 'ja-JP' }[s.lang], { month: 'short', day: 'numeric', weekday: 'short' });
+  return (
+    <div className="page">
+      <Back />
+      <Heading eyebrow="DOSE LOG" title={L('날짜별 복약 기록')} sub={L('먹은 시간은 ✓로 표시돼요. 잘못 눌렀거나 먹고 누르지 못했다면 눌러서 고쳐 주세요.')} size={24} />
+      <div className="col rule-top">
+        {!days.length && <div className="empty" style={{ marginTop: 14 }}>{L('아직 복약 기록이 없어요')}</div>}
+        {days.map(d => {
+          const planned = SLOT_KEYS.filter(k => medsOn(me.meds, d).some(m => m.slots.includes(k)));
+          const taken = me.taken[d] || [];
+          const done = planned.filter(k => taken.includes(k)).length;
+          if (!planned.length) return null;
+          return (
+            <div key={d} className="col" style={{ gap: 8, padding: '12px 0', borderBottom: '1px solid var(--color-divider)' }}>
+              <div className="row" style={{ justifyContent: 'space-between' }}>
+                <span className="serif" style={{ fontSize: 14.5, fontWeight: 600 }}>{d === today ? `${fmt(d)} · ${L('오늘')}` : fmt(d)}</span>
+                <span className="tnum" style={{ fontSize: 12.5, color: done === planned.length ? 'var(--color-accent-700)' : 'var(--color-neutral-600)' }}>{F('{0} / {1} 복용', done, planned.length)}</span>
+              </div>
+              <div role="group" aria-label={fmt(d)} style={{ display: 'grid', gridTemplateColumns: `repeat(${planned.length}, 1fr)`, gap: 6 }}>
+                {planned.map(k => {
+                  const on = taken.includes(k);
+                  return (
+                    <button key={k} aria-pressed={on} onClick={() => toggle(d, k)} className={'pick' + (on ? ' on' : '')} style={{ minHeight: 40, padding: '6px 2px' }}>
+                      <span className="serif" style={{ fontSize: 13.5, fontWeight: on ? 600 : 400 }}>{on ? '✓ ' : ''}{L(SLOT_SHORT[k])}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="fine">{L('복약률과 도장은 고친 기록으로 다시 계산돼요.')}</div>
     </div>
   );
 }
