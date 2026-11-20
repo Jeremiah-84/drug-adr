@@ -20,7 +20,7 @@ body {
   overscroll-behavior: none;
 }
 a { color: var(--color-accent-700); }
-a:hover { color: var(--color-accent-800); }
+@media (hover: hover) { a:hover { color: var(--color-accent-800); } }
 button { font: inherit; color: inherit; }
 
 @keyframes msBeam { 0% { top: 8%; } 50% { top: 88%; } 100% { top: 8%; } }
@@ -94,8 +94,8 @@ button { font: inherit; color: inherit; }
 .hair-b { border-bottom: 1px solid var(--color-divider); }
 
 .tap { cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; color: inherit; font: inherit; }
-.hov:hover { background: var(--ms-hover); }
-.hov6:hover { background: var(--ms-hover-6); }
+@media (hover: hover) { .hov:hover { background: var(--ms-hover); } }
+@media (hover: hover) { .hov6:hover { background: var(--ms-hover-6); } }
 
 .back {
   height: 40px; display: flex; align-items: center; gap: 4px; color: var(--color-accent-700);
@@ -115,7 +115,7 @@ button { font: inherit; color: inherit; }
 }
 .seg2 > button + button { border-left: 1px solid var(--color-divider); }
 .seg2 > button.on { color: var(--color-accent-700); box-shadow: inset 0 0 0 1px var(--color-accent); }
-.seg2 > button:not(.on):hover { background: color-mix(in srgb, var(--color-text) 5%, transparent); }
+@media (hover: hover) { .seg2 > button:not(.on):hover { background: color-mix(in srgb, var(--color-text) 5%, transparent); } }
 .seg2.sm > button { padding: 8px 0; font-size: 12.5px; font-family: inherit; }
 
 /* toggle switch */
@@ -181,7 +181,7 @@ button { font: inherit; color: inherit; }
   display: flex; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--color-divider);
   cursor: pointer; background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; width: 100%;
 }
-.dev .ix:hover { color: var(--color-accent-700); }
+@media (hover: hover) { .dev .ix:hover { color: var(--color-accent-700); } }
 .dev-fab {
   position: fixed; right: 12px; bottom: calc(var(--ms-nav-h) + 12px); z-index: 60; height: 30px; padding: 0 10px;
   border-radius: 15px; border: 1px solid var(--color-accent); background: var(--color-bg); color: var(--color-accent-700);
@@ -195,10 +195,10 @@ button { font: inherit; color: inherit; }
   .dev-fab, .dev-drawer { display: none; }
 }
 
-.lang-btn:hover { border-color: var(--color-accent) !important; }
-.time-edit:hover { color: var(--color-accent-700); }
-.fam-card:hover { border-color: var(--color-accent) !important; }
-.shutter:hover > span { background: rgba(225,173,102,.12); }
+@media (hover: hover) { .lang-btn:hover { border-color: var(--color-accent) !important; } }
+@media (hover: hover) { .time-edit:hover { color: var(--color-accent-700); } }
+@media (hover: hover) { .fam-card:hover { border-color: var(--color-accent) !important; } }
+@media (hover: hover) { .shutter:hover > span { background: rgba(225,173,102,.12); } }
 .shutter:active > span { background: rgba(225,173,102,.25); }
 .dev input[type='range'] { width: 100%; }
 .ms-stage > .dev { display: none; }
@@ -220,7 +220,7 @@ button { font: inherit; color: inherit; }
   cursor: pointer; border: 1px solid var(--color-divider); border-radius: var(--radius-md); background: none;
   color: var(--color-text); white-space: nowrap; font: inherit;
 }
-.pick:hover { border-color: color-mix(in srgb, var(--color-text) 40%, transparent); }
+@media (hover: hover) { .pick:hover { border-color: color-mix(in srgb, var(--color-text) 40%, transparent); } }
 .pick.on { border-color: var(--color-accent); color: var(--color-accent-700); box-shadow: inset 0 0 0 1px var(--color-accent); }
 
 /* bordered unfilled box */
@@ -305,3 +305,28 @@ button:disabled { cursor: default; }
 .ms-phone { word-break: keep-all; overflow-wrap: anywhere; }
 /* Justified paragraphs keep letter-level breaks so lines stay even without wide gaps. */
 .ms-phone .just, .ms-phone .lead, .ms-phone .fine { word-break: normal; }
+
+/* Touch: no double-tap zoom wait on anything tappable, and an instant pressed look so a tap is
+   felt right away (the browser's own tap flash is turned off on body). */
+button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], .tap, .pick, .chip, label { touch-action: manipulation; }
+.tap:active, .hov:active, .hov6:active, .pick:active, .seg2 > button:active, .nav-bar > button:active, .fam-card:active, .lang-btn:active {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+.btn:active, .tap:active, .pick:active, .nav-bar > button:active, .seg2 > button:active { transition: none; }
+.btn-secondary:active { background: color-mix(in srgb, var(--color-text) 12%, transparent); }
+.btn-primary:active { background: color-mix(in srgb, var(--color-accent) 22%, transparent); }
+.nav-bar > button:active .ic { transform: scale(.92); }
+.nav-bar .ic { transition: transform .12s ease; }
+
+/* Page change: the new page settles in like a turned leaf (Classical, quiet). Forward pages come
+   from the right, going back comes from the left, tab changes just fade. */
+@keyframes msInFwd { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes msInBack { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+@keyframes msInFade { from { opacity: 0; } to { opacity: 1; } }
+.ms-view { min-height: 100%; }
+.ms-view.fwd { animation: msInFwd .26s cubic-bezier(.2,.7,.2,1) both; }
+.ms-view.back { animation: msInBack .26s cubic-bezier(.2,.7,.2,1) both; }
+.ms-view.fade { animation: msInFade .2s ease-out both; }
+@keyframes msSheetUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet { animation: msSheetUp .24s cubic-bezier(.2,.7,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .ms-view.fwd, .ms-view.back, .ms-view.fade, .sheet { animation: none; } }

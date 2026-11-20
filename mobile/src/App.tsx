@@ -66,6 +66,12 @@ function Shell() {
   const dateStr = useMemo(() => { const d = new Date(); return `${d.getMonth() + 1}.${d.getDate()}`; }, []);
 
   const View = SCREENS[screen];
+  // Direction of the page change, for the page-turn animation in app.css.
+  const prev = useRef({ screen, depth: s.stack.length, n: 0, dir: '' });
+  if (prev.current.screen !== screen || prev.current.depth !== s.stack.length) {
+    const d = s.stack.length > prev.current.depth ? 'fwd' : s.stack.length < prev.current.depth ? 'back' : 'fade';
+    prev.current = { screen, depth: s.stack.length, n: prev.current.n + 1, dir: d };
+  }
   const showNav = !scanLike && !isOnb && screen !== 'pharmacy';
 
   return (
@@ -77,7 +83,7 @@ function Shell() {
           </div>
 
           <main ref={scrollRef} className="ms-scroll" style={{ bottom: showNav ? 'var(--ms-nav-h)' : 0 }}>
-            {View && <View />}
+            {View && <div key={prev.current.n} className={'ms-view ' + prev.current.dir}><View /></div>}
           </main>
 
           {scanLike && <ScanOverlay />}
