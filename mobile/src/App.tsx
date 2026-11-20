@@ -14,10 +14,11 @@ import { Vitals, VitalsSheet } from './screens/Vitals';
 import { Onboarding } from './screens/Onboarding';
 import { Today } from './screens/Today';
 import { Puzzle } from './screens/Puzzle';
+import { Crossword } from './screens/Crossword';
 import { fmtMin } from './derive';
 
 const SCREENS: Partial<Record<Screen, () => ReactNode>> = {
-  onboarding: Onboarding, today: Today, puzzle: Puzzle,
+  onboarding: Onboarding, today: Today, puzzle: Puzzle, xword: Crossword,
   home: Home, results: Results, detail: Detail, symptom: Symptom, schedule: Schedule, vitals: Vitals,
   history: History, report: Report, search: Search, pill: Pill, my: My, family: Family, pharmacy: Pharmacy,
 };

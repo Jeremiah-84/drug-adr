@@ -36,6 +36,7 @@ URL options for testing: `?splash=0` skip the quote intro, `?lang=en|zh|ja`, `?s
 - **Onboarding** (3 steps: intro, role 환자·보호자 / 의료 관계자, camera + notification permission). Shown once; "온보딩 다시 보기" in 마이.
 - **Today's page** (`today`): a short drug story and a 3-choice quiz, both preferring the user's own medicines (`src/daily.ts`), and a monthly stamp calendar built from the real taken log. Story texts are written from the MFDS labels and should be source-checked before wide release.
 - **Daily sudoku** (`puzzle`, 6×6 or 9×9, `src/sudoku.ts`), saved under `localStorage` key `mediscan.sudoku`.
+- **Daily crossword** (`xword`, 십자말 퀴즈, `src/xword.ts`, `src/screens/Crossword.tsx`): 60 Korean puzzles in `src/xwords.json`, one per day, saved under `mediscan.xword`. The player types the whole answer in one box (works with the Korean keyboard). Puzzles are built by `node scripts/make_xwords.mjs` from the word bank `scripts/xword_bank.mjs`; medicine clues there follow the MFDS labels, so check the label before editing one, then re-run the script and `npm run build`.
 - **Dose button window**: "복용 완료" only works from 2 hours before to 2 hours after the dose time (`WINDOW_MIN` in `src/state.tsx`); outside it the slot shows 예정 / 누락.
 - **4 languages** (ko, en, zh, ja): classical strings live in `src/i18n_classical.ts` (zh/ja need a native review).
 - Medical-pro role shows the MFDS 품목기준코드 on the detail page.
