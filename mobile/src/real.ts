@@ -86,7 +86,8 @@ function hitKey(t: string, k: string, forms: string[] | null | undefined, needSu
   return false;
 }
 
-export type Found = { name: string; ids: string[] };
+/** `times` = doses a day and `days` = days supplied, when a prescription or pill bag shows them. */
+export type Found = { name: string; ids: string[]; times?: number; days?: number };
 /** Returns products found in the text (product name kept for display), falling back to ingredient names. */
 export function findInText(text: string): Found[] {
   const t = norm(text), out: Found[] = [], seen = new Set<string>();
@@ -105,6 +106,40 @@ export function findInText(text: string): Found[] {
     if (keys.some(k => hitKey(t, k, d.form, k.length < 3))) { seen.add(d.id); out.push({ name: d.ko, ids: [d.id] }); }
   }
   return out;
+}
+
+const KNUM: Record<string, number> = { 한: 1, 두: 2, 세: 3, 네: 4 };
+const isInt = (v: number, lo: number, hi: number) => Number.isInteger(v) && v >= lo && v <= hi;
+/**
+ * Read "doses a day" and "days supplied" for each medicine found in a prescription or pill bag.
+ * A prescription row reads "<name> <dose> <times a day> <days>", so the last three numbers on the
+ * medicine's line are used when they make sense. Otherwise a line such as "1일 3회 · 7일분" or
+ * "하루 세 번" anywhere on the paper (usual on pill bags) applies to every medicine.
+ * Nothing is guessed: if the numbers are not clear, the medicine is left without them.
+ */
+export function readDosing(text: string, found: Found[]): Found[] {
+  const raw = String(text || '');
+  const lines = raw.split(/\n+/);
+  const strip = (l: string) => l.replace(/\d+(?:[.,]\d+)?\s*(?:mg|밀리그램|㎎|mcg|μg|그램|g|ml|㎖|밀리리터|%|IU|단위)/gi, ' ');
+  const flat = raw.replace(/\s+/g, '');
+  let gTimes: number | undefined, gDays: number | undefined;
+  const t1 = flat.match(/(?:1|한)일(\d)(?:회|번)/) || flat.match(/하루(\d|한|두|세|네)(?:번|회)/);
+  if (t1) { const v = KNUM[t1[1]] ?? +t1[1]; if (isInt(v, 1, 4)) gTimes = v; }
+  const d1 = flat.match(/(\d{1,3})일분/) || flat.match(/(?:투약|복용|투여)일수[:：]?(\d{1,3})(?!\d)/) || flat.match(/(\d{1,3})일간/);
+  if (d1 && isInt(+d1[1], 1, 180)) gDays = +d1[1];
+  return found.map(f => {
+    const keys = [f.name, ...f.ids.map(i => byId[i]?.ko || '')].map(k => norm(k).replace(/\(.*$/, '').slice(0, 5)).filter(k => k.length >= 2);
+    let times: number | undefined, days: number | undefined;
+    for (const l of lines) {
+      if (!keys.some(k => norm(l).includes(k))) continue;
+      const nums = (strip(l).match(/\d+(?:\.\d+)?/g) || []).map(Number);
+      if (nums.length < 3) continue;
+      const [dose, tm, dy] = nums.slice(-3);
+      if (dose > 0 && dose <= 10 && isInt(tm, 1, 4) && isInt(dy, 1, 180)) { times = tm; days = dy; break; }
+    }
+    times = times ?? gTimes; days = days ?? gDays;
+    return { ...f, ...(times ? { times } : {}), ...(days ? { days } : {}) };
+  });
 }
 
 /** Match a typed symptom ("다리가 부어요", "eGFR 감소", "drowsy") to problem ids, best first. */

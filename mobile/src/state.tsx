@@ -12,7 +12,15 @@ export type VitalsTab = 'bp' | 'glu';
 export type VitalsForm = { s: number | string; di: number | string; p: number | string; v: number | string; when: string; edit?: number };
 
 /** A medicine the person takes: a product (or ingredient) and the times of day it is taken. */
-export type Med = { key: string; name: string; ids: string[]; slots: SlotKey[]; color: string };
+export type Med = {
+  key: string; name: string; ids: string[]; slots: SlotKey[]; color: string;
+  /** Last day of a prescription (YYYY-MM-DD), read from "N일분" on a scanned prescription or pill bag. */
+  until?: string;
+};
+/** Medicines still being taken on `day` (a prescription past its last day no longer counts). */
+export const medsOn = (meds: Med[], day: string) => meds.filter(m => !m.until || m.until >= day);
+/** YYYY-MM-DD of today + n days. */
+export const dayPlus = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 export type ScanRec = { at: number; kind: 'rx' | 'barcode' | 'pill' | 'photo'; found: Found[] };
 export type SymRec = { d: string; text: string; drugs: string };
 export type Member = {
@@ -39,6 +47,8 @@ type Saved = {
   theme?: Theme;
   /** Letter size for people who see small text poorly: 보통 / 크게 / 아주 크게. */
   text?: TextSize;
+  /** The "how to take a good photo" guide on the scan screen has been seen once. */
+  scanTip?: boolean;
 };
 
 export type AppState = Saved & {
@@ -120,6 +130,8 @@ function loadSaved(): Saved {
     // Older saves have no lunch slot: fill in defaults for any missing time.
     // Saves from before the first-run introduction existed belong to people already using the app.
     if (s.onboarded === undefined) s.onboarded = true;
+    // Opening an old scan used to save it again under the same time, so one tap on ✕ removed every copy.
+    s.members.forEach(m => { const seen = new Set<number>(); m.scans = (m.scans || []).filter(x => !seen.has(x.at) && !!seen.add(x.at)); });
     return { ...fresh, ...s, times: { ...fresh.times, ...s.times }, remind: { ...fresh.remind, ...s.remind } };
   } catch { return fresh; }
 }
@@ -169,8 +181,8 @@ export type App = {
   flash: (msg: string) => void;
   openDrug: (f: Found) => void;
   need: (ids: string[]) => void;
-  addMeds: (list: Found[], slots?: SlotKey[]) => number;
-  showFound: (r: ScanRec) => void;
+  addMeds: (list: Found[], slots?: SlotKey[], per?: Record<string, { slots?: SlotKey[]; until?: string }>) => number;
+  showFound: (r: ScanRec, save?: boolean) => void;
   takeSlot: (k: SlotKey) => void;
   sdk: {
     select: (i: number) => void; put: (v: number) => void; hint: () => void; size: (n: SdkSize) => void; fresh: () => void;
@@ -204,12 +216,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Save what the person entered (on this device only).
   const savedRef = useRef('');
   useEffect(() => {
-    const out: Saved = { v: 1, lang: s.lang, times: s.times, remind: s.remind, member: s.member, members: s.members, onboarded: s.onboarded, role: s.role, quiz: s.quiz, theme: s.theme, text: s.text };
+    const out: Saved = { v: 1, lang: s.lang, times: s.times, remind: s.remind, member: s.member, members: s.members, onboarded: s.onboarded, role: s.role, quiz: s.quiz, theme: s.theme, text: s.text, scanTip: s.scanTip };
     const j = JSON.stringify(out);
     if (j === savedRef.current) return;
     savedRef.current = j;
     try { localStorage.setItem(KEY, j); } catch { /* storage full or blocked: keep working in memory */ }
-  }, [s.lang, s.times, s.remind, s.member, s.members, s.onboarded, s.role, s.quiz, s.theme, s.text]);
+  }, [s.lang, s.times, s.remind, s.member, s.members, s.onboarded, s.role, s.quiz, s.theme, s.text, s.scanTip]);
 
   // Light / dark screen colours (index.html sets the first value before the app loads, so there is no flash).
   useEffect(() => {
@@ -280,7 +292,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const openDrug = useCallback((f: Found) => { need(f.ids); set(st => ({ drug: f, dtab: 'adr', stack: [...st.stack, 'detail'] })); }, [set, need]);
 
-  const addMeds = useCallback((list: Found[], slots: SlotKey[] = ['m']) => {
+  const addMeds = useCallback((list: Found[], slots: SlotKey[] = ['m'], per: Record<string, { slots?: SlotKey[]; until?: string }> = {}) => {
     if (!slots.length) slots = ['m'];
     const cur = stateRef.current.members[stateRef.current.member].meds;
     const have = new Set(cur.map(m => m.ids.slice().sort().join('+')));
@@ -289,14 +301,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const k = f.ids.slice().sort().join('+');
       if (!f.ids.length || have.has(k)) return;
       have.add(k);
-      add.push({ key: k, name: f.name, ids: f.ids, slots, color: PALETTE[(cur.length + add.length) % PALETTE.length] });
+      const o = per[k] || {};
+      add.push({ key: k, name: f.name, ids: f.ids, slots: o.slots?.length ? o.slots : slots, color: PALETTE[(cur.length + add.length) % PALETTE.length], ...(o.until ? { until: o.until } : {}) });
     });
     if (add.length) { edit(m => ({ meds: [...m.meds, ...add], since: m.since || dayKey() })); add.forEach(m => need(m.ids)); }
     return add.length;
   }, [edit, need]);
 
-  const showFound = useCallback((r: ScanRec) => {
-    if (r.found.length) edit(m => ({ scans: [r, ...m.scans].slice(0, 30) }));
+  /** Show a scan result. A new scan is saved to the records; opening an old record (save=false) is not. */
+  const showFound = useCallback((r: ScanRec, save = true) => {
+    if (save && r.found.length) edit(m => ({ scans: [r, ...m.scans.filter(x => x.at !== r.at)].slice(0, 30) }));
     r.found.forEach(f => need(f.ids));
     set(x => ({ found: r, stack: [...x.stack.filter(k => k !== 'scan' && k !== 'pill'), 'results'] }));
   }, [edit, set, need]);
@@ -312,11 +326,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const st = stateRef.current, m = st.members[st.member];
       const now = new Date(), hm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       for (const k of SLOT_KEYS) {
-        if (!st.remind[k] || st.times[k] !== hm || !m.meds.some(x => x.slots.includes(k))) continue;
+        const meds = medsOn(m.meds, dayKey());
+        if (!st.remind[k] || st.times[k] !== hm || !meds.some(x => x.slots.includes(k))) continue;
         const tag = dayKey() + k;
         if (fired.has(tag) || (m.taken[dayKey()] || []).includes(k)) continue;
         fired.add(tag);
-        const body = m.meds.filter(x => x.slots.includes(k)).map(x => x.name).join(', ');
+        const body = meds.filter(x => x.slots.includes(k)).map(x => x.name).join(', ');
         try { if ('Notification' in window && Notification.permission === 'granted') new Notification(translate(st.lang, '복용할 시간이에요') + ' · ' + st.times[k], { body, icon: './icon-192.png' }); } catch { /* ignore */ }
       }
     }, 20000);

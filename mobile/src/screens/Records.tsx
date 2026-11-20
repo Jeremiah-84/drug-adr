@@ -51,7 +51,7 @@ export function History() {
           return (
             <div key={sc.at} className="col" style={{ borderBottom: '1px solid var(--color-divider)' }}>
               <div className="row" style={{ gap: 10 }}>
-                <button className="tap hov" onClick={() => { if (!editing) showFound(sc); }}
+                <button className="tap hov" onClick={() => { if (!editing) showFound(sc, false); }}
                   style={{ flex: 1, minWidth: 0, display: 'flex', gap: 16, alignItems: 'center', padding: '14px 0' }}>
                   <div style={{ width: 40, flex: 'none', textAlign: 'center' }}>
                     <div className="g tnum" style={{ fontSize: 26, lineHeight: 1 }}>{String(d.getDate()).padStart(2, '0')}</div>

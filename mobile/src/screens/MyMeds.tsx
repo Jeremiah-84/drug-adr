@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useApp, type Med } from '../state';
-import { DrugRow, SlotChips } from './Drugs';
+import { dayKey, useApp, type Med } from '../state';
+import { DrugRow, fmtDay, SlotChips } from './Drugs';
 
 const HOLD_MS = 450;
 const GAP = 0;
@@ -20,7 +20,7 @@ function targetIndex(d: Drag): number {
  * drag rows by holding them, and remove a medicine with ✕ then a confirm.
  */
 export function MyMedsList() {
-  const { me, edit, openDrug, flash, L, F } = useApp();
+  const { s, me, edit, openDrug, flash, L, F } = useApp();
   const [editing, setEditing] = useState(false);
   const [drag, setDrag] = useState<Drag | null>(null);
   const [ask, setAsk] = useState<string | null>(null);
@@ -146,7 +146,18 @@ export function MyMedsList() {
                     <button className="btn btn-primary" onClick={() => remove(m)} style={{ height: 32 }}>{L('지우기')}</button>
                   </div>
                 ) : editing ? undefined : (
-                  <SlotChips compact value={m.slots} onChange={v => edit(x => ({ meds: x.meds.map(y => y.key === m.key ? { ...y, slots: v } : y) }))} />
+                  <div className="col" style={{ gap: 6 }}>
+                    {m.until && (
+                      <div className="row" style={{ gap: 8, fontSize: 12.5 }}>
+                        <span style={{ color: m.until < dayKey() ? 'var(--color-neutral-600)' : 'var(--color-accent-700)' }}>
+                          {m.until < dayKey() ? F('{0}에 끝났어요', fmtDay(m.until, s.lang)) : F('{0}까지', fmtDay(m.until, s.lang))}
+                        </span>
+                        <button className="tap link-u" style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}
+                          onClick={() => edit(x => ({ meds: x.meds.map(y => y.key === m.key ? { ...y, until: undefined } : y) }))}>{L('계속 먹어요')}</button>
+                      </div>
+                    )}
+                    <SlotChips compact value={m.slots} onChange={v => edit(x => ({ meds: x.meds.map(y => y.key === m.key ? { ...y, slots: v } : y) }))} />
+                  </div>
                 )} />
             </div>
           );

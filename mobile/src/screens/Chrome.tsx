@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as RPointerEvent } from 'react';
 import type { Screen } from '../config';
 import { useApp, type ScanMode } from '../state';
 import { BookOpen, House, Pill as PillIcon, ScanLine, User, X, Zap } from '../icons';
-import { barcodeDetector, code13, findInText, loadIndex, lookupBarcode, ocr, photoCanvas, warmOcr } from '../real';
+import { barcodeDetector, code13, findInText, loadIndex, lookupBarcode, ocr, photoCanvas, readDosing, warmOcr } from '../real';
 
 const MODES: Record<ScanMode, [string, string]> = {
   rx: ['처방전·약봉투', '처방전이나 약봉투의 글자가 네모 안에 들어오게 비춰주세요'],
@@ -47,13 +47,17 @@ export function ScanOverlay() {
     let stop = false;
     (async () => {
       try {
-        const st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+        const st = await openCamera(() => stop);
+        if (!st) return;
         if (stop) { st.getTracks().forEach(x => x.stop()); return; }
         stream.current = st;
         const v = video.current!;
         v.srcObject = st; await v.play(); setLive(true);
-        const caps = (st.getVideoTracks()[0].getCapabilities?.() || {}) as { torch?: boolean };
+        const tr = st.getVideoTracks()[0];
+        const caps = (tr.getCapabilities?.() || {}) as { torch?: boolean; focusMode?: string[] };
         if (caps.torch) setTorch(false);
+        // Keep refocusing on whatever is in front of the lens (Android Chrome; iPhone does this on its own).
+        if (caps.focusMode?.includes('continuous')) tr.applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] }).catch(() => {});
       } catch { setLive(false); }
     })();
     return () => { stop = true; stream.current?.getTracks().forEach(x => x.stop()); stream.current = null; };
@@ -88,7 +92,7 @@ export function ScanOverlay() {
       await loadIndex();
       const text = await ocr(img, p => setBusy(F('글자를 읽는 중… {0}%', p)), t => findInText(t).length);
       setBusy('');
-      const found = findInText(text);
+      const found = readDosing(text, findInText(text));
       if (!found.length) camOn();
       showFound({ at: Date.now(), kind, found });
     } catch { setBusy(L('글자를 읽지 못했어요. 다시 찍어 주세요')); camOn(); }
@@ -108,7 +112,12 @@ export function ScanOverlay() {
     if (s.mode === 'pill') { go('pill'); return; }
     const c = grab();
     if (!c) { file.current?.click(); return; }
-    if (s.mode === 'rx') { setStill(c.toDataURL('image/jpeg', 0.7)); camOff(); readText(c, 'rx'); return; }
+    if (s.mode === 'rx') {
+      // A real photo (ImageCapture) is sharper and larger than a video frame, and the phone focuses for it.
+      setBusy(L('초점을 맞춰 찍는 중…'));
+      const photo = await takePhoto(stream.current);
+      setStill(photo ? URL.createObjectURL(photo) : c.toDataURL('image/jpeg', 0.7)); camOff(); readText(photo || c, 'rx'); return;
+    }
     try { const d = await barcodeDetector(); const r = await d.detect(c); let ok = false; for (const b of r) if (await found(b.rawValue)) { ok = true; break; } if (!ok && !r.length) setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
     catch { setBusy(L('바코드를 찾지 못했어요. 조금 더 가까이 비춰 주세요')); }
   };
@@ -131,9 +140,25 @@ export function ScanOverlay() {
     try { await tr.applyConstraints({ advanced: [{ torch: !torch } as MediaTrackConstraintSet] }); setTorch(!torch); } catch { /* not supported */ }
   };
 
+  const [ring, setRing] = useState<{ x: number; y: number; k: number } | null>(null);
+  const focusAt = (e: RPointerEvent<HTMLDivElement>) => {
+    const tr = stream.current?.getVideoTracks()[0], box = e.currentTarget.getBoundingClientRect();
+    if (!tr || !live) return;
+    const x = e.clientX - box.left, y = e.clientY - box.top;
+    setRing({ x, y, k: Date.now() });
+    const caps = (tr.getCapabilities?.() || {}) as { focusMode?: string[] };
+    const mode = caps.focusMode?.includes('single-shot') ? 'single-shot' : caps.focusMode?.includes('continuous') ? 'continuous' : null;
+    if (!mode) return;
+    tr.applyConstraints({ advanced: [{ pointsOfInterest: [{ x: x / box.width, y: y / box.height }], focusMode: mode } as MediaTrackConstraintSet] })
+      .catch(() => tr.applyConstraints({ advanced: [{ focusMode: mode } as MediaTrackConstraintSet] }).catch(() => {}));
+  };
+  useEffect(() => { if (!ring) return; const id = setTimeout(() => setRing(null), 1200); return () => clearTimeout(id); }, [ring]);
+  const [guide, setGuide] = useState(!s.scanTip && s.mode !== 'pill');
+  const closeGuide = () => { setGuide(false); if (!s.scanTip) set({ scanTip: true }); };
+
   const reading = !!busy && /%|준비/.test(busy);
   const fr = FRAMES[s.mode];
-  const ring = { width: 44, height: 44, borderRadius: '50%', border: '1px solid rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: 'inherit' } as const;
+  const circle = { width: 44, height: 44, borderRadius: '50%', border: '1px solid rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: 'inherit' } as const;
   return (
     <div className="col" style={{ position: 'absolute', inset: 0, background: 'var(--ms-dark)', zIndex: 20, color: '#f8f4f4' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(135deg,rgba(255,255,255,.015) 0 12px,transparent 12px 24px)' }} />
@@ -141,12 +166,15 @@ export function ScanOverlay() {
       {!live && cam && !still && <span style={{ position: 'absolute', top: '46%', left: 24, right: 24, textAlign: 'center', fontSize: 12, fontStyle: 'italic', color: '#9b9797', lineHeight: 1.6 }}>{L('카메라를 쓸 수 없으면 아래 버튼으로 사진을 고르세요')}</span>}
       <input ref={file} type="file" accept="image/*" hidden onChange={e => { onFile(e.target.files?.[0]); e.target.value = ''; }} />
       {still && <img src={still} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: 0.55 }} />}
+      {/* Tap anywhere on the picture to focus there. */}
+      <div onPointerDown={focusAt} style={{ position: 'absolute', inset: 0 }} aria-hidden="true" />
+      {ring && <span key={ring.k} className="focus-ring" style={{ left: ring.x - 32, top: ring.y - 32 }} />}
       <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'calc(var(--ms-top) + 8px) 22px 0' }}>
-        <button aria-label="Close" onClick={back} style={ring}><X /></button>
+        <button aria-label="Close" onClick={back} style={circle}><X /></button>
         <span className="g" style={{ letterSpacing: '.32em', fontSize: 14, color: '#e1ad66', fontWeight: 700 }}>SCAN</span>
-        <div className="g" style={{ ...ring, fontSize: 11, letterSpacing: '.08em', fontWeight: 700, opacity: s.mode === 'barcode' && live ? 1 : 0 }}>AUTO</div>
+        <button aria-label={L('잘 찍는 방법')} onClick={() => setGuide(true)} className="serif" style={{ ...circle, fontSize: 19, fontWeight: 600, color: '#facb8d' }}>?</button>
       </div>
-      <div style={{ position: 'absolute', ...fr, transition: 'all .35s ease', border: '1px solid rgba(225,173,102,.25)' }}>
+      <div style={{ position: 'absolute', ...fr, pointerEvents: 'none', transition: 'all .35s ease', border: '1px solid rgba(225,173,102,.25)' }}>
         <span style={corner({ left: -1, top: -1, borderLeft: gold, borderTop: gold })} />
         <span style={corner({ right: -1, top: -1, borderRight: gold, borderTop: gold })} />
         <span style={corner({ left: -1, bottom: -1, borderLeft: gold, borderBottom: gold })} />
@@ -158,6 +186,7 @@ export function ScanOverlay() {
       <div className="col" style={{ marginTop: 'auto', position: 'relative', padding: '0 22px calc(36px + env(safe-area-inset-bottom, 0px))', alignItems: 'center', gap: 18 }}>
         <div className="serif" aria-live="polite" style={{ fontSize: 14, textAlign: 'center', lineHeight: 1.7, minHeight: 48, maxWidth: 300, textShadow: '0 1px 6px rgba(0,0,0,.8)' }}>
           {busy || L(hint)}
+          {!busy && live && s.mode !== 'pill' && <div style={{ fontSize: 12, color: '#e9d2ad' }}>{L('글자를 한 번 누르면 초점을 맞춰요')}</div>}
           {!busy && <div style={{ fontSize: 11.5, fontStyle: 'italic', color: '#bab6b6' }}>{L('사진은 이 기기 안에서만 처리합니다')}</div>}
         </div>
         <div style={{ display: 'flex', border: '1px solid rgba(255,255,255,.18)', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: 'rgba(0,0,0,.35)' }} role="radiogroup">
@@ -175,12 +204,103 @@ export function ScanOverlay() {
             style={{ width: 76, height: 76, borderRadius: '50%', border: '1px solid #e1ad66', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', padding: 0 }}>
             <span style={{ width: 62, height: 62, borderRadius: '50%', border: '1.5px solid #e1ad66' }} />
           </button>
-          <button aria-label="Flash" onClick={toggleTorch} disabled={torch === null}
-            style={{ ...ring, width: 52, height: 52, color: torch ? '#facb8d' : 'inherit', borderColor: torch ? '#e1ad66' : 'rgba(255,255,255,.2)', opacity: torch === null ? 0.35 : 1 }}><Zap /></button>
+          {/* Flash (torch) — only on phones that allow it from the browser. */}
+          <button aria-label={L('플래시')} aria-pressed={!!torch} onClick={toggleTorch} disabled={torch === null}
+            style={{ width: 52, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 0, padding: 0, color: torch ? '#facb8d' : 'inherit', visibility: torch === null ? 'hidden' : 'visible' }}>
+            <span style={{ ...circle, width: 44, height: 44, borderColor: torch ? '#e1ad66' : 'rgba(255,255,255,.2)' }}><Zap /></span>
+            <span style={{ fontSize: 10.5 }}>{torch ? L('플래시 켬') : L('플래시')}</span>
+          </button>
         </div>
+      </div>
+      {guide && <ScanGuide mode={s.mode} onClose={closeGuide} />}
+    </div>
+  );
+}
+
+const GUIDE: Record<'rx' | 'barcode', [string, string][]> = {
+  rx: [
+    ['밝은 곳에서 평평하게', '종이를 책상에 펴 놓고, 밝은 곳에서 찍어요. 구겨진 약봉투는 손으로 펴 주세요.'],
+    ['위에서 나란히', '휴대폰을 종이 바로 위에서 종이와 나란히 들어요. 비스듬히 찍으면 글자가 찌그러져요.'],
+    ['약 이름이 네모를 꽉 채우게', '15~25cm 거리에서 약 이름 줄이 가로로 네모 안에 크게 들어오게 맞춰요. 너무 가까우면 초점이 안 맞아요.'],
+    ['눌러서 초점 맞추기', '화면의 글자를 한 번 누르면 그곳에 초점을 맞춰요. 글자가 또렷해지면 가운데 버튼을 눌러요.'],
+    ['반사와 그림자 피하기', '불빛이 번쩍이거나 손 그림자가 글자를 가리지 않게 해요. 어두우면 오른쪽 아래 플래시(번개)를 켜고, 반짝이는 봉투는 플래시를 꺼요.'],
+    ['복용법 줄도 함께', '"1일 3회", "7일분" 같은 줄이 함께 나오면 먹는 시간과 끝나는 날을 채워 드려요. 채운 내용은 결과 화면에서 바꿀 수 있어요.'],
+    ['그래도 안 되면', '휴대폰 기본 카메라로 찍은 뒤 왼쪽 아래 "사진" 버튼으로 골라 주세요. 기본 카메라가 초점을 더 잘 맞춰요.'],
+  ],
+  barcode: [
+    ['바코드를 가로로', '약 상자의 바코드가 네모 안에 가로로 들어오게 맞춰요. 비추기만 하면 저절로 읽어요.'],
+    ['10cm쯤 떨어져서', '너무 가까우면 초점이 안 맞아요. 화면을 한 번 누르면 초점을 다시 맞춰요.'],
+    ['반사 피하기', '비닐 포장이 번쩍이면 상자를 조금 기울여요. 어두우면 플래시(번개)를 켜요.'],
+  ],
+};
+
+/** How to take a photo the text reader can read. Shown the first time and from the ? button. */
+function ScanGuide({ mode, onClose }: { mode: ScanMode; onClose: () => void }) {
+  const { L } = useApp();
+  const tips = GUIDE[mode === 'barcode' ? 'barcode' : 'rx'];
+  return (
+    <div className="scan-guide" role="dialog" aria-modal="true" aria-label={L('잘 찍는 방법')} onClick={onClose}>
+      <div className="scan-guide-card" onClick={e => e.stopPropagation()}>
+        <span className="g" style={{ letterSpacing: '.28em', fontSize: 12, color: '#e1ad66', fontWeight: 700 }}>HOW TO SCAN</span>
+        <span className="serif" style={{ fontSize: 21, fontWeight: 600 }}>{L('이렇게 찍으면 잘 읽어요')}</span>
+        <ol className="scan-guide-list">
+          {tips.map(([h, b], i) => (
+            <li key={h}>
+              <span className="g tnum" style={{ color: '#e1ad66', fontSize: 17, width: 20, flex: 'none' }}>{i + 1}</span>
+              <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span className="serif" style={{ fontSize: 15, fontWeight: 600 }}>{L(h)}</span>
+                <span style={{ fontSize: 13, lineHeight: 1.65, color: '#d6d1cf' }}>{L(b)}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <button className="btn" onClick={onClose} style={{ height: 48, border: '1px solid #e1ad66', color: '#facb8d', background: 'none', fontFamily: 'var(--ms-serif)', fontSize: 15, fontWeight: 600 }}>{L('알겠어요')}</button>
       </div>
     </div>
   );
+}
+
+const CAM_KEY = 'mediscan.cam';
+const hasAF = (st: MediaStream) => ((st.getVideoTracks()[0]?.getCapabilities?.() || {}) as { focusMode?: string[] }).focusMode?.includes('continuous');
+/**
+ * Open the back camera. Some phones hand the browser a wide-angle lens that cannot focus up close;
+ * when the first camera has no autofocus, the other back cameras are tried and the first one that
+ * can focus is remembered for next time.
+ */
+async function openCamera(stopped: () => boolean): Promise<MediaStream | null> {
+  const size = { width: { ideal: 1920 }, height: { ideal: 1080 } };
+  let saved = '';
+  try { saved = localStorage.getItem(CAM_KEY) || ''; } catch { /* ignore */ }
+  if (saved) {
+    try { return await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: saved }, ...size }, audio: false }); } catch { /* camera gone: fall through */ }
+  }
+  const first = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, ...size }, audio: false });
+  const caps = (first.getVideoTracks()[0].getCapabilities?.() || {}) as { focusMode?: string[] };
+  if (!caps.focusMode || hasAF(first) || stopped()) return first; // iPhone etc. report no focus modes: keep the default
+  const firstId = first.getVideoTracks()[0].getSettings().deviceId;
+  const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput' && d.deviceId !== firstId && !/front|전면|user/i.test(d.label));
+  for (const c of cams) {
+    let st: MediaStream | null = null;
+    try {
+      first.getTracks().forEach(x => x.stop());
+      st = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: c.deviceId }, ...size }, audio: false });
+      const facing = st.getVideoTracks()[0].getSettings().facingMode;
+      if (hasAF(st) && facing !== 'user') { try { localStorage.setItem(CAM_KEY, c.deviceId); } catch { /* ignore */ } return st; }
+      st.getTracks().forEach(x => x.stop());
+    } catch { st?.getTracks().forEach(x => x.stop()); }
+    if (stopped()) return null;
+  }
+  return navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, ...size }, audio: false });
+}
+
+/** A full-resolution still (the phone focuses for it). Null where the browser cannot take one. */
+async function takePhoto(st: MediaStream | null): Promise<Blob | null> {
+  const tr = st?.getVideoTracks()[0];
+  const IC = (window as unknown as { ImageCapture?: new (t: MediaStreamTrack) => { takePhoto: () => Promise<Blob> } }).ImageCapture;
+  if (!tr || !IC) return null;
+  try {
+    return await Promise.race([new IC(tr).takePhoto(), new Promise<null>(r => setTimeout(() => r(null), 4000))]);
+  } catch { return null; }
 }
 
 /** Non-drug ad banner (same ad page and disclosure as the web app). */
