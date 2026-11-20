@@ -6,6 +6,7 @@ import type { Screen } from '../config';
 import { Badge, SecHead } from '../ui';
 import { ChevronRight, Clock, ScanLine, Stethoscope, MapPin } from '../icons';
 import { AdSlot } from './Chrome';
+import { XPUZZLES, layout, xwRestore } from '../xword';
 import { LangButton } from './People';
 
 const LOCALE = { ko: 'ko-KR', en: 'en-US', zh: 'zh-CN', ja: 'ja-JP' } as const;
@@ -40,6 +41,9 @@ export function Home() {
   const stamps = stampMonth(me);
   const z = s.sdk;
   const left = z.cells.filter(v => !v).length;
+  // crossword progress (saved by the crossword screen; read fresh each time Home renders)
+  const xz = xwRestore(), xl = layout(XPUZZLES[xz.idx]);
+  const xLeft = xl.entries.filter(x => x.cells.some(c => xz.cells[c] !== xl.sol[c])).length;
 
   const takeNext = () => {
     if (!next) return;
@@ -210,6 +214,21 @@ export function Home() {
           <div style={{ fontSize: 11.5, color: 'var(--color-accent-700)', fontStyle: 'italic' }}>{L('두뇌 쉼터 · 매일 새 퍼즐')}</div>
           <div className="serif" style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>{L('오늘의 스도쿠')}</div>
           <div className="muted" style={{ fontSize: 12.5 }}>{z.end ? F('오늘 완성 · 힌트 {0}번', z.hints) : F('{0}칸 남았습니다', left)}</div>
+        </div>
+        <ChevronRight />
+      </button>
+
+      <button className="tap hov" onClick={() => go('xword')}
+        style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 0', marginTop: -20, borderBottom: '1px solid var(--color-divider)' }}>
+        <div aria-hidden="true" style={{ width: 52, height: 52, flex: 'none', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 2 }}>
+          {['약', '', '', '국', '화', '', '', '분', ''].map((v, i) => (
+            <span key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--ms-serif)', fontSize: 11, fontWeight: 700, border: v ? '1px solid var(--color-text)' : 'none', color: 'var(--color-accent-700)' }}>{v}</span>
+          ))}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11.5, color: 'var(--color-accent-700)', fontStyle: 'italic' }}>{L('두뇌 쉼터 · 매일 새 퍼즐')}</div>
+          <div className="serif" style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>{L('오늘의 십자말 퀴즈')}</div>
+          <div className="muted" style={{ fontSize: 12.5 }}>{xz.end ? F('오늘 완성 · 힌트 {0}번', xz.hints) : F('낱말 {0}개 남았습니다', xLeft)}</div>
         </div>
         <ChevronRight />
       </button>
