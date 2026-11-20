@@ -8,7 +8,8 @@ import { sdkLoad, sdkValid, type SdkSize, type SdkState } from './sudoku';
 export type DetailTab = 'adr' | 'organ' | 'how';
 export type ScanMode = 'rx' | 'barcode' | 'pill';
 export type VitalsTab = 'bp' | 'glu';
-export type VitalsForm = { s: number | string; di: number | string; p: number | string; v: number | string; when: string };
+/** `edit` is the index of the record being corrected (absent when adding a new one). */
+export type VitalsForm = { s: number | string; di: number | string; p: number | string; v: number | string; when: string; edit?: number };
 
 /** A medicine the person takes: a product (or ingredient) and the times of day it is taken. */
 export type Med = { key: string; name: string; ids: string[]; slots: SlotKey[]; color: string };

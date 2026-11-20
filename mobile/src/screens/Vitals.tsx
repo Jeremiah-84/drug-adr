@@ -1,6 +1,7 @@
 import { bpSt, gluSt, nowHM, todayMD, type Badge as BadgeT } from '../data';
 import { trBadge } from '../derive';
 import { useApp, type VitalsTab } from '../state';
+import { useState } from 'react';
 import { Back, Badge, Heading, SecHead, Segment, Sheet, Stats } from '../ui';
 import { Minus, Plus } from '../icons';
 
@@ -58,8 +59,13 @@ function useVitalsView(): View {
 }
 
 export function Vitals() {
-  const { s, set, t, L } = useApp();
+  const { s, me, set, t, L } = useApp();
   const vt = useVitalsView();
+  // Tap a record to correct or delete it in the same sheet used for adding.
+  const open = (i: number) => {
+    if (s.vt === 'bp') { const e = me.bp[i]; set(x => ({ sheet: true, form: { ...x.form, s: e.s, di: e.di, p: e.p, edit: i } })); }
+    else { const e = me.glu[i]; set(x => ({ sheet: true, form: { ...x.form, v: e.v, when: e.when, edit: i } })); }
+  };
   return (
     <div className="page">
       <Back />
@@ -107,7 +113,8 @@ export function Vitals() {
         <div className="col">
           <SecHead name={t.records} />
           {vt.rows.map((r, i) => (
-            <div key={vt.rows.length - i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: '1px solid var(--color-divider)' }}>
+            <button key={vt.rows.length - i} className="tap hov" onClick={() => open(i)} aria-label={`${r.d} ${r.time} ${r.big} · ${L('고치기')}`}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: '1px solid var(--color-divider)' }}>
               <div className="tnum" style={{ width: 46, flex: 'none' }}>
                 <div style={{ fontSize: 12.5, color: 'var(--color-accent-700)' }}>{r.d}</div>
                 <div className="muted" style={{ fontSize: 10.5 }}>{r.time}</div>
@@ -116,11 +123,12 @@ export function Vitals() {
                 <span className="g tnum" style={{ fontSize: 22 }}>{r.big}</span> <span className="muted" style={{ fontSize: 11.5, fontStyle: 'italic' }}>{r.sub}</span>
               </div>
               <Badge b={r} style={{ fontSize: 10.5, padding: '1px 8px', alignSelf: 'center' }} />
-            </div>
+            </button>
           ))}
+          <span className="sub" style={{ fontSize: 12, paddingTop: 8 }}>{L('잘못 적은 기록은 눌러서 고치거나 지울 수 있어요')}</span>
         </div>
       )}
-      <button className="btn btn-primary cta" onClick={() => set({ sheet: true })}>{vt.addLabel}</button>
+      <button className="btn btn-primary cta" onClick={() => set(x => ({ sheet: true, form: { ...x.form, edit: undefined } }))}>{vt.addLabel}</button>
       <div className="fine">{t.criteria}</div>
     </div>
   );
@@ -129,10 +137,20 @@ export function Vitals() {
 const WHEN = ['공복', '식후 2시간', '취침 전'];
 
 export function VitalsSheet() {
-  const { s, set, edit, flash, t, L, F } = useApp();
+  const { s, me, set, edit, flash, t, L, F } = useApp();
   const vt = useVitalsView();
+  const [ask, setAsk] = useState(false);
   if (!s.sheet) return null;
   const f = s.form, isBp = s.vt === 'bp';
+  const ed = f.edit, editing = ed !== undefined && ed !== null;
+  const title = editing ? L(isBp ? '혈압 기록 고치기' : '혈당 기록 고치기') : vt.addLabel;
+  const close = () => { setAsk(false); set({ sheet: false }); };
+  const remove = () => {
+    if (!editing) return;
+    if (isBp) edit(m => ({ bp: m.bp.filter((_, j) => j !== ed) }));
+    else edit(m => ({ glu: m.glu.filter((_, j) => j !== ed) }));
+    close(); flash(L('기록을 지웠어요'));
+  };
   const status = trBadge(isBp ? bpSt(+f.s, +f.di) : gluSt(+f.v, f.when), L);
   const fields: ['s' | 'di' | 'p' | 'v', string, string][] = isBp
     ? [['s', '수축기', 'mmHg'], ['di', '이완기', 'mmHg'], ['p', '맥박', 'bpm']]
@@ -140,16 +158,27 @@ export function VitalsSheet() {
   const bump = (k: (typeof fields)[number][0], d: number) => () =>
     set(x => ({ form: { ...x.form, [k]: Math.max(0, (Number(x.form[k]) || 0) + d) } }));
   const save = () => {
+    if (editing) {
+      // Keep the original date and time; only the numbers (and 공복/식후) change.
+      if (isBp) edit(m => ({ bp: m.bp.map((e, j) => j === ed ? { ...e, s: +f.s || 0, di: +f.di || 0, p: +f.p || 0 } : e) }));
+      else edit(m => ({ glu: m.glu.map((e, j) => j === ed ? { ...e, v: +f.v || 0, when: f.when } : e) }));
+      close(); flash(L('기록을 고쳤어요'));
+      return;
+    }
     const time = nowHM(), d = todayMD();
     if (isBp) edit(m => ({ bp: [{ d, time, s: +f.s || 0, di: +f.di || 0, p: +f.p || 0 }, ...m.bp].slice(0, 400) }));
     else edit(m => ({ glu: [{ d, time, v: +f.v || 0, when: f.when }, ...m.glu].slice(0, 400) }));
-    set({ sheet: false });
+    close();
     flash(isBp ? F('혈압 {0}/{1}을 기록했어요', f.s, f.di) : F('혈당 {0} mg/dL을 기록했어요', f.v));
   };
+  const entry = editing ? (isBp ? me.bp[ed] : me.glu[ed]) : null;
   return (
-    <Sheet onClose={() => set({ sheet: false })} gap={16} label={vt.addLabel}>
+    <Sheet onClose={close} gap={16} label={title}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span className="serif" style={{ fontSize: 19, fontWeight: 600 }}>{vt.addLabel}</span>
+        <div className="col" style={{ gap: 2 }}>
+          <span className="serif" style={{ fontSize: 19, fontWeight: 600 }}>{title}</span>
+          {entry && <span className="sub tnum" style={{ fontSize: 12 }}>{F('{0} {1}에 적은 기록', entry.d, entry.time)}</span>}
+        </div>
         <Badge b={status} style={{ padding: '2px 10px', alignSelf: 'center' }} />
       </div>
       {!isBp && (
@@ -170,7 +199,16 @@ export function VitalsSheet() {
           </div>
         ))}
       </div>
-      <button className="btn btn-primary cta" style={{ height: 48, fontSize: 15 }} onClick={save}>{t.save}</button>
+      <button className="btn btn-primary cta" style={{ height: 48, fontSize: 15 }} onClick={save}>{editing ? L('고친 내용 저장') : t.save}</button>
+      {editing && (ask ? (
+        <div className="row" style={{ gap: 8, padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-accent)' }}>
+          <span className="serif" style={{ flex: 1, fontSize: 13 }}>{L('이 기록을 지울까요?')}</span>
+          <button className="btn btn-secondary" onClick={() => setAsk(false)} style={{ height: 32 }}>{L('취소')}</button>
+          <button className="btn btn-primary" onClick={remove} style={{ height: 32 }}>{L('지우기')}</button>
+        </div>
+      ) : (
+        <button className="tap link-u" onClick={() => setAsk(true)} style={{ alignSelf: 'center', fontSize: 13, padding: '4px 8px' }}>{L('이 기록 지우기')}</button>
+      ))}
     </Sheet>
   );
 }
