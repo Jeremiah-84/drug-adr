@@ -133,17 +133,23 @@ export const probName = (D: Index | null, id: string, lang: string) => {
 const loadScript = (src: string) => new Promise<void>((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = () => ok(); s.onerror = () => no(new Error(src)); document.head.appendChild(s); });
 const here = (p: string) => new URL(p, location.href).href;
 
-export async function photoCanvas(file: Blob, max: number): Promise<HTMLCanvasElement> {
-  let bmp: ImageBitmap | HTMLImageElement;
-  try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
-  catch { bmp = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(file); }); }
-  const w0 = bmp.width, h0 = bmp.height, k = Math.min(1, max / Math.max(w0, h0)), c = document.createElement('canvas');
+type Src = ImageBitmap | HTMLImageElement | HTMLCanvasElement;
+async function decode(file: Blob): Promise<Src> {
+  try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+  catch { return new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(file); }); }
+}
+/** Grey, slightly contrasted copy of the picture whose long side is `max` px (shrinks or grows). */
+function sized(src: Src, max: number, grow = false): HTMLCanvasElement {
+  const w0 = src.width, h0 = src.height, k0 = max / Math.max(w0, h0), k = grow ? k0 : Math.min(1, k0), c = document.createElement('canvas');
   c.width = Math.round(w0 * k); c.height = Math.round(h0 * k);
-  const g = c.getContext('2d')!; g.filter = 'grayscale(1) contrast(1.3)'; g.drawImage(bmp, 0, 0, c.width, c.height);
+  const g = c.getContext('2d')!; g.filter = 'grayscale(1) contrast(1.3)'; g.drawImage(src, 0, 0, c.width, c.height);
   return c;
 }
+export async function photoCanvas(file: Blob, max: number): Promise<HTMLCanvasElement> {
+  return sized(await decode(file), max);
+}
 
-type TessWorker = { recognize: (img: HTMLCanvasElement) => Promise<{ data: { text: string } }> };
+type TessWorker = { recognize: (img: HTMLCanvasElement) => Promise<{ data: { text: string; confidence: number } }>; setParameters: (p: Record<string, string>) => Promise<unknown> };
 let ocrW: Promise<TessWorker> | null = null;
 let ocrProg: (p: number) => void = () => {};
 function ocrWorker(): Promise<TessWorker> {
@@ -151,23 +157,45 @@ function ocrWorker(): Promise<TessWorker> {
     ocrW = (async () => {
       const w = window as unknown as { Tesseract?: { createWorker: (...a: unknown[]) => Promise<TessWorker> } };
       if (!w.Tesseract) await loadScript(VENDOR + 'ocr/tesseract.min.js');
-      return w.Tesseract!.createWorker(['kor', 'eng'], 1, {
+      // Korean only: product names on prescriptions and pill bags are Korean, and leaving out
+      // the English model makes loading and reading noticeably quicker.
+      const wk = await w.Tesseract!.createWorker(['kor'], 1, {
         workerPath: here(VENDOR + 'ocr/worker.min.js'), corePath: here(VENDOR + 'ocr/'), langPath: here(VENDOR + 'ocr/'), gzip: true,
         logger: (m: { status: string; progress?: number }) => { if (m.status === 'recognizing text') ocrProg(Math.round((m.progress || 0) * 100)); },
       });
+      // Automatic page layout (Tesseract's mode 3). tesseract.js defaults to "one block of text",
+      // which loses most lines of a prescription table.
+      await wk.setParameters({ tessedit_pageseg_mode: '3' });
+      return wk;
     })();
     ocrW.catch(() => { ocrW = null; });
   }
   return ocrW;
 }
+/** Start loading the text reader early (camera screen opened, photo picker opened). */
+export const warmOcr = () => { ocrWorker().catch(() => {}); };
 
-/** Read the text in a photo (prescription, pill bag) on this device. */
-export async function ocr(img: Blob | HTMLCanvasElement, onProgress: (p: number) => void): Promise<string> {
+/**
+ * Read the text in a photo (prescription, pill bag) on this device.
+ * Tesseract reads best when letters are about 20 px tall, which depends on how close the photo was
+ * taken. The first pass uses the size that suits a normal photo of a prescription; only when that
+ * pass is unsure (low confidence or no medicine found) are larger and smaller copies tried, and the
+ * best reading wins.
+ */
+export async function ocr(img: Blob | HTMLCanvasElement, onProgress: (p: number) => void, score: (text: string) => number = () => 1): Promise<string> {
   const w = await ocrWorker();
   ocrProg = onProgress;
-  const c = img instanceof HTMLCanvasElement ? img : await photoCanvas(img, 2400);
-  const { data } = await w.recognize(c);
-  return (data && data.text) || '';
+  const src = img instanceof HTMLCanvasElement ? img : await decode(img);
+  const long = Math.max(src.width, src.height);
+  const sizes = [Math.min(long, 1700), long > 2000 ? 2400 : Math.min(2400, Math.round(long * 1.4)), 1150].filter((v, i, a) => a.indexOf(v) === i);
+  let best = { text: '', s: -1, conf: -1 };
+  for (const [i, size] of sizes.entries()) {
+    const { data } = await w.recognize(sized(src, size, i === 1));
+    const text = (data && data.text) || '', conf = data?.confidence || 0, s = score(text);
+    if (s > best.s || (s === best.s && conf > best.conf)) best = { text, s, conf };
+    if (s > 0 && conf >= 86) break;
+  }
+  return best.text;
 }
 
 type Detector = { detect: (src: CanvasImageSource) => Promise<{ rawValue: string }[]> };
