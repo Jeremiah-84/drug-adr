@@ -230,6 +230,13 @@ def main():
             if len(e) == 9 and e.isdigit(): bmap.setdefault(e[:8], val)
     json.dump({"m": bmap}, open(os.path.join(a.out, "barcode.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     print("바코드", len(bmap))
+    # 품목기준코드(약 상자·약봉투 QR의 itemSeq) → 위 바코드 열쇠. 휴대폰 앱이 QR을 읽을 때만 받음.
+    smap = {}
+    for seq, codes in bars.items():
+        for c in codes.split(","):
+            if len(c) == 13 and c.startswith("880") and c[3:11] in bmap: smap[seq] = c[3:11]; break
+    json.dump({"s": smap}, open(os.path.join(a.out, "seq.json"), "w"), separators=(",", ":"))
+    print("품목기준코드", len(smap))
     # 낱알식별(새긴 글자·모양·색): pipeline/pills.py 가 받아 둔 .cache/pills.json 이 있으면 화면용으로 줄여 씀
     ppath = os.path.join(a.cache, "pills.json")
     if os.path.exists(ppath):
