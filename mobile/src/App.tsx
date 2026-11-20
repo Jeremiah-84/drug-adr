@@ -16,6 +16,7 @@ import { Today } from './screens/Today';
 import { Puzzle } from './screens/Puzzle';
 import { Crossword } from './screens/Crossword';
 import { fmtMin } from './derive';
+import { Diag } from './Diag';
 
 const SCREENS: Partial<Record<Screen, () => ReactNode>> = {
   onboarding: Onboarding, today: Today, puzzle: Puzzle, xword: Crossword,
@@ -44,6 +45,8 @@ function Shell() {
     document.documentElement.style.setProperty('--ms-serif', SERIF[s.lang]);
   }, [s.lang]);
 
+  // The app keeps its own scroll positions; the browser must not restore any on back/forward.
+  useEffect(() => { try { history.scrollRestoration = 'manual'; } catch { /* ignore */ } }, []);
   // Android back button / browser back walks the in-app stack instead of leaving the app.
   const depth = s.stack.length;
   const depthRef = useRef(depth);
@@ -69,7 +72,9 @@ function Shell() {
   // Direction of the page change, for the page-turn animation in app.css.
   const prev = useRef({ screen, depth: s.stack.length, n: 0, dir: '' });
   if (prev.current.screen !== screen || prev.current.depth !== s.stack.length) {
-    const d = s.stack.length > prev.current.depth ? 'fwd' : s.stack.length < prev.current.depth ? 'back' : 'fade';
+    // Prefixed names: a bare 'back' class also matched the back button's style (.back in app.css),
+    // which turned the page into a centred flex box and cut off the top of a tall page.
+    const d = s.stack.length > prev.current.depth ? 'v-fwd' : s.stack.length < prev.current.depth ? 'v-back' : 'v-fade';
     prev.current = { screen, depth: s.stack.length, n: prev.current.n + 1, dir: d };
   }
   // Back to the top before the new page is painted (a layout effect, not a normal one), so the
@@ -103,6 +108,7 @@ function Shell() {
               skip={L('화면을 누르면 건너뜁니다')} sub={L('메디스캔')} onDone={() => set({ splash: false })} />
           )}
           {s.toast && <div className="toast" role="status">{s.toast}</div>}
+          <Diag />
           <div className="ms-homebar" style={{ background: scanLike ? 'rgba(255,255,255,.5)' : 'var(--color-neutral-800)' }} />
         </div>
       </div>

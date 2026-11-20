@@ -4,6 +4,7 @@ import { adherence, slotViews } from '../derive';
 import { newMember, useApp, type Role, type TextSize, type Theme } from '../state';
 import { Back, Chip, Heading, Segment } from '../ui';
 import { ChevronLeft, ChevronRight, Plus } from '../icons';
+import { toggleDiag } from '../Diag';
 
 const LANG_NAMES: Record<Lang, string> = { ko: '한국어', en: 'English', zh: '中文', ja: '日本語' };
 const LANG_CODES: Record<Lang, string> = { ko: 'KO', en: 'EN', zh: '中', ja: '日' };
@@ -28,7 +29,7 @@ export function LangButton() {
 
 /** App build number shown in 마이 so we can tell whether a phone has the latest version.
  *  Keep it equal to the number in public/sw.js's cache name. */
-const APP_BUILD = 19;
+const APP_BUILD = 21;
 
 export function My() {
   const { s, me, set, go, tab, flash, t, L, F } = useApp();
@@ -122,7 +123,7 @@ export function My() {
           </button>
         ))}
       </div>
-      <div className="fine">{'v' + APP_BUILD + ' · '}{ver ? F('데이터 {0} 갱신', ver) + ' · ' : ''}{L('사진과 기록은 이 기기 안에만 저장되고 서버로 보내지 않아요.')}</div>
+      <div className="fine"><span onClick={toggleDiag}>{'v' + APP_BUILD}</span>{' · '}{ver ? F('데이터 {0} 갱신', ver) + ' · ' : ''}{L('사진과 기록은 이 기기 안에만 저장되고 서버로 보내지 않아요.')}</div>
     </div>
   );
 }
