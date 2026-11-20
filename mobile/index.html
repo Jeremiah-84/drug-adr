@@ -7,7 +7,8 @@
   <script>
     // Apply the saved light / dark choice before the app draws, so the screen does not flash.
     try {
-      var t = (JSON.parse(localStorage.getItem('mediscan.v1') || '{}') || {}).theme;
+      var sv = JSON.parse(localStorage.getItem('mediscan.v1') || '{}') || {}, t = sv.theme;
+      if (sv.text === 'l' || sv.text === 'xl') document.documentElement.dataset.text = sv.text;
       if (t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.dataset.theme = 'dark';
         document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1b1a19');

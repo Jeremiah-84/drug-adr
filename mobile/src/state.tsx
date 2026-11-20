@@ -26,6 +26,7 @@ export type Member = {
 
 export type Role = 'patient' | 'pro';
 export type Theme = 'light' | 'dark' | 'auto';
+export type TextSize = 'm' | 'l' | 'xl';
 type Saved = {
   v: 1; lang: Lang; times: Record<SlotKey, string>; remind: Record<SlotKey, boolean>; member: number; members: Member[];
   /** First-run introduction finished (role picked). */
@@ -35,6 +36,8 @@ type Saved = {
   quiz?: { d: string; pick: number };
   /** Screen colours: light paper (default), dark, or follow the phone setting. */
   theme?: Theme;
+  /** Letter size for people who see small text poorly: 보통 / 크게 / 아주 크게. */
+  text?: TextSize;
 };
 
 export type AppState = Saved & {
@@ -187,12 +190,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Save what the person entered (on this device only).
   const savedRef = useRef('');
   useEffect(() => {
-    const out: Saved = { v: 1, lang: s.lang, times: s.times, remind: s.remind, member: s.member, members: s.members, onboarded: s.onboarded, role: s.role, quiz: s.quiz, theme: s.theme };
+    const out: Saved = { v: 1, lang: s.lang, times: s.times, remind: s.remind, member: s.member, members: s.members, onboarded: s.onboarded, role: s.role, quiz: s.quiz, theme: s.theme, text: s.text };
     const j = JSON.stringify(out);
     if (j === savedRef.current) return;
     savedRef.current = j;
     try { localStorage.setItem(KEY, j); } catch { /* storage full or blocked: keep working in memory */ }
-  }, [s.lang, s.times, s.remind, s.member, s.members, s.onboarded, s.role, s.quiz, s.theme]);
+  }, [s.lang, s.times, s.remind, s.member, s.members, s.onboarded, s.role, s.quiz, s.theme, s.text]);
 
   // Light / dark screen colours (index.html sets the first value before the app loads, so there is no flash).
   useEffect(() => {
@@ -207,6 +210,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     mq.addEventListener('change', apply);
     return () => mq.removeEventListener('change', apply);
   }, [s.theme]);
+
+  // Large text: app.css zooms the page content when this is set.
+  useEffect(() => {
+    if (s.text === 'l' || s.text === 'xl') document.documentElement.dataset.text = s.text;
+    else delete document.documentElement.dataset.text;
+  }, [s.text]);
 
   // Sudoku progress is saved per day, so leaving and coming back resumes the same puzzle.
   useEffect(() => {

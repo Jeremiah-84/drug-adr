@@ -188,4 +188,8 @@ export const EXTRA: Record<string, [string, string, string]> = {
   '밝게': ['Light', '浅色', 'ライト'],
   '어둡게': ['Dark', '深色', 'ダーク'],
   '기기 설정 따르기': ['Follow device', '跟随设备', '端末に合わせる'],
+  '글자 크기': ['Text size', '字体大小', '文字の大きさ'],
+  '보통': ['Normal', '标准', '標準'],
+  '크게': ['Large', '大', '大きく'],
+  '아주 크게': ['Extra large', '特大', 'とても大きく'],
 };

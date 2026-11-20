@@ -284,3 +284,15 @@ button:disabled { cursor: default; }
 :root[data-theme="dark"] .sheet-scrim,
 :root[data-theme="dark"] .dialog-backdrop { background: rgba(0, 0, 0, .55); }
 :root[data-theme="dark"] .plate { filter: sepia(.15) saturate(.8) brightness(.9); }
+
+/* Large text (마이 → 글자 크기). Zoom scales each screen's content and lets it
+   reflow to the narrower width, so inline font sizes all grow together. */
+:root[data-text="l"] .ms-scroll > *,
+:root[data-text="l"] .sheet,
+:root[data-text="l"] .toast { zoom: 1.18; }
+:root[data-text="xl"] .ms-scroll > *,
+:root[data-text="xl"] .sheet,
+:root[data-text="xl"] .toast { zoom: 1.36; }
+:root[data-text="l"] .nav-bar .lb { font-size: 12.5px; }
+:root[data-text="xl"] .nav-bar .lb { font-size: 13.5px; font-weight: 600; }
+:root[data-text="xl"] { --ms-nav-h: calc(70px + env(safe-area-inset-bottom, 0px)); }
