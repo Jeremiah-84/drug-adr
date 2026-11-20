@@ -14,6 +14,11 @@ export const pillIcon = (color: string) => (
 
 const KIND: Record<string, string> = { rx: '처방전 글자 인식', photo: '사진 글자 인식', barcode: '바코드', pill: '알약 모양' };
 const keyOf = (f: Found) => f.ids.slice().sort().join('+');
+/** Times of day for "1일 N회": 1 → 아침, 2 → 아침·저녁, 3 → 아침·점심·저녁, 4 → 자기 전까지. */
+const SLOTS_FOR: Record<number, SlotKey[]> = { 1: ['m'], 2: ['m', 'e'], 3: ['m', 'l', 'e'], 4: ['m', 'l', 'e', 'n'] };
+const keyPlus = (from: number, n: number) => { const d = new Date(from); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+/** "11월 26일" style date in the app language. */
+export const fmtDay = (key: string, lang: string) => new Date(key + 'T12:00:00').toLocaleDateString({ ko: 'ko-KR', en: 'en-US', zh: 'zh-CN', ja: 'ja-JP' }[lang] || 'ko-KR', { month: 'long', day: 'numeric' });
 
 /** Tap-to-choose times of day (아침·점심·저녁·자기 전); several can be on, at least one stays on. */
 export function SlotChips({ value, onChange, compact }: { value: SlotKey[]; onChange: (v: SlotKey[]) => void; compact?: boolean }) {
@@ -77,11 +82,18 @@ export function Results() {
   const have = useMemo(() => new Set(me.meds.map(m => m.key)), [me.meds]);
   const [pick, setPick] = useState<Record<string, boolean>>({});
   const [slots, setSlots] = useState<SlotKey[]>(['m']);
-  useEffect(() => { setPick(Object.fromEntries((r?.found || []).map(f => [keyOf(f), !have.has(keyOf(f))]))); }, [r]);
+  // Per-medicine times of day and last day, filled from "1일 3회 · 7일분" when the paper shows it.
+  const [per, setPer] = useState<Record<string, { slots: SlotKey[]; days?: number }>>({});
+  useEffect(() => {
+    setPick(Object.fromEntries((r?.found || []).map(f => [keyOf(f), !have.has(keyOf(f))])));
+    setPer(Object.fromEntries((r?.found || []).map(f => [keyOf(f), { slots: SLOTS_FOR[f.times || 0] || ['m'], days: f.days }])));
+  }, [r]);
   if (!r) return <div className="page"><Back /></div>;
   const chosen = r.found.filter(f => pick[keyOf(f)] && !have.has(keyOf(f)));
+  const dosed = r.found.some(f => f.times || f.days);
+  const untilOf = (k: string) => per[k]?.days ? keyPlus(r.at, per[k].days! - 1) : undefined;
   const add = () => {
-    const n = addMeds(chosen, slots);
+    const n = addMeds(chosen, slots, dosed ? Object.fromEntries(chosen.map(f => [keyOf(f), { slots: per[keyOf(f)]?.slots, until: untilOf(keyOf(f)) }])) : {});
     flash(n ? F('내 약에 {0}개를 추가했어요', n) : L('이미 모두 등록된 약이에요'));
     if (n) go('schedule');
   };
@@ -102,16 +114,29 @@ export function Results() {
       )}
       <div className="col rule-top">
         {r.found.map((f, i) => {
-          const k = keyOf(f), owned = have.has(k);
+          const k = keyOf(f), owned = have.has(k), pk = per[k], until = untilOf(k);
           return (
             <DrugRow key={k} f={f} color={['#efe9da', '#e3b37a', '#f6f3ec', '#e9b6b0', '#b9d3c4'][i % 5]} onOpen={() => openDrug(f)}
               right={owned ? <span className="sub" style={{ fontSize: 11.5, flex: 'none' }}>{L('등록됨')}</span>
                 : <button role="checkbox" aria-checked={!!pick[k]} aria-label={L('추가할 약으로 고르기')} onClick={() => setPick(p => ({ ...p, [k]: !p[k] }))}
-                  className={'tick' + (pick[k] ? ' on' : '')}>{pick[k] ? '✓' : ''}</button>} />
+                  className={'tick' + (pick[k] ? ' on' : '')}>{pick[k] ? '✓' : ''}</button>}
+              foot={dosed && !owned && pick[k] && pk ? (
+                <div className="col" style={{ gap: 8 }}>
+                  <div className="row" style={{ gap: 8, flexWrap: 'wrap', fontSize: 12.5 }}>
+                    <span style={{ color: 'var(--color-accent-700)' }}>
+                      {[f.times ? F('1일 {0}회', f.times) : L('복용 횟수를 못 읽었어요'), pk.days ? F('{0}일분', pk.days) : ''].filter(Boolean).join(' · ')}
+                    </span>
+                    {until && <span className="muted">{F('{0}까지', fmtDay(until, s.lang))}</span>}
+                    {pk.days && <button className="tap link-u" style={{ fontSize: 12, color: 'var(--color-neutral-700)' }} onClick={() => setPer(p => ({ ...p, [k]: { ...p[k], days: undefined } }))}>{L('기간 빼기')}</button>}
+                  </div>
+                  <SlotChips compact value={pk.slots} onChange={v => setPer(p => ({ ...p, [k]: { ...p[k], slots: v } }))} />
+                </div>
+              ) : undefined} />
           );
         })}
       </div>
-      {chosen.length > 0 && (
+      {dosed && chosen.length > 0 && <span className="sub" style={{ fontSize: 12.5, marginTop: -6 }}>{L('처방전에 적힌 복용 횟수와 일수로 먹는 시간을 골라 두었어요. 맞는지 확인하고 눌러서 바꿀 수 있어요.')}</span>}
+      {!dosed && chosen.length > 0 && (
         <div className="col" style={{ gap: 8 }}>
           <span className="label">{L('언제 드세요? 눌러서 여러 개 고를 수 있어요')}</span>
           <SlotChips value={slots} onChange={setSlots} />

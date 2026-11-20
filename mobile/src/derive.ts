@@ -1,5 +1,5 @@
 import { LV, SLOT_KEYS, SLOT_LABEL, type Level, type SlotKey, type Tag } from './data';
-import { WINDOW_MIN, type AppState, type Med, type Member } from './state';
+import { WINDOW_MIN, medsOn, type AppState, type Med, type Member } from './state';
 import { ingName, probName, type Detail, type Found, type Index } from './real';
 
 export type AdrRow = { pid: string; name: string; lv: Level; freq: string; quote: string; ing: string };
@@ -54,18 +54,19 @@ export const slotViews = (s: AppState, me: Member): SlotView[] => {
   return SLOT_KEYS.map(k => {
     const time = s.times[k], tm = toMin(time), taken = today.includes(k), d = s.now - tm;
     const ss: SlotState = taken ? 'done' : d < -WINDOW_MIN ? 'early' : d > WINDOW_MIN ? 'missed' : 'open';
-    return { k, label: SLOT_LABEL[k], time, meds: me.meds.filter(m => m.slots.includes(k)), taken, remind: s.remind[k], ss, from: fmtMin(tm - WINDOW_MIN), until: fmtMin(tm + WINDOW_MIN) };
+    return { k, label: SLOT_LABEL[k], time, meds: medsOn(me.meds, todayKey()).filter(m => m.slots.includes(k)), taken, remind: s.remind[k], ss, from: fmtMin(tm - WINDOW_MIN), until: fmtMin(tm + WINDOW_MIN) };
   }).sort((a, b) => a.time.localeCompare(b.time));
 };
 
 /** Stamp calendar for the current month: a stamp on each day every planned dose was recorded. */
-export type StampDay = { d: number; kind: 'stamp' | 'today' | 'miss' | 'none' | 'future' };
+/** `ends` = names of prescriptions whose last day is this day. */
+export type StampDay = { d: number; kind: 'stamp' | 'today' | 'miss' | 'none' | 'future'; ends: string[] };
 export function stampMonth(me: Member): { days: StampDay[]; count: number; total: number; first: number; month: number; todayDone: boolean } {
   const now = new Date(), y = now.getFullYear(), mo = now.getMonth(), today = now.getDate();
   const total = new Date(y, mo + 1, 0).getDate(), first = new Date(y, mo, 1).getDay();
-  const planned = SLOT_KEYS.filter(k => me.meds.some(m => m.slots.includes(k)));
+  const plannedOn = (key: string) => SLOT_KEYS.filter(k => medsOn(me.meds, key).some(m => m.slots.includes(k)));
   const start = me.since || Object.keys(me.taken).sort()[0] || todayKey();
-  const full = (key: string) => planned.length > 0 && planned.every(k => (me.taken[key] || []).includes(k));
+  const full = (key: string) => { const p = plannedOn(key); return p.length > 0 && p.every(k => (me.taken[key] || []).includes(k)); };
   let count = 0;
   const days: StampDay[] = [];
   for (let d = 1; d <= total; d++) {
@@ -74,9 +75,9 @@ export function stampMonth(me: Member): { days: StampDay[]; count: number; total
     if (d > today) kind = 'future';
     else if (full(key)) kind = 'stamp';
     else if (d === today) kind = 'today';
-    else kind = key < start || !planned.length ? 'none' : 'miss';
+    else kind = key < start || !plannedOn(key).length ? 'none' : 'miss';
     if (kind === 'stamp') count++;
-    days.push({ d, kind });
+    days.push({ d, kind, ends: me.meds.filter(m => m.until === key).map(m => m.name) });
   }
   return { days, count, total, first, month: mo + 1, todayDone: full(todayKey()) };
 }
@@ -84,13 +85,13 @@ const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${Stri
 
 /** Share of planned doses marked as taken over the last `days` days (today included). */
 export function adherence(me: Member, days: number): { pct: number | null; per: (number | null)[]; done: number; missed: number } {
-  const planned = SLOT_KEYS.filter(k => me.meds.some(m => m.slots.includes(k)));
   const per: (number | null)[] = []; let done = 0, total = 0;
   // Count only from the day medicines were first saved, so earlier days are not "missed".
   const start = me.since || Object.keys(me.taken).sort()[0] || todayKey();
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
     const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const planned = SLOT_KEYS.filter(x => medsOn(me.meds, k).some(m => m.slots.includes(x)));
     if (!planned.length || k < start) { per.push(null); continue; }
     const n = (me.taken[k] || []).filter(x => planned.includes(x)).length;
     // Today counts only once something is recorded, so the morning does not read as "missed".

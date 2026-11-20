@@ -347,3 +347,16 @@ button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], .ta
 /* crossword: a wrong letter */
 :root { --xw-bad: #b3261e; }
 :root[data-theme="dark"] { --xw-bad: #ff8a80; }
+
+/* Scan screen: tap-to-focus ring and the "how to take a good photo" guide. */
+.focus-ring { position: absolute; width: 64px; height: 64px; border: 1.5px solid #e1ad66; border-radius: 50%; pointer-events: none; animation: msFocus 1.1s ease-out forwards; }
+@keyframes msFocus { 0% { transform: scale(1.5); opacity: 0; } 25% { transform: scale(1); opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+.scan-guide { position: absolute; inset: 0; z-index: 5; background: rgba(12,10,9,.72); display: flex; align-items: flex-end; animation: msInFade .25s ease-out; }
+.scan-guide-card { width: 100%; max-height: 92%; overflow-y: auto; overscroll-behavior: contain; background: #1f1c1a; color: #f8f4f4; border-top: 1px solid #e1ad66; border-radius: 18px 18px 0 0; padding: 22px 24px calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; }
+.scan-guide-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.scan-guide-list li { display: flex; gap: 12px; padding: 11px 0; border-top: 1px solid rgba(255,255,255,.1); }
+:root[data-text] .scan-guide-card { zoom: var(--tz); }
+:root.zfix[data-text] .scan-guide-card { width: calc(100% / var(--tz)); }
+@media (prefers-reduced-motion: reduce) { .focus-ring, .scan-guide { animation: none; } }
+/* Last day of a prescription on the stamp calendar. */
+.cal-end { position: absolute; top: 0; right: 2px; font-size: 9.5px; line-height: 1; padding: 2px 4px; border-radius: 6px; background: var(--color-bg); border: 1px solid var(--color-accent); color: var(--color-accent-800); font-weight: 600; }
