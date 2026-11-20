@@ -256,4 +256,5 @@ export const EXTRA: Record<string, [string, string, string]> = {
   '이 QR에서는 약을 찾지 못했어요': ['No medicine found in this QR code', '未能从此二维码中找到药品', 'このQRから薬は見つかりませんでした'],
   'QR 코드': ['QR code', '二维码', 'QRコード'],
   'QR': ['QR', '二维码', 'QR'],
+  '한 번 더 읽어 보는 중…': ['Reading once more…', '再识别一次…', 'もう一度読み取り中…'],
 };
