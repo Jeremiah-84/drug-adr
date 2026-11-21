@@ -4,15 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>같이 먹어도 되나요? · 약 바로알기</title>
-<meta name="description" content="감기약, 진통제, 처방약을 함께 먹을 때 같은 성분이 겹치는지 확인하세요.">
+<meta name="description" content="감기약, 진통제, 처방약을 함께 먹을 때 같은 성분이 겹치는지, 식약처가 함께 쓰지 말라고 정한 조합(병용금기)인지 확인하세요.">
 <link rel="icon" href="../icon-192.png">
 <link rel="stylesheet" href="portal.css">
+<style>.alert.ix{background:color-mix(in srgb,#d33 9%,var(--bg,#fff));border-color:color-mix(in srgb,#d33 35%,transparent)}.alert.ix>svg{color:#c22}.alert.ix .tag{background:#c22;color:#fff}.alert .why,.note .why{color:var(--muted);font-size:.9rem}</style>
 </head>
 <body data-page="check" data-base="">
 <section class="page-head"><div class="wrap">
   <div class="crumb"><a href="index.html">홈</a> / 같이 먹어도 되나요?</div>
   <h1>같이 먹어도 되나요?</h1>
-  <p class="lead">먹고 있거나 먹으려는 약을 하나씩 넣어 보세요. 같은 성분이 두 번 들어가는지, 비슷한 계열의 약이 겹치는지 알려드려요. 입력한 약은 이 기기 밖으로 보내지 않아요.</p>
+  <p class="lead">먹고 있거나 먹으려는 약을 하나씩 넣어 보세요. 같은 성분이 두 번 들어가는지, 비슷한 계열의 약이 겹치는지, 식약처가 <b>함께 쓰면 안 된다고 정한 조합(병용금기)</b>인지 알려드려요. 입력한 약은 이 기기 밖으로 보내지 않아요.</p>
   <div class="search compact">
     <div class="box"><i data-i="search"></i><input id="q" type="search" placeholder="약 이름 입력 후 목록에서 고르기 (예: 판콜에이내복)" autocomplete="off" aria-label="약 추가"><button class="btn" type="button"><span>추가</span></button></div>
     <div class="sugg" id="sugg" hidden></div>
@@ -21,7 +22,7 @@
 </div></section>
 <main><div class="wrap" style="max-width:820px;margin-left:auto;margin-right:auto">
   <div id="out"></div>
-  <div class="note" style="margin-top:24px"><i data-i="info"></i><span>이 확인은 <b>성분 이름이 겹치는지</b>만 봅니다. 약끼리 서로 효과를 바꾸는 상호작용은 아직 확인하지 않아요. 처방약을 드시는 중이라면 일반약을 사기 전에 약사에게 지금 먹는 약을 알려 주세요.</span></div>
+  <div class="note" style="margin-top:24px"><i data-i="info"></i><span id="scope">이 확인은 <b>성분 이름이 겹치는지</b>만 봅니다. 약끼리 서로 효과를 바꾸는 상호작용은 아직 확인하지 않아요. 처방약을 드시는 중이라면 일반약을 사기 전에 약사에게 지금 먹는 약을 알려 주세요.</span></div>
 </div></main>
 <script src="portal.js"></script>
 <script>
@@ -32,6 +33,13 @@ const GROUPS=[
   {name:'졸릴 수 있는 항히스타민제',why:'졸음, 입마름, 어르신의 혼동이 심해질 수 있어요.',ids:['chlorpheniramine','diphenhydramine','doxylamine','hydroxyzine','cyproheptadine','promethazine','dimenhydrinate','mequitazine','clemastine']},
   {name:'코막힘 성분(혈관 수축제)',why:'혈압이 오르거나 가슴이 두근거릴 수 있어요.',ids:['pseudoephedrine','methylephedrine','ephedrine']},
 ];
+// 식약처 DUR 병용금기·효능군중복 (docs/data/interactions.json, 매월 자동 갱신)
+let IX=null;
+function loadIx(){if(!IX)IX=fetch(Portal.DATA+'interactions.json').then(r=>r.ok?r.json():null).then(d=>{
+  if(!d)return null;const pair={};d.taboo.forEach(([a,b,r,dt])=>{pair[a+'|'+b]={r,dt}});
+  const sc=document.getElementById('scope');if(sc)sc.innerHTML=`<b>같은 성분</b>, <b>같은 효능군</b>, 그리고 식약처 DUR(의약품안전사용서비스)의 <b>병용금기</b> 목록을 확인합니다(자료 기준일 ${esc(d.version)}). 목록에 없다고 해서 꼭 안전하다는 뜻은 아니에요. 처방약을 드시는 중이라면 다른 약을 사기 전에 지금 먹는 약을 약사에게 알려 주시고, <b>경고가 나와도 처방받은 약을 스스로 끊지 말고 먼저 의사·약사와 상의하세요.</b>`;
+  return {...d,pair}}).catch(()=>null);return IX}
+loadIx();
 let picked=[];const listEl=document.getElementById('list'),out=document.getElementById('out');
 Portal.attachSearch(document.getElementById('q'),document.getElementById('sugg'),it=>{
   if(!picked.some(p=>p.label===it.label))picked.push(it);document.getElementById('q').value='';render();
@@ -46,11 +54,24 @@ async function render(){
   const by={};picked.forEach(p=>p.ids.forEach(id=>(by[id]=by[id]||[]).push(p.label)));
   const dup=Object.entries(by).filter(([,v])=>v.length>1);
   const grp=GROUPS.map(g=>{const hit=picked.filter(p=>p.ids.some(id=>g.ids.includes(id)));return{...g,hit}}).filter(g=>g.hit.length>1);
-  let h='';
+  const ix=await loadIx();let h='';
+  if(ix){
+    const seen=new Set(),hits=[];
+    for(let i=0;i<picked.length;i++)for(let j=i+1;j<picked.length;j++)for(const x of picked[i].ids)for(const y of picked[j].ids){
+      const k=x<y?x+'|'+y:y+'|'+x,v=ix.pair[k];if(!v)continue;const key=k+'#'+i+'#'+j;if(seen.has(key))continue;seen.add(key);
+      hits.push({a:picked[i].label,b:picked[j].label,x,y,v})}
+    if(hits.length)h+=`<div class="alert ix">${icon('warn')}<div><b>함께 쓰면 안 되는 조합이 있어요</b> <span class="tag">식약처 병용금기</span><ul>${hits.map(t=>`<li><b>${esc(t.a)}</b> (${esc(name(t.x))}) + <b>${esc(t.b)}</b> (${esc(name(t.y))})${t.v.r.map(r=>ix.reasons[r]).filter(Boolean).length?`<br><span class="why">${t.v.r.map(r=>esc(ix.reasons[r])).filter(Boolean).join(' · ')}</span>`:''}</li>`).join('')}</ul><b>처방받은 약을 스스로 끊지 마세요.</b> 의사가 알고 함께 처방했을 수도 있어요. 먼저 처방한 의사나 약사에게 이 조합을 알려 주고 상의하세요.</div></div>`;
+    const eh=ix.efcy.map(g=>{const hit=picked.filter(p=>p.ids.some(id=>g.ids.includes(id)));return{name:g.name,hit}}).filter(g=>g.hit.length>1)
+      .filter(g=>!dup.some(([,v])=>v.length===g.hit.length&&g.hit.every(p=>v.includes(p.label))));
+    if(eh.length)h+=`<div class="note" style="margin-top:12px">${icon('layers')}<div><b>같은 효능군 약이 겹쳐요</b> <span class="tag">식약처 효능군중복</span><ul>${eh.map(g=>`<li><b>${esc(g.name)}</b> — ${g.hit.map(p=>esc(p.label)).join(', ')}</li>`).join('')}</ul>효과가 비슷한 약을 함께 먹으면 부작용이 커질 수 있어요. 일부러 함께 처방된 것일 수 있으니 의사·약사와 상의하세요.</div></div>`;
+    ix._eh=eh;
+  }
   if(dup.length)h+=`<div class="alert">${icon('warn')}<div><b>같은 성분이 겹쳐요</b><ul>${dup.map(([id,v])=>`<li><b>${esc(name(id))}</b> — ${v.map(esc).join(', ')}${id==='acetaminophen'?' · <a href="guide/acetaminophen.html">하루 최대량 확인</a>':''}</li>`).join('')}</ul>같은 성분을 두 제품으로 먹으면 하루 권장량을 넘기기 쉬워요. 한 가지만 먹거나 약사와 상의하세요.</div></div>`;
   const grpOnly=grp.filter(g=>!dup.some(([id,v])=>g.ids.includes(id)&&v.length===g.hit.length));
-  if(grpOnly.length)h+=`<div class="note" style="margin-top:12px">${icon('layers')}<div><b>비슷한 계열이 겹쳐요</b> <span class="tag draft">참고</span><ul>${grpOnly.map(g=>`<li><b>${esc(g.name)}</b> — ${g.hit.map(p=>esc(p.label)).join(', ')}<br><span style="color:var(--muted)">${esc(g.why)}</span></li>`).join('')}</ul></div></div>`;
-  if(!h)h=`<div class="card result-ok">${icon('check')}<div><b>겹치는 성분을 찾지 못했어요.</b><div style="color:var(--muted)">그래도 처음 같이 먹는 약이라면 약사에게 한 번 확인받으세요.</div></div></div>`;
+  const efLabels=(ix&&ix._eh||[]).map(g=>g.hit.map(p=>p.label).sort().join('|'));
+  const grpShow=grpOnly.filter(g=>!efLabels.includes(g.hit.map(p=>p.label).sort().join('|')));
+  if(grpShow.length)h+=`<div class="note" style="margin-top:12px">${icon('layers')}<div><b>비슷한 계열이 겹쳐요</b> <span class="tag draft">참고</span><ul>${grpShow.map(g=>`<li><b>${esc(g.name)}</b> — ${g.hit.map(p=>esc(p.label)).join(', ')}<br><span style="color:var(--muted)">${esc(g.why)}</span></li>`).join('')}</ul></div></div>`;
+  if(!h)h=`<div class="card result-ok">${icon('check')}<div><b>겹치는 성분${ix?'이나 병용금기 조합을':'을'} 찾지 못했어요.</b><div style="color:var(--muted)">그래도 처음 같이 먹는 약이라면 약사에게 한 번 확인받으세요.</div></div></div>`;
   h+=`<h2 style="margin:36px 0 14px">넣은 약의 성분</h2><div class="tablewrap"><table><tr><th>약</th><th>성분</th></tr>${picked.map(p=>`<tr><td>${esc(p.label)}</td><td>${p.ids.map(id=>db.byId[id]?`<a href="drug.html?id=${encodeURIComponent(id)}">${esc(name(id))}</a>`:esc(id)).join(', ')}</td></tr>`).join('')}</table></div>`;
   out.innerHTML=h;
 }
