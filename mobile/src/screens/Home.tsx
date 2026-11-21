@@ -7,6 +7,7 @@ import { Badge, SecHead } from '../ui';
 import { ChevronRight, Clock, ScanLine, Stethoscope, MapPin } from '../icons';
 import { AdSlot } from './Chrome';
 import { XPUZZLES, layout, xwRestore } from '../xword';
+import { mmss, ranks, type Board } from '../ranks';
 import { LangButton } from './People';
 
 const LOCALE = { ko: 'ko-KR', en: 'en-US', zh: 'zh-CN', ja: 'ja-JP' } as const;
@@ -44,6 +45,12 @@ export function Home() {
   // crossword progress (saved by the crossword screen; read fresh each time Home renders)
   const xz = xwRestore(), xl = layout(XPUZZLES[xz.idx]);
   const xLeft = xl.entries.filter(x => x.cells.some(c => xz.cells[c] !== xl.sol[c])).length;
+  // best on-device record, shown on each game card
+  const best = (b: Board) => {
+    const r = ranks(b)[0];
+    if (!r) return null;
+    return <div className="tnum" style={{ fontSize: 12, marginTop: 2, color: 'var(--color-accent-700)' }}>{F('🏆 1위 {0} · {1}', mmss(r.t), r.h ? F('힌트 {0}번', r.h) : L('힌트 없이'))}</div>;
+  };
 
   const takeNext = () => {
     if (!next) return;
@@ -214,6 +221,7 @@ export function Home() {
           <div style={{ fontSize: 11.5, color: 'var(--color-accent-700)', fontStyle: 'italic' }}>{L('두뇌 쉼터 · 매일 새 퍼즐')}</div>
           <div className="serif" style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>{L('오늘의 스도쿠')}</div>
           <div className="muted" style={{ fontSize: 12.5 }}>{z.end ? F('오늘 완성 · 힌트 {0}번', z.hints) : F('{0}칸 남았습니다', left)}</div>
+          {best(z.n === 6 ? 'sdk6' : 'sdk9')}
         </div>
         <ChevronRight />
       </button>
@@ -229,6 +237,7 @@ export function Home() {
           <div style={{ fontSize: 11.5, color: 'var(--color-accent-700)', fontStyle: 'italic' }}>{L('두뇌 쉼터 · 매일 새 퍼즐')}</div>
           <div className="serif" style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>{L('오늘의 십자말 퀴즈')}</div>
           <div className="muted" style={{ fontSize: 12.5 }}>{xz.end ? F('오늘 완성 · 힌트 {0}번', xz.hints) : F('낱말 {0}개 남았습니다', xLeft)}</div>
+          {best('xw')}
         </div>
         <ChevronRight />
       </button>

@@ -3,6 +3,7 @@ import { useApp } from '../state';
 import { XPUZZLES, layout, syllables, xwNew, xwRestore, xwSave, type XEntry, type XState } from '../xword';
 import { Back, Heading } from '../ui';
 import { Delete, Lightbulb } from '../icons';
+import { PlaceLine, Ranking, useRecord } from './Ranks';
 
 /** Daily Korean crossword. Pick a square or a clue, then type the whole answer and press 넣기.
  *  Typing the whole word in one box keeps the Korean keyboard working normally and is easier
@@ -108,6 +109,8 @@ export function Crossword() {
   const [, tick] = useState(0);
   useEffect(() => { if (done) return; const id = setInterval(() => tick(x => x + 1), 1000); return () => clearInterval(id); }, [done]);
   const secs = Math.round(((z.end || Date.now()) - z.start) / 1000);
+  const gid = `xw:${z.idx}:${new Date().toDateString()}`;
+  const place = useRecord('xw', gid, done, secs, z.hints);
 
   const nos = new Map(entries.map(x => [x.cells[0], x.no]));
   const dirL = (x: XEntry) => (x.d === 'a' ? L('가로') : L('세로'));
@@ -149,6 +152,7 @@ export function Crossword() {
           <span className="kicker">COMPLETE</span>
           <span className="serif" style={{ fontSize: 18, fontWeight: 600 }}>{L('오늘의 퀴즈를 모두 맞혔습니다')}</span>
           <span className="sub">{F('{0}분 {1}초 · 힌트 {2}번 사용', Math.floor(secs / 60), secs % 60, z.hints)}</span>
+          <PlaceLine place={place} />
         </div>
       ) : (
         <div ref={card} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 16px 18px', border: '1px solid var(--color-accent)', background: 'color-mix(in srgb,var(--color-accent) 6%,transparent)' }}>
@@ -191,6 +195,7 @@ export function Crossword() {
         </div>
       ))}
 
+      <Ranking board="xw" mine={done ? gid : undefined} title={L('나의 순위')} />
       <div className="fine">{L('약에 관한 문제는 식약처 의약품 허가정보(첨부문서)의 내용에 맞춰 만들었습니다. 내 약에 대한 판단은 의사·약사와 상의하세요.')}</div>
       <div className="muted" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, paddingTop: 12, borderTop: '1px solid var(--color-divider)' }}>
         <span style={{ fontStyle: 'italic' }}>{F('{0}개 남음 · 힌트 {1}번', left, z.hints)}</span>
