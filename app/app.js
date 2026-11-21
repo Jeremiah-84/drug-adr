@@ -51,6 +51,7 @@ function applyStatic(){document.documentElement.lang=LANG==='en'?'en':'ko';
   document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=T(e.dataset.i18n));
   document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=T(e.dataset.i18nPh));
   document.querySelectorAll('[data-i18n-html]').forEach(e=>e.innerHTML=T(e.dataset.i18nHtml));
+  document.querySelectorAll('[data-i18n-title]').forEach(e=>{e.title=T(e.dataset.i18nTitle);e.setAttribute('aria-label',e.title)});
   document.querySelectorAll('.legend [data-lv]').forEach(e=>e.textContent=LANG==='en'?I18N_EN.lv[e.dataset.lv]:({4:'높음',3:'가능성 있음',2:'낮음',1:'매우 드묾'})[e.dataset.lv]);
   const lb=document.getElementById('langBtn');if(lb)lb.textContent=T('lang');
   document.querySelectorAll('.brand-en').forEach(e=>e.hidden=LANG==='en');
@@ -263,9 +264,9 @@ async function ocrPhoto(file){
     if(n>best.n||(n===best.n&&conf>best.conf))best={text,n,conf};
     if(n>0&&conf>=86)break}
   return best.text}
-/* 사진·캡처 그림 한 장에서 글자를 읽어 약을 찾음 (how: ocr=휴대폰 사진, cap=처방 창 캡처·붙여넣기, tab=확장에서 화면 찍기)
+/* 사진·캡처 그림 한 장에서 글자를 읽어 약을 찾음 (how: ocr=휴대폰 사진, cap=처방 창 캡처 붙여넣기)
    웹 버전과 확장 프로그램 모두 사용. 확장은 글자 인식 프로그램을 패키지 안에 담아 씀(원격 코드 없음). */
-// 화면 캡처는 글자가 작으니(12~13px) 2배 키워서 읽음 (3배는 짧은 이름을 놓침). rect가 있으면 그 부분만 잘라서 읽음
+// 화면 캡처는 글자가 작으니(12~13px) 2배 키워서 읽음 (3배는 짧은 이름을 놓침)
 async function capCanvas(src,rect){
   let bmp=src;if(src instanceof Blob){try{bmp=await createImageBitmap(src)}catch(e){bmp=await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=URL.createObjectURL(src)})}}
   const r=rect||{x:0,y:0,w:bmp.width,h:bmp.height};
@@ -278,7 +279,7 @@ async function ocrImage(f,how,rect){if(!f||ocrBusy)return;const hint=$('drughint
   try{ocrProg=p=>{hint.textContent=T('ocrRun',p)};
     const text=how==='ocr'?await ocrPhoto(f):await ocrCap(f,rect);
     $('paste').value=text;$('pastebox').open=true;
-    const r=addFromText(text,how==='tab'?'cap':how);
+    const r=addFromText(text,how);
     hint.textContent=r.f.length?T(how==='ocr'?'ocrDone':'capDone',r.f.length,r.added.length):T(how==='ocr'?'ocrNone':'capNone');
   }catch(e){track(how+'_fail');hint.textContent=T('ocrErr')+(e&&e.message||e)}
   finally{ocrBusy=false}}
@@ -286,50 +287,14 @@ if($('capzone')){
   const cz=$('capzone'),imgOf=items=>{for(const it of items||[])if(it.kind==='file'&&/^image\//.test(it.type))return it.getAsFile();return null};
   cz.hidden=false;
   if(IS_EXT){const h=cz.querySelector('[data-i18n-html]');h.dataset.i18nHtml='capHowExt';h.innerHTML=T('capHowExt')}
-  cz.onclick=()=>{$('capIn').value='';$('capIn').click()};
-  cz.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();cz.click()}};
+  // 칸을 누르면 선택(포커스)만 됨 → 그다음 Ctrl+V. 파일 고르기는 📁 버튼으로만
+  cz.onclick=e=>{if(e.target.closest('#capFile'))return;cz.focus()};
+  $('capFile').onclick=e=>{e.stopPropagation();$('capIn').value='';$('capIn').click()};
   $('capIn').onchange=()=>ocrImage($('capIn').files[0],'cap');
   document.addEventListener('paste',e=>{const f=imgOf(e.clipboardData&&e.clipboardData.items);if(!f)return;e.preventDefault();cz.scrollIntoView({block:'nearest'});ocrImage(f,'cap')});
   cz.addEventListener('dragover',e=>{e.preventDefault();cz.classList.add('over')});
   cz.addEventListener('dragleave',()=>cz.classList.remove('over'));
   cz.addEventListener('drop',e=>{e.preventDefault();cz.classList.remove('over');const f=[...(e.dataTransfer.files||[])].find(x=>/^image\//.test(x.type));if(f)ocrImage(f,'cap')});
-}
-/* 확장 프로그램: 지금 보고 있는 탭 화면을 찍어서(이 컴퓨터 안에서만) 처방 부분을 고르고 글자를 읽음.
-   처방 창이 그림이거나 글자를 못 읽는 화면일 때 쓰는 방법 */
-if(IS_EXT&&$('extcap')&&window.chrome&&chrome.tabs&&chrome.tabs.captureVisibleTab){
-  $('extcap').hidden=false;
-  let shot=null,drag=null,rect=null;
-  const view=$('capview'),img=$('capshot'),box=$('capimg'),selEl=$('capsel');
-  const closeView=()=>{view.hidden=true;img.removeAttribute('src');shot=null;selEl.hidden=true};
-  const grab=async tab=>{
-    try{return await chrome.tabs.captureVisibleTab(tab.windowId,{format:'png'})}
-    catch(e1){
-      // 이 사이트를 찍을 권한이 아직 없으면 한 번만 허용을 요청
-      $('drughint').textContent=T('allow');
-      const ok=await chrome.permissions.request({origins:['<all_urls>']});
-      if(!ok){track('tab_fail',{why:'perm_denied'});throw new Error(T('denied'))}
-      return await chrome.tabs.captureVisibleTab(tab.windowId,{format:'png'})}};
-  $('capTab').onclick=async()=>{const hint=$('drughint');
-    try{const [tab]=await chrome.tabs.query({active:true,lastFocusedWindow:true});
-      if(!tab){hint.textContent=T('openTab');return}
-      if(tab.url&&!/^(https?|file):/.test(tab.url)){hint.textContent=T('cantRead');return}
-      const url=await grab(tab);
-      shot=await (await fetch(url)).blob();
-      img.src=url;selEl.hidden=true;rect=null;view.hidden=false;hint.textContent='';track('tab_shot');
-      view.scrollIntoView({block:'nearest'});
-    }catch(e){hint.textContent=T('capFail')+(e&&e.message||e)}};
-  const pos=e=>{const b=box.getBoundingClientRect();return{x:Math.max(0,Math.min(b.width,e.clientX-b.left)),y:Math.max(0,Math.min(b.height,e.clientY-b.top))}};
-  box.addEventListener('pointerdown',e=>{if(!shot)return;box.setPointerCapture(e.pointerId);drag=pos(e);selEl.hidden=true});
-  box.addEventListener('pointermove',e=>{if(!drag)return;const p=pos(e);
-    rect={x:Math.min(drag.x,p.x),y:Math.min(drag.y,p.y),w:Math.abs(p.x-drag.x),h:Math.abs(p.y-drag.y)};
-    Object.assign(selEl.style,{left:rect.x+'px',top:rect.y+'px',width:rect.w+'px',height:rect.h+'px'});selEl.hidden=false});
-  box.addEventListener('pointerup',()=>{if(!drag)return;drag=null;
-    if(!rect||rect.w<12||rect.h<8){selEl.hidden=true;rect=null;return}
-    // 화면에 보이는 크기 → 실제 그림 픽셀로 바꿔서 그 부분만 읽음
-    const k=img.naturalWidth/box.getBoundingClientRect().width;
-    ocrImage(shot,'tab',{x:Math.round(rect.x*k),y:Math.round(rect.y*k),w:Math.round(rect.w*k),h:Math.round(rect.h*k)})});
-  $('capAll').onclick=()=>{if(shot)ocrImage(shot,'tab')};
-  $('capClose').onclick=closeView;
 }
 if(!IS_EXT&&$('camrow')){
   $('camrow').hidden=false;
