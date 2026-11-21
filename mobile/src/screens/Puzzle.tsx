@@ -3,6 +3,7 @@ import { useApp } from '../state';
 import { SDK_DEF, type SdkSize, sdkConflicts } from '../sudoku';
 import { Back, Heading, Segment } from '../ui';
 import { Delete, Lightbulb } from '../icons';
+import { PlaceLine, Ranking, useRecord } from './Ranks';
 
 export function Puzzle() {
   const { s: st, sdk, flash, L, F } = useApp();
@@ -20,6 +21,10 @@ export function Puzzle() {
   const [, tick] = useState(0);
   useEffect(() => { if (done) return; const id = setInterval(() => tick(x => x + 1), 1000); return () => clearInterval(id); }, [done]);
   const secs = Math.round(((z.end || Date.now()) - z.start) / 1000);
+  const board = n === 6 ? 'sdk6' : 'sdk9';
+  // one id per puzzle: the same finished game is never counted twice
+  const gid = `sdk:${n}:${z.seed}:${new Date().toDateString()}`;
+  const place = useRecord(board, gid, done, secs, z.hints);
 
   const press = (v: number) => {
     if (z.sel < 0) return flash(L('칸을 먼저 골라 주세요'));
@@ -56,6 +61,7 @@ export function Puzzle() {
           <span className="kicker">COMPLETE</span>
           <span className="serif" style={{ fontSize: 18, fontWeight: 600 }}>{L('오늘의 퍼즐을 완성했습니다')}</span>
           <span className="sub">{F('{0}분 {1}초 · 힌트 {2}번 사용', Math.floor(secs / 60), secs % 60, z.hints)}</span>
+          <PlaceLine place={place} />
         </div>
       ) : (
         <>
@@ -71,6 +77,7 @@ export function Puzzle() {
           </div>
         </>
       )}
+      <Ranking board={board} mine={done ? gid : undefined} title={n === 6 ? L('나의 순위 · 6×6') : L('나의 순위 · 9×9')} />
       <div className="muted" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12.5, paddingTop: 12, borderTop: '1px solid var(--color-divider)' }}>
         <span style={{ fontStyle: 'italic' }}>{F('{0}칸 남음 · 힌트 {1}번', left, z.hints)}</span>
         <button className="tap link-u" onClick={sdk.fresh}>{L('새 퍼즐')}</button>
