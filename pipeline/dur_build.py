@@ -41,12 +41,15 @@ class Matcher:
             for i, rx in self.rx:  # 긴 이름부터 맞추고, 맞은 부분은 지워서 짧은 이름이 또 잡히지 않게
                 if rx.search(s):
                     hit.append(i); s = rx.sub(" ", s)
+        if not hit and len(b) >= 5:  # 우리 id에 염 이름이 남은 경우 (예: "ketorolac tromethamine")
+            hit = [i for i, _ in self.rx if i.startswith(b + " ")][:1]
         if not hit and kor:
             hit = sorted(self.ko.get(_kbase(kor), ()))
         self.cache[k] = hit
         return hit
 
 def build(raw, out):
+    raw = {k: [x.get("item", x) if isinstance(x, dict) and set(x) == {"item"} else x for x in v] for k, v in raw.items()}
     index = json.load(open(os.path.join(out, "index.json")))
     m = Matcher(index["drugs"])
     reasons, ridx = [], {}
@@ -57,7 +60,7 @@ def build(raw, out):
     pairs = {}
     miss = collections.Counter()
     for r in raw.get("taboo", []):
-        if g(r, "DEL_YN") in ("Y", "삭제"): continue
+        if g(r, "DEL_YN") in ("Y", "삭제", "삭제예정"): continue
         a = m.ids(g(r, "INGR_ENG_NAME"), g(r, "INGR_KOR_NAME", "INGR_NAME"))
         b = m.ids(g(r, "MIXTURE_INGR_ENG_NAME"), g(r, "MIXTURE_INGR_KOR_NAME", "MIXTURE_INGR_NAME"))
         if not a: miss[g(r, "INGR_ENG_NAME") or g(r, "INGR_KOR_NAME")] += 1
@@ -74,9 +77,11 @@ def build(raw, out):
 
     groups = collections.defaultdict(set)
     for r in raw.get("efcy", []):
-        if g(r, "DEL_YN") in ("Y", "삭제"): continue
-        name = g(r, "EFFECT_NAME", "SERS_NAME", "CLASS_NAME", "EFCY_NM")
-        if not name: continue
+        if g(r, "DEL_YN") in ("Y", "삭제", "삭제예정"): continue
+        # 같은 효능군 안의 같은 계열(예: 혈압강하제 중 ARB끼리)만 중복으로 봄. 계열이 비어 있는 행(주로 복합제)은 성분별 행이 따로 있어 건너뜀
+        eff, sers = g(r, "EFFECT_CODE", "EFFECT_NAME"), g(r, "SERS_NAME")
+        if not eff or not sers: continue
+        name = eff + " · " + sers
         for i in m.ids(g(r, "INGR_ENG_NAME"), g(r, "INGR_KOR_NAME", "INGR_NAME")):
             groups[name].add(i)
     efcy = [{"name": n, "ids": sorted(v)} for n, v in sorted(groups.items()) if len(v) > 0]

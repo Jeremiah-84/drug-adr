@@ -38,7 +38,7 @@ def items_of(body):
     if isinstance(it, dict):
         it = it.get("item") or []
         if isinstance(it, dict): it = [it]
-    return it
+    return [x.get("item", x) if isinstance(x, dict) and set(x) == {"item"} else x for x in it]
 
 def fetch_all(key):
     out = {}
@@ -66,8 +66,9 @@ def main():
         if a.raw: return
     if os.path.exists(os.path.join(HERE, "dur_build.py")):
         sys.path.insert(0, HERE)
+        raw = json.load(open(RAW))
         from dur_build import build
-        build(json.load(open(RAW)), a.out)
+        build(raw, a.out)
 
 if __name__ == "__main__":
     main()
