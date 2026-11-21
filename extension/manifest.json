@@ -12,8 +12,7 @@
   ],
   "optional_host_permissions": [
     "https://*/*",
-    "http://*/*",
-    "<all_urls>"
+    "http://*/*"
   ],
   "background": {
     "service_worker": "background.js"
