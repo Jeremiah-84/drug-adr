@@ -240,8 +240,8 @@ function ocrWorker(langs){
   const k=langs.join('+');
   if(!ocrW[k])ocrW[k]=(async()=>{
     if(!window.Tesseract)await loadScript('vendor/ocr/tesseract.min.js');
-    // 프로그램·한글 자료 모두 이 사이트(확장은 패키지 안)에서 받음 (사진은 밖으로 나가지 않음). 확장은 blob: 워커를 못 써서(MV3) 워커 파일을 직접 띄움
-    const w=await Tesseract.createWorker(langs,1,{workerPath:here('vendor/ocr/worker.min.js'),corePath:here('vendor/ocr/'),langPath:here('vendor/ocr/'),gzip:true,workerBlobURL:!IS_EXT,
+    // 프로그램·한글 자료 모두 이 사이트(확장은 패키지 안)에서 받음 (사진은 밖으로 나가지 않음). 확장은 blob: 워커를 못 써서(MV3) 워커 파일을 직접 띄우고, 엣지 스토어가 압축 파일을 막아서 언어 자료는 압축 안 된 것을 씀
+    const w=await Tesseract.createWorker(langs,1,{workerPath:here('vendor/ocr/worker.min.js'),corePath:here('vendor/ocr/'),langPath:here('vendor/ocr/'),gzip:!IS_EXT,workerBlobURL:!IS_EXT,
       logger:m=>{if(m.status==='recognizing text')ocrProg(Math.round((m.progress||0)*100))}});
     // 사진은 자동 쪽 배치(3)로 읽음. 기본값(한 덩어리 글)은 처방전 표의 줄을 대부분 놓침
     if(k==='kor')await w.setParameters({tessedit_pageseg_mode:'3'});
