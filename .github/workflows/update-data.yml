@@ -23,10 +23,15 @@ jobs:
           python3 pipeline/run.py --out docs/data --cache .cache
           python3 pipeline/history_kr.py --out docs/data --cache .cache
           python3 pipeline/brief.py --out docs/data --cache .cache
+      - name: 식약처 DUR 병용금기·효능군중복 받기
+        continue-on-error: true
+        env:
+          MFDS_KEY: ${{ secrets.MFDS_KEY }}
+        run: python3 pipeline/dur.py --fetch --out docs/data
       - name: 바뀐 데이터 올리기
         run: |
           git config user.name "data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          git add docs/data pipeline/barcodes.json
+          git add docs/data pipeline/barcodes.json pipeline/dur_raw.json 2>/dev/null || git add docs/data pipeline/barcodes.json
           git diff --cached --quiet || git commit -m "약 데이터 갱신 $(date +%Y-%m-%d)"
           git pull --rebase origin main && git push
