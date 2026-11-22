@@ -4,6 +4,7 @@ import { XPUZZLES, layout, syllables, xwNew, xwRestore, xwSave, type XEntry, typ
 import { Back, Heading } from '../ui';
 import { Delete, Lightbulb } from '../icons';
 import { PlaceLine, Ranking, useRecord } from './Ranks';
+import { AdSlot } from './Chrome';
 
 /** Daily Korean crossword. Pick a square or a clue, then type the whole answer and press 넣기.
  *  Typing the whole word in one box keeps the Korean keyboard working normally and is easier
@@ -148,12 +149,15 @@ export function Crossword() {
       </div>
 
       {done ? (
+        <>
         <div style={{ padding: '16px 4px', borderTop: '1px solid var(--color-accent)', borderBottom: '1px solid var(--color-accent)', display: 'flex', flexDirection: 'column', gap: 6, textAlign: 'center' }}>
           <span className="kicker">COMPLETE</span>
           <span className="serif" style={{ fontSize: 18, fontWeight: 600 }}>{L('오늘의 퀴즈를 모두 맞혔습니다')}</span>
           <span className="sub">{F('{0}분 {1}초 · 힌트 {2}번 사용', Math.floor(secs / 60), secs % 60, z.hints)}</span>
           <PlaceLine place={place} />
         </div>
+          <AdSlot />
+        </>
       ) : (
         <div ref={card} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 16px 18px', border: '1px solid var(--color-accent)', background: 'color-mix(in srgb,var(--color-accent) 6%,transparent)' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>

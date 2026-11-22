@@ -364,13 +364,16 @@ async function takePhoto(st: MediaStream | null): Promise<Blob | null> {
 }
 
 /** Non-drug ad banner (same ad page and disclosure as the web app). */
+/** Ad banner (docs/ads.json decides what shows). Kept off dose, drug-detail and scan screens on purpose. */
 export function AdSlot() {
   const { L } = useApp();
   const [ok, setOk] = useState(false);
+  // the app has its own light/dark switch, so tell the banner page which one is on
+  const theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
   return (
     <div style={{ display: ok ? 'block' : 'none' }}>
       <div className="muted" style={{ fontSize: 10.5, fontStyle: 'italic', margin: '0 0 4px' }}>{L('광고')}</div>
-      <iframe src="../ad.html" title={L('광고')} onLoad={() => setOk(true)} loading="lazy"
+      <iframe key={theme} src={"../ad.html?theme=" + theme} title={L('광고')} onLoad={() => setOk(true)}
         sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin" referrerPolicy="no-referrer"
         style={{ width: '100%', height: 80, border: '1px solid var(--color-divider)', borderRadius: 'var(--radius-md)', background: 'var(--color-neutral-100)' }} />
     </div>

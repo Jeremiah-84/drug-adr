@@ -4,6 +4,7 @@ import { SDK_DEF, type SdkSize, sdkConflicts } from '../sudoku';
 import { Back, Heading, Segment } from '../ui';
 import { Delete, Lightbulb } from '../icons';
 import { PlaceLine, Ranking, useRecord } from './Ranks';
+import { AdSlot } from './Chrome';
 
 export function Puzzle() {
   const { s: st, sdk, flash, L, F } = useApp();
@@ -57,12 +58,15 @@ export function Puzzle() {
         })}
       </div>
       {done ? (
+        <>
         <div style={{ padding: '16px 4px', borderTop: '1px solid var(--color-accent)', borderBottom: '1px solid var(--color-accent)', display: 'flex', flexDirection: 'column', gap: 6, textAlign: 'center' }}>
           <span className="kicker">COMPLETE</span>
           <span className="serif" style={{ fontSize: 18, fontWeight: 600 }}>{L('오늘의 퍼즐을 완성했습니다')}</span>
           <span className="sub">{F('{0}분 {1}초 · 힌트 {2}번 사용', Math.floor(secs / 60), secs % 60, z.hints)}</span>
           <PlaceLine place={place} />
         </div>
+          <AdSlot />
+        </>
       ) : (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${n === 6 ? 6 : 5},minmax(0,1fr))`, gap: 8 }}>
