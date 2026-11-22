@@ -16,6 +16,19 @@ shutil.copytree(os.path.join(root, "docs", "vendor", "ocr"), os.path.join(dist, 
 import gzip
 for g in ("kor", "eng"):
     with gzip.open(os.path.join(root, "docs", "vendor", "ocr", g + ".traineddata.gz")) as fi, open(os.path.join(dist, "vendor", "ocr", g + ".traineddata"), "wb") as fo: shutil.copyfileobj(fi, fo)
+# 스토어 심사(MV3 원격 코드 금지): tesseract 기본값에 남은 CDN 주소 문자열을 지움. 실제로는 app.js가 workerPath·corePath·langPath를 패키지 안 경로로 넘기므로 이 기본값은 쓰이지 않음
+import re
+for f in ("tesseract.min.js", "worker.min.js"):
+    p = os.path.join(dist, "vendor", "ocr", f); s = open(p, encoding="utf-8").read()
+    s2 = s.replace("https://cdn.jsdelivr.net/npm/", "./")
+    assert s2 != s, f + ": CDN 문자열을 못 찾음"
+    open(p, "w", encoding="utf-8").write(s2)
+for base, _, files in os.walk(dist):
+    for f in files:
+        if f.endswith((".js", ".html", ".json")) and not f.startswith("pills"):
+            t = open(os.path.join(base, f), encoding="utf-8", errors="ignore").read()
+            bad = [m for m in re.findall(r"https?://[^\s\"'`)]+", t) if re.search(r"cdn|unpkg|\.m?js\b|\.wasm\b", m)]  # 원격 스크립트로 보일 만한 주소만 막음
+            assert not bad, (f, bad[:3])
 open(os.path.join(dist, "config.js"), "w").write("window.ADR_CONFIG=" + json.dumps({"mode": "ext", "remote": remote}) + ";\n")
 # 웹 버전
 web = open(os.path.join(root, "app", "panel.html"), encoding="utf-8").read().replace("</head>", '<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#1f6f5c">\n<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{})</script>\n</head>', 1)
