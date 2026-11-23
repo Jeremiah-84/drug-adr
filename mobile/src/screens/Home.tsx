@@ -4,7 +4,7 @@ import { quizOf, storyOf, pageNo } from '../daily';
 import { dayKey, useApp } from '../state';
 import type { Screen } from '../config';
 import { Badge, SecHead } from '../ui';
-import { ChevronRight, Clock, ScanLine, Stethoscope, MapPin } from '../icons';
+import { ChevronRight, Clock, ScanLine, Stethoscope, MapPin, Pill } from '../icons';
 import { AdSlot } from './Chrome';
 import { XPUZZLES, layout, xwRestore } from '../xword';
 import { mmss, ranks, type Board } from '../ranks';
@@ -163,6 +163,15 @@ export function Home() {
             </div>
           </button>
         ))}
+        <button className="tap hov6" onClick={() => go('pill')} style={{ gridColumn: '1 / -1', padding: '16px', borderRight: '1px solid var(--color-divider)', borderBottom: '1px solid var(--color-divider)', display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left' }}>
+          <Pill stroke="var(--color-accent)" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="serif" style={{ fontSize: 14.5, fontWeight: 600 }}>{L('알약 모양으로 찾기')}</div>
+            <div className="g muted" style={{ fontSize: 11.5, letterSpacing: '.14em', fontWeight: 700, marginTop: 2 }}>PILL ID</div>
+            <div className="muted" style={{ fontSize: 12, fontStyle: 'italic', marginTop: 4 }}>{L('새겨진 글자·모양·색으로 무슨 약인지 찾아요')}</div>
+          </div>
+          <ChevronRight size={16} />
+        </button>
       </div>
 
       <button className="tap col" onClick={() => go('vitals')}>
