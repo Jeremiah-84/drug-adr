@@ -1,20 +1,20 @@
 plugins { id 'com.android.application' }
 
-// MediScan Pro — Trusted Web Activity wrapper for https://jeremiah-84.github.io/drug-adr/m/
+// 내약노트 (My Meds Note) — Trusted Web Activity wrapper for https://jeremiah-84.github.io/drug-adr/m/
 // Version: bump versionCode by 1 for every upload to Google Play.
 def twa = [
-    applicationId : 'kr.mediscanpro.app',
+    applicationId : 'kr.naeyaknote.app',
     hostName      : 'jeremiah-84.github.io',
     launchUrl     : '/drug-adr/m/',
     pathPrefix    : '/drug-adr/m/',
-    launcherName  : '메디스캔 프로',
+    launcherName  : '내약노트',
     themeColor    : '#F3F2F2',
     navColor      : '#F3F2F2',
     bgColor       : '#F3F2F2',
 ]
 
 android {
-    namespace 'kr.mediscanpro.app'
+    namespace 'kr.naeyaknote.app'
     compileSdk 36
 
     defaultConfig {

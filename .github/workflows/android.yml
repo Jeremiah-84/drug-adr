@@ -26,7 +26,7 @@ jobs:
       # 업로드 키는 공개 저장소에 두지 않습니다. 여기서 만든 AAB는 서명 전 파일입니다.
       - uses: actions/upload-artifact@v4
         with:
-          name: mediscan-pro-unsigned-aab
+          name: naeyaknote-unsigned-aab
           path: android/app/build/outputs/bundle/release/*.aab
           retention-days: 14
       # 서명 전 AAB를 같은 브랜치의 .play-build/ 에 올려 둡니다 (Claude가 받아서 업로드 키로 서명).

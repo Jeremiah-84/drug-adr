@@ -1,6 +1,6 @@
 {
-  "name": "MediScan Pro",
-  "short_name": "MediScan Pro",
+  "name": "내약노트",
+  "short_name": "내약노트",
   "description": "처방약 스캔 · 이상반응 · 복약 알림",
   "lang": "ko",
   "start_url": "./",
