@@ -62,7 +62,7 @@ export function Home() {
   return (
     <div style={{ padding: '12px 26px 30px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottom: '1px solid var(--color-divider)' }}>
-        <span className="g" style={{ fontSize: 15, letterSpacing: '.3em', fontWeight: 700 }}>MEDISCAN PRO</span>
+        <span className={s.lang === 'en' ? 'g' : 'serif'} style={{ fontSize: 15, letterSpacing: s.lang === 'en' ? '.3em' : '.2em', fontWeight: 700 }}>{s.lang === 'en' ? 'MY MEDS NOTE' : L('내약노트')}</span>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <LangButton />
           <button className="tap avatar" aria-label="My" onClick={() => tab('my')} style={{ width: 36, height: 36, fontSize: 14 }}>{initial}</button>

@@ -110,7 +110,7 @@ export function Splash({ quote, dateStr, font, cjk, skip, sub, onDone }: Props) 
           const a = Math.min(1, (t - T_BRAND) / 900);
           ctx.globalAlpha = a; ctx.textAlign = 'center';
           spacing(ctx, '9px'); ctx.font = '600 17px "Cormorant Garamond", serif'; ctx.fillStyle = PAPER;
-          ctx.fillText('MEDISCAN PRO', cx + 4, cy - 12 + (1 - a) * 6);
+          ctx.fillText('MY MEDS NOTE', cx + 4, cy - 12 + (1 - a) * 6);
           spacing(ctx, '0px'); ctx.fillStyle = GOLD; ctx.fillRect(cx - 16, cy + 6 + (1 - a) * 6, 32, 1);
           ctx.font = 'italic 400 13px "Lora", "Noto Serif KR", serif'; ctx.fillStyle = MUTED;
           ctx.fillText(sub, cx, cy + 32 + (1 - a) * 6);

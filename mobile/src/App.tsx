@@ -107,7 +107,7 @@ function Shell() {
           <DiarySheet />
           {s.splash && (
             <Splash key={`${s.splashKey}-${s.lang}`} quote={quote} dateStr={dateStr} font={SPLASH_FONT[s.lang]} cjk={s.lang === 'zh' || s.lang === 'ja'}
-              skip={L('화면을 누르면 건너뜁니다')} sub={L('메디스캔 프로')} onDone={() => set({ splash: false })} />
+              skip={L('화면을 누르면 건너뜁니다')} sub={s.lang === 'en' ? '' : L('내약노트')} onDone={() => set({ splash: false })} />
           )}
           {s.toast && <div className="toast" role="status">{s.toast}</div>}
           <Diag />

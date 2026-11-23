@@ -130,7 +130,7 @@ const D: Record<string, [string, string, string]> = {
  "삶은 뒤돌아볼 때 이해되지만, 앞을 향해 살아야 한다.": ["Life can only be understood backwards, but it must be lived forwards.", "人生只能向后理解，却必须向前生活。", "人生は後ろ向きにしか理解できないが、前向きにしか生きられない。"], "키르케고르": ["Kierkegaard", "克尔凯郭尔", "キルケゴール"],
  "살아야 할 이유를 아는 사람은 어떤 상황도 견딜 수 있다.": ["He who has a why to live can bear almost any how.", "知道为什么而活的人，几乎能忍受任何境遇。", "生きる理由を持つ者は、ほとんどどんな状況にも耐えられる。"], "니체": ["Nietzsche", "尼采", "ニーチェ"],
  "행복은 스스로 만족하는 사람의 것이다.": ["Happiness belongs to the self-sufficient.", "幸福属于自足的人。", "幸福は自ら満ち足りる者のものである。"], "아리스토텔레스": ["Aristotle", "亚里士多德", "アリストテレス"],
- "화면을 누르면 건너뜁니다": ["Tap to skip", "轻触屏幕跳过", "タップしてスキップ"], "메디스캔 프로": ["MediScan Pro", "医扫 Pro", "メディスキャン プロ"],
+ "화면을 누르면 건너뜁니다": ["Tap to skip", "轻触屏幕跳过", "タップしてスキップ"], "내약노트": ["My Meds Note", "我的药记", "マイ薬ノート"],
  "공복": ["Fasting", "空腹", "空腹時"], "식후 2시간": ["2h after meal", "餐后2小时", "食後2時間"], "혈압": ["Blood pressure", "血压", "血圧"], "혈당": ["Glucose", "血糖", "血糖"],
  "맥박 {0}": ["Pulse {0}", "脉搏 {0}", "脈拍 {0}"], "맥박 {0} bpm": ["Pulse {0} bpm", "脉搏 {0} bpm", "脈拍 {0} bpm"],
  "혈압 기록하기": ["Log blood pressure", "记录血压", "血圧を記録"], "혈당 기록하기": ["Log glucose", "记录血糖", "血糖を記録"],
