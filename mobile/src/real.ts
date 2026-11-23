@@ -340,16 +340,25 @@ export function loadPills() {
   return PILLS;
 }
 const pnorm = (s: string) => norm(s).replace(/[^0-9a-z가-힣]/g, '');
-export async function pillSearch(q: { imprint: string; shape: string; color: string }): Promise<PillRow[]> {
+export type PillQuery = { imprint: string; shape: string; color: string; form: string };
+/** Pill forms people can tell apart by looking: tablet, hard capsule, soft (gel) capsule. */
+export const PILL_FORMS: Record<string, (f: string) => boolean> = {
+  tab: f => /정/.test(f) && !/캡슐/.test(f),
+  hard: f => /캡슐/.test(f) && !/연질/.test(f),
+  soft: f => /연질캡슐/.test(f),
+};
+/** Every pill that fits the imprint, shape, color and form (all optional). */
+export async function pillSearch(q: PillQuery): Promise<PillRow[]> {
   const P = await loadPills();
   const t = pnorm(q.imprint);
+  const fm = PILL_FORMS[q.form];
   const out = P.r.filter(r =>
-    (!q.shape || r[3] === q.shape) && (!q.color || (r[4] + ',' + r[5]).includes(q.color)) &&
+    (!q.shape || r[3] === q.shape) && (!q.color || (r[4] + ',' + r[5]).includes(q.color)) && (!fm || fm(r[6])) &&
     (!t || pnorm(r[1]).includes(t) || pnorm(r[2]).includes(t) || pnorm(r[1] + r[2]).includes(t) || pnorm(r[2] + r[1]).includes(t)));
   // Exact imprint first, then pills we have ingredient data for.
-  const exact = (r: PillRow) => (t && (pnorm(r[1]) === t || pnorm(r[2]) === t) ? 0 : 1);
+  const exact = (r: PillRow) => (t && (pnorm(r[1]) === t || pnorm(r[2]) === t || pnorm(r[1] + r[2]) === t || pnorm(r[2] + r[1]) === t) ? 0 : 1);
   const has = (r: PillRow) => (r[7] ? 0 : 1);
-  return out.sort((a, b) => exact(a) - exact(b) || has(a) - has(b)).slice(0, 40);
+  return out.sort((a, b) => exact(a) - exact(b) || has(a) - has(b));
 }
 
 /** Ingredient ids for a pill row: r[7] holds either the ids or a product name from the index. */
