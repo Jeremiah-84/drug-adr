@@ -1,0 +1,59 @@
+plugins { id 'com.android.application' }
+
+// MediScan Pro — Trusted Web Activity wrapper for https://jeremiah-84.github.io/drug-adr/m/
+// Version: bump versionCode by 1 for every upload to Google Play.
+def twa = [
+    applicationId : 'kr.mediscanpro.app',
+    hostName      : 'jeremiah-84.github.io',
+    launchUrl     : '/drug-adr/m/',
+    pathPrefix    : '/drug-adr/m/',
+    launcherName  : '메디스캔 프로',
+    themeColor    : '#F3F2F2',
+    navColor      : '#F3F2F2',
+    bgColor       : '#F3F2F2',
+]
+
+android {
+    namespace 'kr.mediscanpro.app'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId twa.applicationId
+        minSdk 23
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+
+        manifestPlaceholders = [
+            hostName    : twa.hostName,
+            defaultUrl  : 'https://' + twa.hostName + twa.launchUrl,
+            pathPrefix  : twa.pathPrefix,
+            launcherName: twa.launcherName,
+        ]
+        resValue 'string', 'appName', twa.launcherName
+        resValue 'string', 'launcherName', twa.launcherName
+        resValue 'color', 'colorPrimary', twa.themeColor
+        resValue 'color', 'navigationColor', twa.navColor
+        resValue 'color', 'backgroundColor', twa.bgColor
+        resValue 'string', 'providerAuthority', twa.applicationId + '.fileprovider'
+        // Digital Asset Links: tells Android this app and the website belong together.
+        resValue 'string', 'assetStatements',
+            '[{\\"relation\\": [\\"delegate_permission/common.handle_all_urls\\"], ' +
+            '\\"target\\": {\\"namespace\\": \\"web\\", \\"site\\": \\"https://' + twa.hostName + '\\"}}]'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // No signing here: the bundle is signed with the upload key outside this public repo.
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}

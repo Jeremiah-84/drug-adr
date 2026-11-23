@@ -1,0 +1,31 @@
+name: 안드로이드 앱(AAB) 만들기
+on:
+  workflow_dispatch: {}
+  push:
+    paths:
+      - "android/**"
+      - ".github/workflows/android.yml"
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.13"
+      - name: AAB 만들기 (서명 전)
+        working-directory: android
+        run: gradle --no-daemon :app:bundleRelease
+      # 업로드 키는 공개 저장소에 두지 않습니다. 여기서 만든 AAB는 서명 전 파일입니다.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mediscan-pro-unsigned-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          retention-days: 14
