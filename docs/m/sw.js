@@ -1,8 +1,8 @@
-// Offline support for the MediScan mobile app (docs/m/).
+// Offline support for the 내약노트 (My Meds Note) mobile app (docs/m/).
 // - pages: network first, cached copy when offline
 // - drug data (../data/): network first so the monthly update shows up; cached copy when offline
 // - built assets, OCR/barcode engines, fonts: cache first (file names change when they change)
-const CACHE = 'mediscan-v30';
+const CACHE = 'mediscan-v32';
 const SCOPE = new URL('./', self.location).href;
 const DATA = new URL('../data/', self.location).href;
 const VENDOR = new URL('../vendor/', self.location).href;
