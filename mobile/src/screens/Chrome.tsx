@@ -204,7 +204,7 @@ export function ScanOverlay() {
         </div>
         <div style={{ display: 'flex', border: '1px solid rgba(255,255,255,.18)', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: 'rgba(0,0,0,.35)' }} role="radiogroup">
           {(Object.keys(MODES) as ScanMode[]).map(k => (
-            <button key={k} role="radio" aria-checked={s.mode === k} onClick={() => { setBusy(''); setLink(''); seen.current.clear(); set({ mode: k }); }}
+            <button key={k} role="radio" aria-checked={s.mode === k} onClick={() => { if (k === 'pill') { go('pill'); return; } setBusy(''); setLink(''); seen.current.clear(); set({ mode: k }); }}
               style={{ whiteSpace: 'nowrap', padding: '8px 13px', fontSize: 12.5, background: 'none', border: 0, color: s.mode === k ? '#facb8d' : '#bab6b6', boxShadow: s.mode === k ? 'inset 0 0 0 1px #e1ad66' : 'none' }}>
               {L(MODES[k][0])}
             </button>
