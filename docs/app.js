@@ -231,6 +231,29 @@ $('pillbox').addEventListener('toggle',async()=>{if(!$('pillbox').open||PILLS)re
   try{PILLS=await getJSON('pills.json');track('pill_open')}catch(e){$('pillmsg').textContent=T('failLoad');return}pillUI();pillSearch()});
 let pillT=null;$('pillq').addEventListener('input',()=>{clearTimeout(pillT);pillT=setTimeout(pillSearch,150)});
 
+/* ---------- 약물 상호작용: 식약처 DUR 병용금기·효능군중복 (data/interactions.json, 매월 자동 갱신) ---------- */
+let IX=null, IXP=null;
+function loadIx(){if(!IXP)IXP=getJSON('interactions.json').then(d=>{const pair={};for(const [a,b,r] of d.taboo)pair[a<b?a+'|'+b:b+'|'+a]=r;IX={...d,pair};return IX}).catch(()=>{IXP=null;return null});return IXP}
+function ixFind(){const tab=[],ef=[];if(!IX||sel.length<2)return{tab,ef};
+  for(let i=0;i<sel.length;i++)for(let j=i+1;j<sel.length;j++){const x=sel[i],y=sel[j],r=IX.pair[x<y?x+'|'+y:y+'|'+x];if(r)tab.push({x,y,r})}
+  for(const g of IX.efcy){const hit=sel.filter(id=>g.ids.includes(id));if(hit.length>1)ef.push({name:g.name,hit})}
+  return{tab,ef}}
+let ixLast='';
+async function renderIx(){const n=$('ixn'),msg=$('ixmsg'),res=$('ixres');
+  if(sel.length<2){n.hidden=true;msg.textContent=T('ixNeed');res.innerHTML='';return}
+  if(!IX){msg.textContent=T('ixLoad');if(!await loadIx()){msg.textContent=T('failLoad');return}}
+  const {tab,ef}=ixFind(),nm=id=>byId[id]?dn(byId[id]):id;
+  n.hidden=!(tab.length||ef.length);n.className='ixn'+(tab.length?'':' ef');n.textContent=T('ixN',tab.length+ef.length);
+  n.title=T('ixNT',tab.length,ef.length);
+  msg.textContent=tab.length||ef.length?T('ixSrc',IX.version):T('ixOk',IX.version);
+  let h='';
+  if(tab.length)h+=`<div class="ixg"><b class="h">${T('ixTab')}</b><ul>${tab.map(t=>`<li><b>${esc(nm(t.x))}</b> + <b>${esc(nm(t.y))}</b>${t.r.length?`<br><span class="why">${t.r.map(i=>IX.reasons[i]).filter(Boolean).map(esc).join(' · ')}</span>`:''}</li>`).join('')}</ul></div>`;
+  if(ef.length)h+=`<div class="ixg ef"><b class="h">${T('ixEf')}</b><ul>${ef.map(g=>`<li>${esc(g.name)}<br><b>${g.hit.map(id=>esc(nm(id))).join(', ')}</b></li>`).join('')}</ul></div>`;
+  if(h)h+=`<div class="hint" style="margin-top:6px">${T('ixNote')}</div>`;
+  res.innerHTML=h;
+  const key=sel.slice().sort().join(',');if((tab.length||ef.length)&&key!==ixLast){ixLast=key;track('ix_hit',{n_drugs:sel.length,n_taboo:tab.length,n_efcy:ef.length})}}
+$('ixbox').addEventListener('toggle',()=>{if($('ixbox').open)track('ix_open',{n_drugs:sel.length})});
+
 /* ---------- 글자 인식(OCR: 화면 캡처·사진)과 약 상자 바코드 (모두 이 기기 안에서 처리, 바코드·사진은 웹 버전만) ---------- */
 const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error(src));document.head.appendChild(s)});
 const here=p=>new URL(p,location.href).href;
@@ -437,7 +460,7 @@ function renderChips(){
   c.innerHTML=sel.map(id=>`<span class="chip">${esc(dn(byId[id]))}<button type="button" aria-label="${esc(T('remove',dn(byId[id])))}" data-rm="${id}">×</button></span>`).join('')||`<span class="none">${T('chipsEmpty')}</span>`;
   c.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{sel=sel.filter(x=>x!==b.dataset.rm);save();render()});
 }
-function render(){renderChips();renderProbs();ensure(sel).then(()=>{renderResult();renderOrgan()})}
+function render(){renderChips();renderProbs();renderIx();ensure(sel).then(()=>{renderResult();renderOrgan()})}
 if(!IS_EXT){$('scan').hidden=true;const sb=document.querySelector('[data-i18n="sub"]');if(sb){sb.dataset.i18n='subWeb';sb.textContent=T('subWeb')}}
 try{if(!localStorage.getItem('adr.introOk')){$('intro').hidden=false}}catch(e){$('intro').hidden=false}
 $('introOk').onclick=()=>{$('intro').hidden=true;try{localStorage.setItem('adr.introOk','1');localStorage.setItem('adr.stats',$('statsOk').checked?'1':'0')}catch(e){};renderStats();track('intro_ok')};

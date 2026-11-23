@@ -29,6 +29,7 @@ for base, _, files in os.walk(dist):
             t = open(os.path.join(base, f), encoding="utf-8", errors="ignore").read()
             bad = [m for m in re.findall(r"https?://[^\s\"'`)]+", t) if re.search(r"cdn|unpkg|\.m?js\b|\.wasm\b", m)]  # 원격 스크립트로 보일 만한 주소만 막음
             assert not bad, (f, bad[:3])
+assert not [f for _, _, fs in os.walk(dist) for f in fs if f.endswith(".gz")], "엣지 스토어: 패키지 안에 .gz 파일이 있으면 안 됨"
 open(os.path.join(dist, "config.js"), "w").write("window.ADR_CONFIG=" + json.dumps({"mode": "ext", "remote": remote}) + ";\n")
 # 웹 버전
 web = open(os.path.join(root, "app", "panel.html"), encoding="utf-8").read().replace("</head>", '<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#1f6f5c">\n<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{})</script>\n</head>', 1)
