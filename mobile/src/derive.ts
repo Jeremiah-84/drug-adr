@@ -61,8 +61,9 @@ export const slotViews = (s: AppState, me: Member): SlotView[] => {
 /** Stamp calendar for the current month: a stamp on each day every planned dose was recorded. */
 /** `ends` = names of prescriptions whose last day is this day. */
 export type StampDay = { d: number; kind: 'stamp' | 'today' | 'miss' | 'none' | 'future'; ends: string[] };
-export function stampMonth(me: Member): { days: StampDay[]; count: number; total: number; first: number; month: number; todayDone: boolean } {
-  const now = new Date(), y = now.getFullYear(), mo = now.getMonth(), today = now.getDate();
+/** `y`/`mo` (0-based month) pick another month for the diary; the current month by default. */
+export function stampMonth(me: Member, y = new Date().getFullYear(), mo = new Date().getMonth()): { days: StampDay[]; count: number; total: number; first: number; month: number; year: number; todayDone: boolean } {
+  const tk = todayKey();
   const total = new Date(y, mo + 1, 0).getDate(), first = new Date(y, mo, 1).getDay();
   const plannedOn = (key: string) => SLOT_KEYS.filter(k => medsOn(me.meds, key).some(m => m.slots.includes(k)));
   const start = me.since || Object.keys(me.taken).sort()[0] || todayKey();
@@ -72,14 +73,14 @@ export function stampMonth(me: Member): { days: StampDay[]; count: number; total
   for (let d = 1; d <= total; d++) {
     const key = `${y}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     let kind: StampDay['kind'];
-    if (d > today) kind = 'future';
+    if (key > tk) kind = 'future';
     else if (full(key)) kind = 'stamp';
-    else if (d === today) kind = 'today';
+    else if (key === tk) kind = 'today';
     else kind = key < start || !plannedOn(key).length ? 'none' : 'miss';
     if (kind === 'stamp') count++;
     days.push({ d, kind, ends: me.meds.filter(m => m.until === key).map(m => m.name) });
   }
-  return { days, count, total, first, month: mo + 1, todayDone: full(todayKey()) };
+  return { days, count, total, first, month: mo + 1, year: y, todayDone: full(todayKey()) };
 }
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 

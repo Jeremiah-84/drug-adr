@@ -31,7 +31,10 @@ export type Member = {
   /** taken[YYYY-MM-DD] = slots marked as taken that day */
   taken: Record<string, SlotKey[]>;
   scans: ScanRec[]; syms: SymRec[];
+  /** Diary: diary[YYYY-MM-DD] = a sticker (an emoji) and/or a short memo for that day. */
+  diary?: Record<string, DiaryEntry>;
 };
+export type DiaryEntry = { st?: string; memo?: string };
 
 export type Role = 'patient' | 'pro';
 export type Theme = 'light' | 'dark' | 'auto';
@@ -63,6 +66,9 @@ export type AppState = Saved & {
   draft: { h: number; mi: number };
   vt: VitalsTab;
   sheet: boolean;
+  /** Diary: the month on show ([year, 0-based month]) and the day open in the sticker/memo sheet. */
+  diaryYM: [number, number];
+  diaryDay: string | null;
   form: VitalsForm;
   mode: ScanMode;
   /** The medicine open on the detail screen. */
@@ -151,6 +157,8 @@ const initialState = (): AppState => {
   draft: { h: 8, mi: 0 },
   vt: 'bp',
   sheet: false,
+  diaryYM: [new Date().getFullYear(), new Date().getMonth()],
+  diaryDay: null,
   form: { s: 120, di: 80, p: 70, v: 100, when: '공복' },
   mode: 'rx',
   drug: { name: '', ids: [] },

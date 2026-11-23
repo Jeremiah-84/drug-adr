@@ -1,4 +1,5 @@
 import { EXTRA } from './i18n_extra';
+import { DIARY } from './i18n_diary';
 import { CLASSICAL } from './i18n_classical';
 import { XWORD } from './i18n_xword';
 // Translations ported 1:1 from the Claude Design prototype. Korean is the source language;
@@ -166,6 +167,7 @@ const D: Record<string, [string, string, string]> = {
 };
 
 Object.assign(D, EXTRA);
+for (const [k, v] of Object.entries(DIARY)) if (!(k in D)) D[k] = v;
 for (const [k, v] of Object.entries(CLASSICAL)) if (!(k in D)) D[k] = v;
 for (const [k, v] of Object.entries(XWORD)) if (!(k in D)) D[k] = v;
 
