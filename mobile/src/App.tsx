@@ -11,6 +11,7 @@ import { Pill, Search } from './screens/Find';
 import { DoseLog, History, Report } from './screens/Records';
 import { Schedule, TimeSheet } from './screens/Schedule';
 import { Vitals, VitalsSheet } from './screens/Vitals';
+import { DiarySheet } from './screens/Diary';
 import { Onboarding } from './screens/Onboarding';
 import { Today } from './screens/Today';
 import { Puzzle } from './screens/Puzzle';
@@ -103,6 +104,7 @@ function Shell() {
           {showNav && <BottomNav />}
           <TimeSheet />
           <VitalsSheet />
+          <DiarySheet />
           {s.splash && (
             <Splash key={`${s.splashKey}-${s.lang}`} quote={quote} dateStr={dateStr} font={SPLASH_FONT[s.lang]} cjk={s.lang === 'zh' || s.lang === 'ja'}
               skip={L('화면을 누르면 건너뜁니다')} sub={L('메디스캔 프로')} onDone={() => set({ splash: false })} />

@@ -262,6 +262,7 @@ button:disabled { cursor: default; }
    ramps are flipped so every "muted / gold text" token stays readable. */
 :root[data-theme="dark"] {
   color-scheme: dark;
+  --cal-red: #e58a7f;
   --color-bg: #1b1a19;
   --color-surface: #252321;
   --color-text: #ece7df;
@@ -361,3 +362,27 @@ button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], .ta
 @media (prefers-reduced-motion: reduce) { .focus-ring, .scan-guide { animation: none; } }
 /* Last day of a prescription on the stamp calendar. */
 .cal-end { position: absolute; top: 0; right: 2px; font-size: 9.5px; line-height: 1; padding: 2px 4px; border-radius: 6px; background: var(--color-bg); border: 1px solid var(--color-accent); color: var(--color-accent-800); font-weight: 600; }
+
+/* Diary (오늘의 페이지 → 복약 다이어리): holidays and Sundays in a muted red. */
+:root { --cal-red: #b0413e; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cal-arrow { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-divider); border-radius: 50%; font-size: 18px; color: var(--color-accent-700); }
+.cal-arrow:disabled { opacity: .35; }
+.cal-ym { display: flex; align-items: baseline; gap: 6px; padding: 6px 10px; border-radius: var(--radius-md); }
+.cal-ym::after { content: '▾'; font-size: 11px; color: var(--color-accent); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 4px; touch-action: pan-y; animation: cal-in .22s ease; }
+.cal-grid.from-l { animation-name: cal-in-l; }
+@keyframes cal-in { from { opacity: 0; transform: translateX(14px); } }
+@keyframes cal-in-l { from { opacity: 0; transform: translateX(-14px); } }
+.cal-day { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 50px; padding: 3px 0 2px; border-radius: 8px; min-width: 0; }
+.cal-day.sel { background: color-mix(in srgb, var(--color-accent) 9%, transparent); }
+.cal-st { position: absolute; top: -3px; left: 0; font-size: 14px; line-height: 1; }
+.cal-hol { font-size: 9.5px; line-height: 1.15; color: var(--cal-red); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 1px; }
+.cal-hol.soft { color: var(--color-accent-700); }
+.cal-memo { width: 5px; height: 5px; border-radius: 50%; background: var(--color-accent); }
+.cal-pick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.st-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.st-grid > button { height: 44px; font-size: 22px; border: 1px solid var(--color-divider); border-radius: var(--radius-md); }
+.st-grid > button.on { border-color: var(--color-accent); box-shadow: inset 0 0 0 1px var(--color-accent); background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.memo-box { width: 100%; min-height: 96px; resize: vertical; padding: 10px 12px; font: inherit; font-size: 14.5px; line-height: 1.6; color: var(--color-text); background: transparent; border: 1px solid var(--color-divider); border-radius: var(--radius-md); }
+.memo-box:focus { outline: none; border-color: var(--color-accent); }
