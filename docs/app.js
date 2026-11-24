@@ -149,7 +149,15 @@ function addFromText(text,how){const f=findDrugs(text),added=f.filter(id=>!sel.i
   track('drugs_found',{how,found:f.length,added:added.length});for(const id of added)track('drug_add',{drug:id,how});return{f,added}}
 $('pasteGo').onclick=()=>{const r=addFromText($('paste').value,'paste');
   $('pasteMsg').textContent=T('pasteMsg',r.added.length,r.f.length);$('paste').value=''};
-$('clearAll').onclick=()=>{track('new_patient',{n:sel.length});sel=[];save();render();q.focus()};
+/* 새 환자: 약 목록뿐 아니라 붙여넣기 칸·캡처/사진 글자 읽기 결과·안내 문구·새 문제 입력까지 모두 비움.
+   읽는 중이던 캡처가 끝나도 이전 환자 약이 다시 들어오지 않도록 patientGen을 올림 */
+let patientGen=0;
+$('clearAll').onclick=()=>{track('new_patient',{n:sel.length});patientGen++;sel=[];
+  q.value='';sg.hidden=true;$('paste').value='';$('pasteMsg').textContent='';$('pastebox').open=false;$('drughint').textContent='';
+  if($('capIn'))$('capIn').value='';if($('photoIn'))$('photoIn').value='';
+  $('ixbox').open=false;
+  pq.value='';ftq='';renderPMatch([]);renderProbs();
+  save();render();q.focus()};
 
 /* 현재 탭 화면 글자 읽기: 복사가 막힌 화면도 글자로 되어 있으면 읽을 수 있음 */
 $('scan').onclick=async()=>{
@@ -299,8 +307,10 @@ async function ocrCap(f,rect){const w=await ocrWorker(['kor','eng']);const {data
 let ocrBusy=false;
 async function ocrImage(f,how,rect){if(!f||ocrBusy)return;const hint=$('drughint');ocrBusy=true;
   hint.textContent=T('ocrLoad');track(how+'_start');
-  try{ocrProg=p=>{hint.textContent=T('ocrRun',p)};
+  const gen=patientGen;
+  try{ocrProg=p=>{if(gen===patientGen)hint.textContent=T('ocrRun',p)};
     const text=how==='ocr'?await ocrPhoto(f):await ocrCap(f,rect);
+    if(gen!==patientGen){track(how+'_dropped');return}   // 읽는 사이 '새 환자'를 누름 → 결과 버림
     $('paste').value=text;$('pastebox').open=true;
     const r=addFromText(text,how);
     hint.textContent=r.f.length?T(how==='ocr'?'ocrDone':'capDone',r.f.length,r.added.length):T(how==='ocr'?'ocrNone':'capNone');
