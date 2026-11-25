@@ -1,7 +1,9 @@
 """확장 프로그램 설치 폴더(dist/drug-adr-extension)와 웹 버전(docs)을 만듭니다.
-사용법: python3 build_extension.py https://아이디.github.io/저장소/"""
+사용법: python3 build_extension.py [https://아이디.github.io/저장소/]
+주소를 빼면 기본 공개 주소를 씁니다. 빈 주소("")로 만들면 확장의 광고·통계·자료 자동 갱신이 모두 꺼지므로 스토어용으로 쓰면 안 됩니다."""
 import json, os, shutil, sys, zipfile
-remote = sys.argv[1] if len(sys.argv) > 1 else ""
+DEFAULT_REMOTE = "https://jeremiah-84.github.io/drug-adr/"
+remote = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_REMOTE
 if remote and not remote.endswith("/"): remote += "/"
 root = os.path.dirname(os.path.abspath(__file__))
 dist = os.path.join(root, "dist", "drug-adr-extension")
@@ -31,6 +33,7 @@ for base, _, files in os.walk(dist):
             assert not bad, (f, bad[:3])
 assert not [f for _, _, fs in os.walk(dist) for f in fs if f.endswith(".gz")], "엣지 스토어: 패키지 안에 .gz 파일이 있으면 안 됨"
 open(os.path.join(dist, "config.js"), "w").write("window.ADR_CONFIG=" + json.dumps({"mode": "ext", "remote": remote}) + ";\n")
+if not remote: print("경고: remote 주소가 비어 있음 → 이 패키지에는 광고·통계·자료 자동 갱신이 없습니다 (스토어에 올리지 마세요)", file=sys.stderr)
 # 웹 버전
 web = open(os.path.join(root, "app", "panel.html"), encoding="utf-8").read().replace("</head>", '<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#1f6f5c">\n<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{})</script>\n</head>', 1)
 open(os.path.join(root, "docs", "index.html"), "w", encoding="utf-8").write(web)
