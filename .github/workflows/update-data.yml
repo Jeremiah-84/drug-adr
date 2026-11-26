@@ -8,16 +8,27 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # 첨부문서 1,500여 개를 매번 처음부터 받으면 3시간을 넘기므로, 받은 것은 캐시에 남겨 다음 실행이 이어서 받게 함
+      - name: 지난번에 받은 식약처 자료 불러오기
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache
+          key: mfds-${{ github.run_id }}
+          restore-keys: mfds-
       - name: 식약처 데이터 받기와 추출
+        timeout-minutes: 320
         env:
           MFDS_KEY: ${{ secrets.MFDS_KEY }}
         run: |
+          rm -f .cache/list.json   # 제품 목록은 매번 새로 받음
           python3 pipeline/barcodes.py --cache .cache
           python3 pipeline/pills.py --cache .cache
           python3 pipeline/run.py --out docs/data --cache .cache
@@ -28,10 +39,16 @@ jobs:
         env:
           MFDS_KEY: ${{ secrets.MFDS_KEY }}
         run: python3 pipeline/dur.py --fetch --out docs/data
+      - name: 받은 식약처 자료 저장 (중간에 멈춰도 저장)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache
+          key: mfds-${{ github.run_id }}
       - name: 바뀐 데이터 올리기
         run: |
           git config user.name "data-bot"
           git config user.email "data-bot@users.noreply.github.com"
           git add docs/data pipeline/barcodes.json pipeline/dur_raw.json 2>/dev/null || git add docs/data pipeline/barcodes.json
           git diff --cached --quiet || git commit -m "약 데이터 갱신 $(date +%Y-%m-%d)"
-          git pull --rebase origin main && git push
+          git pull --rebase origin "$GITHUB_REF_NAME" && git push origin HEAD:"$GITHUB_REF_NAME"
