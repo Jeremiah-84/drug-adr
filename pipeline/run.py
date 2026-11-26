@@ -50,9 +50,16 @@ def fetch_detail(seq, key, cache):
     return it
 
 SALT = r'\b(hydrochloride|hcl|besylate|besilate|camsylate|maleate|mesylate|mesilate|sodium|potassium|calcium|magnesium|hydrate|monohydrate|dihydrate|trihydrate|sesquihydrate|hemihydrate|anhydrous|tartrate|bitartrate|citrate|fumarate|hemifumarate|succinate|sulfate|bisulfate|hydrobromide|bromide|acetate|phosphate|dipotassium|disodium|nitrate|oxalate|malate|lactate|tosylate|tosilate|medoxomil|cilexetil|axetil|proxetil|pivoxil|propanediol|l-pyroglutamic acid|micronized|dispersion|zinc|ethyl|esters?|salt|lysine|arginine|meglumine|trometamol|hemitartrate|valerate|benzoate|palmitate|stearate|hemicalcium|olamine|decanoate|enanthate|hyclate|pamoate|aspartate|gluconate|carbonate|oxide|chloride|hemimalate|hemiedisylate|edisylate|orotate|nicotinate|adipate|camsilate|napadisilate|salicylate)\b'
+# 염 이름을 떼고 나면 음이온·금속 조각만 남는 성분(예: magnesium hydroxide → hydroxide)은
+# 조각 이름이 다른 약(수산화알루미늄·수산화제이철 등)까지 잡으므로 염을 떼지 않고 그대로 둠
+FRAG = {"hydroxide", "bicarbonate", "precipitated", "aluminium", "aluminum", "monobasic", "dibasic", "tribasic", "iodide",
+        "ferric", "ferrous", "dried", "colloidal", "light", "heavy", "hydrogen", "dihydrogen", "gel", "trisilicate", "silicate", "hexahydrate"}
 def base_name(n):
-    n = n.lower(); n = re.sub(r"\(.*?\)", "", n); n = re.sub(SALT, " ", n)
-    n = re.sub(r"[^a-z0-9\- ]", " ", n); return re.sub(r"\s+", " ", n).strip()
+    n = n.lower(); n = re.sub(r"\(.*?\)", "", n)
+    full = re.sub(r"\s+", " ", re.sub(r"[^a-z0-9\- ]", " ", n)).strip()
+    n = re.sub(SALT, " ", n)
+    n = re.sub(r"[^a-z0-9\- ]", " ", n); n = re.sub(r"\s+", " ", n).strip()
+    return full if n and set(n.split()) <= FRAG else n
 ORAL = re.compile(r"(정|캡슐|캅셀|엘릭서|세립|산|과립|시럽|현탁|액|환|츄)")
 NONORAL = re.compile(r"(주사|주\d|주$|주\(|주사액|패취|패치|겔|크림|연고|좌제|좌약|점안|점이|점비|외용|흡입|분무|스프레이|플라스타|카타플라스마|로션|질정|가글|구강|에어로솔|필름(?!코팅)|첩부|트로키|관장|외용액|이식|투여용|투석|수액|세정)")
 INJ = re.compile(r"(주사|주\d|주$|주\(|수액|주사액)")
@@ -86,7 +93,10 @@ def ko_name(name):
     k = (m[-1] if m else name).split(",")[0].strip()
     k = re.sub(r"\d.*$", "", k)
     if not m: k = re.sub(FORMSUF, "", k)
+    k0 = k
     k = re.sub(KSALT, "", k).strip()
+    # 수산화마그네슘 → 수산화, 탄산수소나트륨 → 탄산수소 처럼 조각만 남으면 염을 떼지 않음
+    if k != k0 and re.search(r"(화|탄산|수소|침강탄산)$", k): k = k0.strip()
     return k or name
 
 def group_ko(ps):
@@ -162,7 +172,7 @@ def main():
         e = re.sub(r"\(.*?\)|주식회사|㈜", "", e or "").strip()
         return re.sub(r"(제약|약품|신약|바이오|팜|파마|생명과학|헬스케어|메디칼|코리아)+.*$", "", e).strip()
     stems = {stem_of(p.get("ENTP_NAME")) for p in prods} - {""}
-    STOP = {"관납용", "군납용", "군납명", "주사용", "외용", "내복", "라이스", "디메틸", "고려삼분", "멸균", "정제수", "대한", "한국", "동아", "일반"}
+    STOP = {"관납용", "군납용", "군납명", "주사용", "외용", "내복", "라이스", "디메틸", "고려삼분", "멸균", "정제수", "대한", "한국", "동아", "일반", "앰플", "바이알"}
     def noisy(k):
         k2 = k.replace(" ", "")
         return len(k2) < 2 or k2 in stems or k2 in STOP or not re.search(r"[가-힣]{2}", k2)
