@@ -20,7 +20,7 @@ def call(op, params, key, tries=6):
     url = API + op + "?" + urllib.parse.urlencode({"serviceKey": key, "type": "json", **params})
     for a in range(tries):
         try:
-            with urllib.request.urlopen(url, timeout=120) as r:
+            with urllib.request.urlopen(url, timeout=40) as r:
                 d = json.load(r)
             return d["body"]
         except Exception as e:
