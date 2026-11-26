@@ -29,6 +29,7 @@ def call(op, params, key, tries=6):
     raise RuntimeError(f"API 호출 실패: {op} {params}")
 
 def fetch_list(key, cache):
+    os.makedirs(cache, exist_ok=True)
     path = os.path.join(cache, "list.json")
     if os.path.exists(path):
         return json.load(open(path))
