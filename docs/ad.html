@@ -26,19 +26,26 @@ function house(list,label){
   if(!ad.img){a.querySelector('.ic').textContent=ad.icon||'AD';a.querySelector('b').textContent=ad.title;a.querySelector('span span').textContent=ad.sub||''}
   box.appendChild(a);tag.textContent=label;tell('ad_view',ad.id);a.addEventListener('click',()=>tell('ad_click',ad.id));
 }
-function script(src,after){const s=document.createElement('script');s.src=src;s.async=true;if(after)s.onload=after;document.body.appendChild(s)}
+/* 광고 회사 스크립트는 '출처 없는' 작은 틀(sandbox, allow-same-origin 없음) 안에서만 실행합니다.
+   이 사이트(jeremiah-84.github.io)는 휴대폰 앱·웹 버전과 주소가 같아서, 틀을 나누지 않으면 광고 스크립트가
+   그 앱들이 브라우저에 저장한 약 목록·혈압·혈당·가족 이름을 읽을 수 있게 됩니다. */
+function adFrame(w,h,body){
+  const f=document.createElement('iframe');f.width=w;f.height=h;f.style.border='0';f.scrolling='no';f.title='광고';
+  f.setAttribute('sandbox','allow-scripts allow-popups allow-popups-to-escape-sandbox');
+  f.referrerPolicy='no-referrer';
+  f.srcdoc='<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;overflow:hidden">'+body+'</body></html>';
+  return f}
 fetch('ads.json',{cache:'no-cache'}).then(r=>r.json()).then(c=>{
   if(c.provider==='adfit'&&c.adfit&&c.adfit.unit){
-    box.innerHTML=`<ins class="kakao_ad_area" style="display:none" data-ad-unit="${c.adfit.unit}" data-ad-width="${c.adfit.width}" data-ad-height="${c.adfit.height}"></ins>`;
     box.style.cssText='height:100%;display:flex;justify-content:center;align-items:center';
-    script('https://t1.daumcdn.net/kas/static/ba.min.js');tell('ad_view','adfit');
+    const n=v=>String(parseInt(v,10)||0);
+    box.appendChild(adFrame(c.adfit.width,c.adfit.height,'<ins class="kakao_ad_area" style="display:none" data-ad-unit="'+String(c.adfit.unit).replace(/[^A-Za-z0-9_-]/g,'')+'" data-ad-width="'+n(c.adfit.width)+'" data-ad-height="'+n(c.adfit.height)+'"></ins><scr'+'ipt async src="https://t1.daumcdn.net/kas/static/ba.min.js"></scr'+'ipt>'));
+    tell('ad_view','adfit');
   }else if(c.provider==='coupang'&&c.coupang&&c.coupang.id){
     box.style.cssText='height:100%;display:flex;justify-content:center;align-items:center';
     // 쿠팡이 준 코드를 그대로 작은 틀 안에서 실행 (쿠팡 스크립트는 자기 자리에 배너를 직접 그림)
     const cfg={id:c.coupang.id,template:c.coupang.template||'carousel',trackingCode:c.coupang.trackingCode,width:String(c.coupang.width),height:String(c.coupang.height),tsource:''};
-    const f=document.createElement('iframe');f.width=c.coupang.width;f.height=c.coupang.height;f.style.border='0';f.scrolling='no';f.title='광고';
-    f.srcdoc='<!doctype html><html><body style="margin:0;overflow:hidden"><scr'+'ipt src="https://ads-partners.coupang.com/g.js"></scr'+'ipt><scr'+'ipt>new PartnersCoupang.G('+JSON.stringify(cfg)+');</scr'+'ipt></body></html>';
-    box.appendChild(f);
+    box.appendChild(adFrame(c.coupang.width,c.coupang.height,'<scr'+'ipt src="https://ads-partners.coupang.com/g.js"></scr'+'ipt><scr'+'ipt>new PartnersCoupang.G('+JSON.stringify(cfg).replace(/</g,'\\u003c')+');</scr'+'ipt>'));
     tag.textContent='이 광고는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.';tag.style.cssText='position:fixed;left:0;right:0;bottom:2px;top:auto;text-align:center;font-size:9px;color:var(--muted)';box.style.height='calc(100% - 14px)';tell('ad_view','coupang');
   }else{house(c.banners&&c.banners.length?c.banners:[{id:'none',title:'광고 자리',url:'#'}],c.provider==='banner'?'광고':'시험 광고')}
 }).catch(()=>house([{id:'none',icon:'AD',title:'이 자리에 광고를 실을 수 있습니다',url:'https://github.com/Jeremiah-84/drug-adr/issues'}],'광고'));
