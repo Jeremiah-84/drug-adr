@@ -43,9 +43,13 @@ fetch('ads.json',{cache:'no-cache'}).then(r=>r.json()).then(c=>{
     tell('ad_view','adfit');
   }else if(c.provider==='coupang'&&c.coupang&&c.coupang.id){
     box.style.cssText='height:100%;display:flex;justify-content:center;align-items:center';
-    // 쿠팡이 준 코드를 그대로 작은 틀 안에서 실행 (쿠팡 스크립트는 자기 자리에 배너를 직접 그림)
     const cfg={id:c.coupang.id,template:c.coupang.template||'carousel',trackingCode:c.coupang.trackingCode,width:String(c.coupang.width),height:String(c.coupang.height),tsource:''};
-    box.appendChild(adFrame(c.coupang.width,c.coupang.height,'<scr'+'ipt src="https://ads-partners.coupang.com/g.js"></scr'+'ipt><scr'+'ipt>new PartnersCoupang.G('+JSON.stringify(cfg).replace(/</g,'\\u003c')+');</scr'+'ipt>'));
+    // 쿠팡 g.js 를 우리 주소에서 실행하지 않고, g.js 가 만들어 주던 쿠팡 배너 틀(쿠팡 주소)을 직접 붙입니다.
+    // 다른 주소(ads-partners.coupang.com)의 틀이라 브라우저가 이 앱의 저장 정보를 읽지 못하게 막아 줍니다.
+    // (sandbox 틀 안에 넣으면 쿠팡 배너 페이지까지 막혀서 배너가 비어 보였음)
+    const q=new URLSearchParams({id:String(cfg.id),template:cfg.template,trackingCode:cfg.trackingCode||'',subId:'',width:cfg.width,height:cfg.height,tsource:''});
+    const f=document.createElement('iframe');f.src='https://ads-partners.coupang.com/widgets.html?'+q;f.width=cfg.width;f.height=cfg.height;f.style.border='0';f.scrolling='no';f.title='광고';
+    box.appendChild(f);
     tag.textContent='이 광고는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.';tag.style.cssText='position:fixed;left:0;right:0;bottom:2px;top:auto;text-align:center;font-size:9px;color:var(--muted)';box.style.height='calc(100% - 14px)';tell('ad_view','coupang');
   }else{house(c.banners&&c.banners.length?c.banners:[{id:'none',title:'광고 자리',url:'#'}],c.provider==='banner'?'광고':'시험 광고')}
 }).catch(()=>house([{id:'none',icon:'AD',title:'이 자리에 광고를 실을 수 있습니다',url:'https://github.com/Jeremiah-84/drug-adr/issues'}],'광고'));
